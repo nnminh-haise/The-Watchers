@@ -1,6 +1,4 @@
-# Báo cáo tuần 1
-
----
+# Week 1 report
 
 ## Mô tả website
 
@@ -31,19 +29,19 @@ Website bán đồng hồ online sẽ lưu giữ các thông tin sau:
 
 ## Mô hình thực thể quan hệ - ERD
 
-![Alt text](img/ERD1.png)
+![website ERD](img/ERD1.png)
 
 ## Dạng chuẩn 3
 
 ### Quy ước
 
-- <u>**Khóa chính**</u>: In đậm và gạch chân.
+- **<u>Khóa chính</u>**: In đậm và gạch chân.
 - *Khóa tương đương*: in nghiêng.
 - **Khóa ngoại**: in đậm.
 
 ### Mô hình dữ liệu
 
-1. LOAIDONGHO (<u>**MALOAIDH**</u>, TENLOAI)
+1. LOAIDONGHO (**<u>MALOAIDH</u>**, TENLOAI)
 2. HANGDONGHO (<u>**MAHANGDH**</u>, TENHANG)
 3. DONGHO (<u>**MADH**</u>, TENDH, GIA, SLTON, MOTA, TRANGTHAI, HINHANH, **LOAIDH**, **HANGDH**)
 4. NHACUNGCAP (<u>**MANCC**</u>, *TENNCC*, DIACHI, *EMAIL*, *SDT*)
@@ -53,12 +51,8 @@ Website bán đồng hồ online sẽ lưu giữ các thông tin sau:
 8. PHIEUDAT (<u>**MAPD**</u>, NGAY_DAT, HOTEN_NGUOI_NHAN, DIACHI_NGUOI_NHAN, SDT_NGUOI_NHAN, NGAYGIO_GIAOHANG, TRANGTHAI, **MAKH**)
 9. CT_PHIEUDAT (<u>**MAPD, MADH**</u>, SOLUONG, GIA)
 10. KHACHHANG (<u>**MAKH**</u>, *EMAIL*, *PASSWORD*, *SALT*, *CMND*, HO, TEN, GIOITINH, NGAYSINH, DIACHI, *SDT*, *MASO_THUE*)
-11. HOADON (<u>**SOHD**</u>, NGAY_IN_HD, TONG_TIEN, MA_SOTHUE, **MAPD**, **MAKH**)
+11. HOADON (<u>**SOHD**</u>, NGAY_IN_HD, TONG_TIEN, MA_SOTHUE, **MAPD**)
 
 ## Mô hình - Diagram
 
-
-## Cơ sở dữ liệu
-
-
-## Một số lệnh SQL
+![Website Diagram](img/Diagram.png)

@@ -45,7 +45,7 @@ Website bán đồng hồ online sẽ lưu giữ các thông tin sau:
 
 ### Mô hình dữ liệu
 
-1. LOAIDONGHO (<u>**MALOAIDH**</u>, TENLOAI)
+1. LOAIDONGHO (**<u>MALOAIDH</u>**, TENLOAI)
 2. HANGDONGHO (<u>**MAHANGDH**</u>, TENHANG)
 3. DONGHO (<u>**MADH**</u>, TENDH, GIA, SLTON, MOTA, TRANGTHAI, HINHANH, **LOAIDH**, **HANGDH**)
 4. NHACUNGCAP (<u>**MANCC**</u>, *TENNCC*, DIACHI, *EMAIL*, *SDT*)
