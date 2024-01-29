@@ -1,0 +1,12 @@
+{"properties": [
+  {
+    "name": "security.jwt.secret-key",
+    "type": "java.lang.String",
+    "description": "secret key for generating authentication token"
+  },
+  {
+    "name": "security.jwt.expiration-time",
+    "type": "java.lang.String",
+    "description": "expiration time for authentication token"
+  }
+]}

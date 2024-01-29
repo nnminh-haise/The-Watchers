@@ -7,6 +7,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -16,7 +17,6 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleSecurityException(Exception exception) {
         ProblemDetail errorDetail = null;
 
-        // TODO send this stack trace to an observability tool
         exception.printStackTrace();
 
         if (exception instanceof BadCredentialsException) {
@@ -44,6 +44,12 @@ public class GlobalExceptionHandler {
         if (exception instanceof ExpiredJwtException) {
             errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403), exception.getMessage());
             errorDetail.setProperty("description", "The JWT token has expired");
+        }
+
+        //* Using email as username
+        if (exception instanceof UsernameNotFoundException) {
+            errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(404), exception.getMessage());
+            errorDetail.setProperty("description", "Cannot find the user with the given email");
         }
 
         if (errorDetail == null) {

@@ -16,7 +16,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "customer_account")
-public class Account implements UserDetails{
+public class Account implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false, unique = true)
@@ -81,7 +81,7 @@ public class Account implements UserDetails{
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        //! Return empty list because we dont cover the role-based access control in this project
+        //* Return empty list because we dont cover the role-based access control in this project */
         return List.of();
     }
 
@@ -90,7 +90,7 @@ public class Account implements UserDetails{
         return this.email;
     }
 
-    //! The below methods are unnecessary for this project
+    //* The below methods are unnecessary for this project */
     @Override
     public boolean isAccountNonExpired() {
         return true;

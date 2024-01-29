@@ -1,45 +1,39 @@
 package com.example.watch_selling.controller;
-
 import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.watch_selling.model.Customer;
+import com.example.watch_selling.dtos.CustomerInfoDto;
+import com.example.watch_selling.model.Account;
 import com.example.watch_selling.service.CustomerService;
-
-import org.springframework.web.bind.annotation.RequestMapping;
 
 
 @RestController
 @RequestMapping(path = "/api/customer")
 public class CustomerController {
-    private CustomerService CustomerService;
+    private CustomerService customerService;
 
-    public CustomerController(CustomerService CustomerService) {
-        this.CustomerService = CustomerService;
+    public CustomerController(CustomerService customerService) {
+        this.customerService = customerService;
     }
 
-    /**
-     * TODO: Fix this into get all customers
-     * Get all customers
-     * @param customer
-     * @return all customers in json format
-     */
-    @GetMapping("")
-    public ResponseEntity<String> getAllCustomersAccount() {
-        return ResponseEntity.status(HttpStatus.FOUND).body("Found customer");
-    }
+    @GetMapping("/me")
+    public ResponseEntity<CustomerInfoDto> authenticatedAccount() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Account currentUserAccount = (Account)authentication.getPrincipal();
 
-    @GetMapping("/{email}")
-    public ResponseEntity<Customer> getCustomerByEmail(@PathVariable String email) {
-        Optional<Customer> optionalCustomer = CustomerService.findByEmail(email);
-        if (!optionalCustomer.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        Optional<Customer> currentCustomer = customerService.findByEmail(currentUserAccount.getEmail());
+        if (!currentCustomer.isPresent()) {
+            throw new UsernameNotFoundException("Customer's info is empty");
         }
-        return ResponseEntity.status(HttpStatus.OK).body(optionalCustomer.get());
+
+        return ResponseEntity.ok(new CustomerInfoDto(currentCustomer.get()));
     }
 }
