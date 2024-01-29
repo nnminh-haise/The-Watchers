@@ -55,8 +55,6 @@ public class AuthenticationController {
         return ResponseEntity.ok(registeredAccount);
     }
 
-    //! Sign in process is working wrong
-    //TODO: Fix this
     @PostMapping("/sign-in")
     public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginAccountDto loginAccountDto) {
         Account authenticatedUser = authenticationService.authenticate(loginAccountDto);

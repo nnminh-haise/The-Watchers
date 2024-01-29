@@ -3,7 +3,6 @@ package com.example.watch_selling.service;
 import java.util.Optional;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.watch_selling.repository.AccountRepository;
@@ -13,7 +12,6 @@ import com.example.watch_selling.model.Account;
 public class AccountService {
     private AccountRepository accountRepository;
     
-    @Autowired
     public AccountService(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
     }

@@ -1,6 +1,7 @@
 package com.example.watch_selling.service;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,8 @@ import com.example.watch_selling.repository.AccountRepository;
 @Service
 public class AuthenticationService {
     private final AccountRepository accountRepository;
+
+    private final AccountService accountService;
     
     private final PasswordEncoder passwordEncoder;
     
@@ -21,32 +24,38 @@ public class AuthenticationService {
     public AuthenticationService(
         AccountRepository accountRepository,
         AuthenticationManager authenticationManager,
-        PasswordEncoder passwordEncoder
+        PasswordEncoder passwordEncoder,
+        AccountService accountService
     ) {
         this.authenticationManager = authenticationManager;
         this.accountRepository = accountRepository;
         this.passwordEncoder = passwordEncoder;
+        this.accountService = accountService;
     }
 
     public Account signup(RegisterAccountDto input) {
         if (input.getEmail() == null || input.getEmail().isEmpty()) {
-            throw new RuntimeException("Email is required");
+            throw new BadCredentialsException("Email is required");
         }
 
         if (input.getPassword() == null || input.getPassword().isEmpty()) {
-            throw new RuntimeException("Password is required");
+            throw new BadCredentialsException("Password is required");
         }
 
         if (input.getConfirmPassword() == null || input.getConfirmPassword().isEmpty()) {
-            throw new RuntimeException("Confirm password is required");
+            throw new BadCredentialsException("Confirm password is required");
         }
 
         if (!isValidEmail(input.getEmail())) {
-            throw new RuntimeException("Email is invalid");
+            throw new BadCredentialsException("Email is invalid");
         }
 
         if (!input.getPassword().equals(input.getConfirmPassword())) {
-            throw new RuntimeException("Password and confirm password do not match");
+            throw new BadCredentialsException("Password and confirm password do not match");
+        }
+
+        if (accountService.findByEmail(input.getEmail()).isPresent()) {
+            throw new BadCredentialsException("Email is already taken");
         }
 
         Account account = new Account();
@@ -59,15 +68,15 @@ public class AuthenticationService {
 
     public Account authenticate(LoginAccountDto input) {
         if (input.getEmail() == null || input.getEmail().isEmpty()) {
-            throw new RuntimeException("Email is required");
+            throw new BadCredentialsException("Email is required");
         }
 
         if (input.getPassword() == null || input.getPassword().isEmpty()) {
-            throw new RuntimeException("Password is required");
+            throw new BadCredentialsException("Password is required");
         }
 
         if (!isValidEmail(input.getEmail())) {
-            throw new RuntimeException("Email is invalid");
+            throw new BadCredentialsException("Email is invalid");
         }
 
         authenticationManager.authenticate(
