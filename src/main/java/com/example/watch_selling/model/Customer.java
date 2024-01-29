@@ -1,54 +1,66 @@
 package com.example.watch_selling.model;
 
 import java.util.Date;
+import java.util.UUID;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "khach_hang")
 public class Customer {
     @Id
-    @SequenceGenerator(name = "customer_sequence", sequenceName = "customer_sequence", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "makh", nullable = false, unique = true)
+    private UUID id;
 
+    @Column(unique = true, nullable = false)
     private String cmnd;
 
+    @Column(nullable = false)
     private String ho;
 
+    @Column(nullable = false)
     private String ten;
 
+    @Column(nullable = false)
     private String gioitinh;
 
+    @Column(nullable = false)
     private Date ngaysinh;
 
+    @Column(nullable = false)
     private String diachi;
 
+    @Column(nullable = false)
     private String sdt;
 
+    @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false, unique = true)
     private String masothue;
 
-    private String password;
+    @Column(name = "da_xoa")
+    private Boolean daXoa = false;
 
-    private String salt;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinColumn(name = "account_id", referencedColumnName = "id", unique = true, nullable = false)
+    private Account account;
 
     public Customer() {
-
     }
 
-    public Customer(Long id, String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi,
-            String sdt, String email, String masothue, String password, String salt) {
-        if (!isEmail(email)) {
-            throw new ExceptionInInitializerError("Email is not valid");
-        }
-
+    public Customer(UUID id, String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi,
+            String sdt, String email, String masothue, Boolean daXoa, Account account) {
         this.id = id;
         this.cmnd = cmnd;
         this.ho = ho;
@@ -59,16 +71,12 @@ public class Customer {
         this.sdt = sdt;
         this.email = email;
         this.masothue = masothue;
-        this.password = password;
-        this.salt = salt;
+        this.daXoa = daXoa;
+        this.account = account;
     }
 
-    public Customer(String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi,
-            String sdt, String email, String masothue, String password) {
-        if (!isEmail(email)) {
-            throw new ExceptionInInitializerError("Email is not valid");
-        }
-
+    public Customer(String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi, String sdt,
+            String email, String masothue, Boolean daXoa, Account account) {
         this.cmnd = cmnd;
         this.ho = ho;
         this.ten = ten;
@@ -78,14 +86,29 @@ public class Customer {
         this.sdt = sdt;
         this.email = email;
         this.masothue = masothue;
-        this.password = password;
+        this.daXoa = daXoa;
+        this.account = account;
     }
 
-    public Long getId() {
+    public Customer(String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi, String sdt,
+            String email, String masothue, Boolean daXoa) {
+        this.cmnd = cmnd;
+        this.ho = ho;
+        this.ten = ten;
+        this.gioitinh = gioitinh;
+        this.ngaysinh = ngaysinh;
+        this.diachi = diachi;
+        this.sdt = sdt;
+        this.email = email;
+        this.masothue = masothue;
+        this.daXoa = daXoa;
+    }
+
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -150,9 +173,6 @@ public class Customer {
     }
 
     public void setEmail(String email) {
-        if (!isEmail(email)) {
-            throw new ExceptionInInitializerError("Email is not valid");
-        }
         this.email = email;
     }
 
@@ -164,23 +184,19 @@ public class Customer {
         this.masothue = masothue;
     }
 
-    public String getPassword() {
-        return password;
+    public Boolean getDaXoa() {
+        return daXoa;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setDaXoa(Boolean daXoa) {
+        this.daXoa = daXoa;
     }
 
-    public String getSalt() {
-        return salt;
+    public Account getAccount() {
+        return account;
     }
 
-    public void setSalt(String salt) {
-        this.salt = salt;
-    }
-
-    private Boolean isEmail(String email) {
-        return email.contains("@");
+    public void setAccount(Account account) {
+        this.account = account;
     }
 }

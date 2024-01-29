@@ -2,6 +2,7 @@ package com.example.watch_selling.service;
 
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.watch_selling.model.Customer;
 import com.example.watch_selling.repository.CustomerRepository;
@@ -10,8 +11,9 @@ import com.example.watch_selling.repository.CustomerRepository;
 public class CustomerService {
     private CustomerRepository customerRepository;
 
-    public Customer createCustomer(Customer customer) {
-        return customerRepository.save(customer);
+    @Autowired
+    public CustomerService(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
     }
 
     public Optional<Customer> findByEmail(String email) {
