@@ -64,6 +64,9 @@ public class Customer implements UserDetails{
     @JsonIgnore
     private Account account;
 
+    @Column(name = "hinhanh", nullable = true)
+    private String hinhAnh;
+
     public Customer() {
     }
 
@@ -206,6 +209,14 @@ public class Customer implements UserDetails{
 
     public void setAccount(Account account) {
         this.account = account;
+    }
+
+    public void setHinhAnh(String hinhAnh) {
+        this.hinhAnh = hinhAnh;
+    }
+
+    public String getHinhAnh() {
+        return hinhAnh;
     }
 
     //* Return empty list because we dont cover the role-based access control in this project */

@@ -12,6 +12,10 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID>{
     @Query("SELECT c FROM Customer c WHERE c.email = ?1")
     public Optional<Customer> findByEmail(String email);
 
-    // @Query("SELECT c FROM Customer c WHERE c.id = ?1")
-    // public Customer save(Customer customer);
+    public Customer save(Customer customer);
+
+    // public Customer update(Customer customer);
+
+    @Query("SELECT c.cmnd FROM Customer c WHERE c.cmnd = ?1")
+    public Optional<String> findByCmnd(String cmnd);
 }

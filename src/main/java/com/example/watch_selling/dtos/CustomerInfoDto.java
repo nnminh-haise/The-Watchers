@@ -26,13 +26,12 @@ public class CustomerInfoDto {
 
     private String masothue;
 
-    private Boolean daXoa = false;
+    private String hinhAnh;
 
     public CustomerInfoDto() {
     }
 
-    public CustomerInfoDto(UUID id, String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi,
-            String sdt, String email, String masothue, Boolean daXoa) {
+    public CustomerInfoDto(UUID id, String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi, String sdt, String email, String masothue) {
         this.id = id;
         this.cmnd = cmnd;
         this.ho = ho;
@@ -43,11 +42,9 @@ public class CustomerInfoDto {
         this.sdt = sdt;
         this.email = email;
         this.masothue = masothue;
-        this.daXoa = daXoa;
     }
 
-    public CustomerInfoDto(String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi, String sdt,
-            String email, String masothue, Boolean daXoa) {
+    public CustomerInfoDto(String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi, String sdt, String email, String masothue) {
         this.cmnd = cmnd;
         this.ho = ho;
         this.ten = ten;
@@ -57,7 +54,6 @@ public class CustomerInfoDto {
         this.sdt = sdt;
         this.email = email;
         this.masothue = masothue;
-        this.daXoa = daXoa;
     }
 
     public CustomerInfoDto(Customer customer) {
@@ -71,7 +67,6 @@ public class CustomerInfoDto {
         this.sdt = customer.getSdt();
         this.email = customer.getEmail();
         this.masothue = customer.getMasothue();
-        this.daXoa = customer.getDaXoa();
     }
 
     public UUID getId() {
@@ -154,11 +149,11 @@ public class CustomerInfoDto {
         this.masothue = masothue;
     }
 
-    public Boolean getDaXoa() {
-        return daXoa;
+    public void setHinhAnh(String hinhAnh) {
+        this.hinhAnh = hinhAnh;
     }
 
-    public void setDaXoa(Boolean daXoa) {
-        this.daXoa = daXoa;
+    public String getHinhAnh() {
+        return hinhAnh;
     }
 }
