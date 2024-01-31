@@ -1,10 +1,14 @@
-# Week 1 report
+# Báo cáo tuần 1
+
+*A simple watch selling website*
+
+---
 
 ## Mô tả website
 
-Website bán đồng hồ online sẽ lưu giữ các thông tin sau:
+Website đồng hồ sẽ lưu giữ các thông tin sau:
 
-- Website bán nhiều đồng hồ, thông tin đồng hồ bao gồm mã đồng hồ để phân biệt các đồng hồ với nhau, tên đồng hồ, giá, số lượng tồn, mô tả, trạng thái, hình ảnh. Một loại đồng hồ có nhiều đồng hồ và một đồng hồ chỉ thuộc một loại đồng hồ.
+- Website trưng bày nhiều đồng hồ, thông tin đồng hồ bao gồm mã đồng hồ để phân biệt các đồng hồ với nhau, tên đồng hồ, giá, số lượng tồn, mô tả, trạng thái, hình ảnh. Một loại đồng hồ có nhiều đồng hồ và một đồng hồ chỉ thuộc một loại đồng hồ.
 - Một đồng hồ thuộc một hãng đồng hồ, một hãng có nhiều đồng hồ.
 - Nhà cung cấp sẽ cung cấp nhiều đồng hồ thuộc các hãng khác nhau. Nhà cung cấp sẽ có thông tin: mã nhà cung cấp để phân biệt với nhà cung cấp khác, tên nhà cung cấp, địa chỉ, email, số điện thoại.
 - Khi nhập hàng thì sẽ đặt hàng cho nhà cung cấp. Một đơn đặt hàng chỉ gởi cho một nhà cung cấp, trong đơn đặt hàng có thông tin mã đơn đặt hàng để phân biệt các đơn đặt hàng, ngày đặt hang. Một nhà cung cấp có thể được đặt hàng nhiều lần.
@@ -24,18 +28,19 @@ Website bán đồng hồ online sẽ lưu giữ các thông tin sau:
 4. NHACUNGCAP (<u>**MANCC**</u>, TENNCC, DIACHI, EMAIL, SDT)
 5. DONDATHANG (<u>**MADDH**</u>, NGAYDH)
 6. PHIEUDAT (<u>**MAPD**</u>, NGAY_DAT, HOTEN_NGUOI_NHAN, DIACHI_NGUOI_NHAN, SDT_NGUOI_NHAN, NGAYGIO_GIAOHANG, TRANGTHAI)
-7. KHACHHANG (<u>**MAKH**</u>, EMAIL, PASSWORD, SALT, CMND, HO, TEN, GIOITINH, NGAYSINH, DIACHI, SDT, MA_SOTHUE)
+7. KHACHHANG (<u>**MAKH**</u>, EMAIL, CMND, HO, TEN, GIOITINH, NGAYSINH, DIACHI, SDT, MA_SOTHUE)
 8. HOADON (<u>**SOHD**</u>, NGAY_IN_HD, TONG_TIEN, MA_SOTHUE)
+9. CUSTOMER_ACCOUNT(<u>**ID**</u>, EMAIL, PASSWORD, DELETE_STATUS)
 
 ## Mô hình thực thể quan hệ - ERD
 
-![website ERD](img/ERD1.png)
+![Website ERD](/weekly-report/week1/img/ERD.png)
 
 ## Dạng chuẩn 3
 
 ### Quy ước
 
-- **<u>Khóa chính</u>**: In đậm và gạch chân.
+- <u>**Khóa chính**</u>: In đậm và gạch chân.
 - *Khóa tương đương*: in nghiêng.
 - **Khóa ngoại**: in đậm.
 
@@ -43,16 +48,17 @@ Website bán đồng hồ online sẽ lưu giữ các thông tin sau:
 
 1. LOAIDONGHO (**<u>MALOAIDH</u>**, TENLOAI)
 2. HANGDONGHO (<u>**MAHANGDH**</u>, TENHANG)
-3. DONGHO (<u>**MADH**</u>, TENDH, GIA, SLTON, MOTA, TRANGTHAI, HINHANH, **LOAIDH**, **HANGDH**)
-4. NHACUNGCAP (<u>**MANCC**</u>, *TENNCC*, DIACHI, *EMAIL*, *SDT*)
-5. CT_CUNGCAP (<u>**MANCC, MADH**</u>)
-6. DONDATHANG (<u>**MADDH**</u>, NGAYDH, **MANCC**)
-7. CT_DONDATHANG (<u>**MADDH, MADH**</u>, SL, GIA)
-8. PHIEUDAT (<u>**MAPD**</u>, NGAY_DAT, HOTEN_NGUOI_NHAN, DIACHI_NGUOI_NHAN, SDT_NGUOI_NHAN, NGAYGIO_GIAOHANG, TRANGTHAI, **MAKH**)
-9. CT_PHIEUDAT (<u>**MAPD, MADH**</u>, SOLUONG, GIA)
-10. KHACHHANG (<u>**MAKH**</u>, *EMAIL*, *PASSWORD*, *SALT*, *CMND*, HO, TEN, GIOITINH, NGAYSINH, DIACHI, *SDT*, *MASO_THUE*)
-11. HOADON (<u>**SOHD**</u>, NGAY_IN_HD, TONG_TIEN, MA_SOTHUE, **MAPD**)
+3. DONGHO (<u>**MADH**</u>, TENDH, GIA, SLTON, MOTA, TRANGTHAI, HINHANH, **LOAIDH**, **HANGDH**, DA_XOA)
+4. NHACUNGCAP (<u>**MANCC**</u>, *TENNCC*, DIACHI, *EMAIL*, *SDT*, DA_XOA)
+5. CT_CUNGCAP (<u>**MANCC, MADH**</u>, DA_XOA)
+6. DONDATHANG (<u>**MADDH**</u>, NGAYDH, **MANCC**, DA_XOA)
+7. CT_DONDATHANG (<u>**MADDH, MADH**</u>, SL, GIA, DA_XOA)
+8. PHIEUDAT (<u>**MAPD**</u>, NGAY_DAT, HOTEN_NGUOI_NHAN, DIACHI_NGUOI_NHAN, SDT_NGUOI_NHAN, NGAYGIO_GIAOHANG, TRANGTHAI, **MAKH**, DA_XOA)
+9. CT_PHIEUDAT (<u>**MAPD, MADH**</u>, SOLUONG, GIA, DA_XOA)
+10. KHACHHANG (<u>**MAKH**</u>, *EMAIL*, *CMND*, HO, TEN, GIOITINH, NGAYSINH, DIACHI, *SDT*, *MASO_THUE*, DA_XOA, **ACCOUNT_ID**)
+11. HOADON (<u>**SOHD**</u>, NGAY_IN_HD, TONG_TIEN, MA_SOTHUE, **MAPD**, DA_XOA)
+12. CUSTOMER_ACCOUNT(<u>**ID**</u>, EMAIL, PASSWORD, DELETE_STATUS)
 
 ## Mô hình - Diagram
 
-![Website Diagram](img/Diagram.png)
+![Website Diagram](/weekly-report/week1/img/Diagram.png)
