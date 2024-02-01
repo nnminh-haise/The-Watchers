@@ -1,15 +1,15 @@
 package com.example.watch_selling.dtos;
 
-public class RegisterAccountDto {
+public class RegisterDto {
     private String email;
 
     private String password;
 
     private String confirmPassword;
 
-    public RegisterAccountDto() {}
+    public RegisterDto() {}
 
-    public RegisterAccountDto(String email, String password, String confirmPassword) {
+    public RegisterDto(String email, String password, String confirmPassword) {
         this.email = email;
         this.password = password;
         this.confirmPassword = confirmPassword;

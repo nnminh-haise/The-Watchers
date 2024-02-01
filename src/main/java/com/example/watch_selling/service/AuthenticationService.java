@@ -6,8 +6,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.watch_selling.dtos.LoginAccountDto;
-import com.example.watch_selling.dtos.RegisterAccountDto;
+import com.example.watch_selling.dtos.LoginDto;
+import com.example.watch_selling.dtos.RegisterDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.repository.AccountRepository;
 
@@ -33,7 +33,7 @@ public class AuthenticationService {
         this.accountService = accountService;
     }
 
-    public Account signup(RegisterAccountDto input) {
+    public Account signup(RegisterDto input) {
         if (input.getEmail() == null || input.getEmail().isEmpty()) {
             throw new BadCredentialsException("Email is required");
         }
@@ -66,7 +66,7 @@ public class AuthenticationService {
         return accountRepository.save(account);
     }
 
-    public Account authenticate(LoginAccountDto input) {
+    public Account authenticate(LoginDto input) {
         if (input.getEmail() == null || input.getEmail().isEmpty()) {
             throw new BadCredentialsException("Email is required");
         }

@@ -6,8 +6,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.watch_selling.dtos.LoginAccountDto;
-import com.example.watch_selling.dtos.RegisterAccountDto;
+import com.example.watch_selling.dtos.LoginDto;
+import com.example.watch_selling.dtos.RegisterDto;
+import com.example.watch_selling.dtos.RequestDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.service.AuthenticationService;
 import com.example.watch_selling.service.JwtService;
@@ -49,18 +50,16 @@ public class AuthenticationController {
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<Account> register(@RequestBody RegisterAccountDto registerAccountDto) {
-        Account registeredAccount = authenticationService.signup(registerAccountDto);
+    public ResponseEntity<Account> register(@RequestBody RequestDto<RegisterDto> registerAccountDto) {
+        Account registeredAccount = authenticationService.signup(registerAccountDto.getData());
 
         return ResponseEntity.ok(registeredAccount);
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginAccountDto loginAccountDto) {
-        Account authenticatedUser = authenticationService.authenticate(loginAccountDto);
-
+    public ResponseEntity<LoginResponse> authenticate(@RequestBody RequestDto<LoginDto> loginDto) {
+        Account authenticatedUser = authenticationService.authenticate(loginDto.getData());
         String jwtToken = jwtService.generateToken(authenticatedUser);
-
         LoginResponse loginResponse = new LoginResponse().setToken(jwtToken).setExpiresIn(jwtService.getExpirationTime());
 
         return ResponseEntity.ok(loginResponse);

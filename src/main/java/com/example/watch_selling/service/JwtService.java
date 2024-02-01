@@ -32,17 +32,14 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    // Most used
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }
 
-    // Most used
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return buildToken(extraClaims, userDetails, jwtExpiration);
     }
 
-    // Most used
     public long getExpirationTime() {
         return jwtExpiration;
     }
@@ -50,8 +47,7 @@ public class JwtService {
     private String buildToken(
             Map<String, Object> extraClaims,
             UserDetails userDetails,
-            long expiration
-    ) {
+            long expiration) {
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
@@ -62,7 +58,6 @@ public class JwtService {
                 .compact();
     }
 
-    // Most used
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
