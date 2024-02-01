@@ -2,6 +2,7 @@ package com.example.watch_selling.service;
 
 import java.util.Optional;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import com.example.watch_selling.dtos.CustomerInfoDto;
@@ -40,9 +41,43 @@ public class CustomerService {
         customerRepository.save(newCustomer);
     }
 
-    // public CustomerInfoDto updateCustomerInfo(String customerEmail, CustomerInfoDto currentCustomerInfo, Account customerAccount) {
-    //     CustomerInfoDto newCustomerInfoDto = new CustomerInfoDto();
+    public void updateCusomterInfo(String email, CustomerInfoDto newCustomerInfo, Account customerAccount) throws BadRequestException {
+        Optional<Customer> currentCustomerInfo = customerRepository.findByEmail(email);
 
-    //     return newCustomerInfoDto;
-    // }
+        if (!currentCustomerInfo.get().getEmail().equals(newCustomerInfo.getEmail())) {
+            throw new BadRequestException("Cannot change customer's email!");
+        }
+
+        if (!currentCustomerInfo.get().getCmnd().equals(newCustomerInfo.getCmnd())) {
+            throw new BadRequestException("Cannot change customer's CMND!");
+        }
+
+        if (!currentCustomerInfo.get().getAccount().getId().equals(customerAccount.getId())) {
+            throw new BadRequestException("Cannot change customer's account!");
+        }
+
+        if (customerRepository.findEmailByPhoneNumber(newCustomerInfo.getSdt()).isPresent() && !customerRepository.findEmailByPhoneNumber(newCustomerInfo.getSdt()).get().equals(email)) {
+            throw new BadRequestException("Phonenumber has been used!");
+        }
+
+        if (customerRepository.findEmailByMasothue(newCustomerInfo.getMasothue()).isPresent() && !customerRepository.findEmailByMasothue(newCustomerInfo.getMasothue()).get().equals(email)) {
+            throw new BadRequestException("Masothue has been used!");
+        }
+
+        Customer newInfo = new Customer();
+        newInfo.setCmnd(currentCustomerInfo.get().getCmnd());
+        newInfo.setHo(newCustomerInfo.getHo());
+        newInfo.setTen(newCustomerInfo.getTen());
+        newInfo.setGioitinh(newCustomerInfo.getGioitinh());
+        newInfo.setNgaysinh(newCustomerInfo.getNgaysinh());
+        newInfo.setDiachi(newCustomerInfo.getDiachi());
+        newInfo.setEmail(email);
+        newInfo.setSdt(newCustomerInfo.getSdt());
+        newInfo.setMasothue(newCustomerInfo.getMasothue());
+        newInfo.setDaXoa(currentCustomerInfo.get().getDaXoa());
+        newInfo.setAccount(customerAccount);
+        newInfo.setHinhAnh(newCustomerInfo.getHinhAnh());
+
+        customerRepository.update(customerAccount.getId(), newInfo);
+    }
 }

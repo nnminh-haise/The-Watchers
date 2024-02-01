@@ -1,5 +1,6 @@
 package com.example.watch_selling.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.watch_selling.dtos.LoginDto;
 import com.example.watch_selling.dtos.RegisterDto;
 import com.example.watch_selling.dtos.RequestDto;
+import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.service.AuthenticationService;
 import com.example.watch_selling.service.JwtService;
@@ -50,18 +52,24 @@ public class AuthenticationController {
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<Account> register(@RequestBody RequestDto<RegisterDto> registerAccountDto) {
+    public ResponseEntity<ResponseDto<Account>> register(@RequestBody RequestDto<RegisterDto> registerAccountDto) {
         Account registeredAccount = authenticationService.signup(registerAccountDto.getData());
 
-        return ResponseEntity.ok(registeredAccount);
+        ResponseDto<Account> response = new ResponseDto<>();
+        response.setData(registeredAccount);
+        response.setStatusCode(HttpStatus.ACCEPTED.value());
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<LoginResponse> authenticate(@RequestBody RequestDto<LoginDto> loginDto) {
+    public ResponseEntity<ResponseDto<LoginResponse>> authenticate(@RequestBody RequestDto<LoginDto> loginDto) {
         Account authenticatedUser = authenticationService.authenticate(loginDto.getData());
         String jwtToken = jwtService.generateToken(authenticatedUser);
         LoginResponse loginResponse = new LoginResponse().setToken(jwtToken).setExpiresIn(jwtService.getExpirationTime());
 
-        return ResponseEntity.ok(loginResponse);
+        ResponseDto<LoginResponse> response = new ResponseDto<>();
+        response.setData(loginResponse);
+        response.setStatusCode(HttpStatus.ACCEPTED.value());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
