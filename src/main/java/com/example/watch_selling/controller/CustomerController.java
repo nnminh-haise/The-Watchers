@@ -4,6 +4,7 @@ import java.util.Optional;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +21,8 @@ import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.service.CustomerService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 
 @RestController
 @RequestMapping(path = "/api/customer")
@@ -31,9 +34,13 @@ public class CustomerController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ResponseDto<CustomerInfoDto>> authenticatedAccount() {
+    public ResponseEntity<ResponseDto<CustomerInfoDto>> authenticatedAccount(HttpServletRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Account currentUserAccount = (Account)authentication.getPrincipal();
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || authHeader.startsWith("Bearer ") == false) {
+            throw new BadCredentialsException("Invalid token!");
+        }
 
         Optional<Customer> currentCustomer = customerService.findByEmail(currentUserAccount.getEmail());
         if (!currentCustomer.isPresent()) {
@@ -43,6 +50,7 @@ public class CustomerController {
         ResponseDto<CustomerInfoDto> response = new ResponseDto<>();
         response.setData(new CustomerInfoDto(currentCustomer.get()));
         response.setStatusCode(HttpStatus.OK.value());
+        response.setJwt(authHeader.substring(7));
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
