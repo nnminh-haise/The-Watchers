@@ -7,9 +7,7 @@ public class ResponseDto<T> {
 
     private String description;
 
-    private String error;
-
-    private Integer statusCode;
+    private Integer status;
 
     public ResponseDto() {}
 
@@ -22,19 +20,17 @@ public class ResponseDto<T> {
         this.message = message;
     }
 
-    public ResponseDto(T data, String message, String error, Integer statusCode) {
+    public ResponseDto(T data, String message, Integer status) {
         this.data = data;
         this.message = message;
-        this.error = error;
-        this.statusCode = statusCode;
+        this.status = status;
     }
 
-    public ResponseDto(T data, String message, String description, String error, Integer statusCode) {
+    public ResponseDto(T data, String message, String description, Integer status) {
         this.data = data;
         this.message = message;
         this.description = description;
-        this.error = error;
-        this.statusCode = statusCode;
+        this.status = status;
     }
 
     public T getData() {
@@ -61,19 +57,11 @@ public class ResponseDto<T> {
         this.description = description;
     }
 
-    public String getError() {
-        return error;
+    public Integer getStatus() {
+        return status;
     }
 
-    public void setError(String error) {
-        this.error = error;
-    }
-
-    public Integer getStatusCode() {
-        return statusCode;
-    }
-
-    public void setStatusCode(Integer statusCode) {
-        this.statusCode = statusCode;
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 }

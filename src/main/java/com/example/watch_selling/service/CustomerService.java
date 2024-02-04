@@ -1,8 +1,11 @@
 package com.example.watch_selling.service;
 
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.coyote.BadRequestException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.example.watch_selling.dtos.CustomerInfoDto;
@@ -18,66 +21,104 @@ public class CustomerService {
         this.customerRepository = customerRepository;
     }
 
-    public Optional<Customer> findByEmail(String email) {
+    public Optional<Customer> getCustomerByEmail(String email) {
         return customerRepository.findByEmail(email);
     }
 
-    public void addNewCustomer(String customerEmail, CustomerInfoDto customerInfoDto, Account customerAccount) {
-        Customer newCustomer = new Customer();
+    public Integer createCustomerProfile(Account customerAccount, CustomerInfoDto customerProfile) throws BadRequestException {
+        if (!isValidEmail(customerAccount.getEmail())) {
+            throw new BadRequestException("Invalid email!");
+        }
 
-        newCustomer.setCmnd(customerInfoDto.getCmnd());
-        newCustomer.setHo(customerInfoDto.getHo());
-        newCustomer.setTen(customerInfoDto.getTen());
-        newCustomer.setGioitinh(customerInfoDto.getGioitinh());
-        newCustomer.setNgaysinh(customerInfoDto.getNgaysinh());
-        newCustomer.setDiachi(customerInfoDto.getDiachi());
-        newCustomer.setSdt(customerInfoDto.getSdt());
-        newCustomer.setEmail(customerInfoDto.getEmail());
-        newCustomer.setMasothue(customerInfoDto.getMasothue());
-        newCustomer.setDaXoa(false);
+        Optional<Customer> customer = customerRepository.findByEmail(customerAccount.getEmail());
+        if (customer.isPresent()) {
+            return HttpStatus.CONFLICT.value();
+        }
+
+        if (!customerProfile.getEmail().equals(customerAccount.getEmail())) {
+            throw new BadRequestException("Wrong customer' email!");
+        }
+
+        Customer newCustomer = customerProfile.makeCustomer();
         newCustomer.setAccount(customerAccount);
-        newCustomer.setHinhAnh(customerInfoDto.getHinhAnh());
-
+        newCustomer.setDaXoa(false);
         customerRepository.save(newCustomer);
+
+        return HttpStatus.CREATED.value();
     }
 
-    public void updateCusomterInfo(String email, CustomerInfoDto newCustomerInfo, Account customerAccount) throws BadRequestException {
-        Optional<Customer> currentCustomerInfo = customerRepository.findByEmail(email);
-
-        if (!currentCustomerInfo.get().getEmail().equals(newCustomerInfo.getEmail())) {
-            throw new BadRequestException("Cannot change customer's email!");
+    public Integer updateCustomerProfile(Account customerAccount, CustomerInfoDto newCustomerProfile) throws BadRequestException {
+        if (!isValidEmail(customerAccount.getEmail())) {
+            throw new BadRequestException("Invalid email!");
         }
 
-        if (!currentCustomerInfo.get().getCmnd().equals(newCustomerInfo.getCmnd())) {
-            throw new BadRequestException("Cannot change customer's CMND!");
+        Optional<Customer> customer = customerRepository.findByEmail(customerAccount.getEmail());
+        if (!customer.isPresent()) {
+            return HttpStatus.NOT_FOUND.value();
+        }
+        else if (customer.get().getDaXoa() == true) {
+            return HttpStatus.NOT_FOUND.value();
         }
 
-        if (!currentCustomerInfo.get().getAccount().getId().equals(customerAccount.getId())) {
-            throw new BadRequestException("Cannot change customer's account!");
+        if (!customer.get().getEmail().equals(newCustomerProfile.getEmail())) {
+            throw new BadRequestException("Unmatch email! Cannot change email!"); 
         }
 
-        if (customerRepository.findEmailByPhoneNumber(newCustomerInfo.getSdt()).isPresent() && !customerRepository.findEmailByPhoneNumber(newCustomerInfo.getSdt()).get().equals(email)) {
-            throw new BadRequestException("Phonenumber has been used!");
+        if (!customer.get().getCmnd().equals(newCustomerProfile.getCmnd())) {
+            throw new BadRequestException("Unmatch citizen id! Cannot change citizen id!"); 
         }
 
-        if (customerRepository.findEmailByMasothue(newCustomerInfo.getMasothue()).isPresent() && !customerRepository.findEmailByMasothue(newCustomerInfo.getMasothue()).get().equals(email)) {
-            throw new BadRequestException("Masothue has been used!");
+        if (!customer.get().getMasothue().equals(newCustomerProfile.getMasothue())) {
+            throw new BadRequestException("Unmatch tax code! Cannot change tax code!"); 
         }
 
-        Customer newInfo = new Customer();
-        newInfo.setCmnd(currentCustomerInfo.get().getCmnd());
-        newInfo.setHo(newCustomerInfo.getHo());
-        newInfo.setTen(newCustomerInfo.getTen());
-        newInfo.setGioitinh(newCustomerInfo.getGioitinh());
-        newInfo.setNgaysinh(newCustomerInfo.getNgaysinh());
-        newInfo.setDiachi(newCustomerInfo.getDiachi());
-        newInfo.setEmail(email);
-        newInfo.setSdt(newCustomerInfo.getSdt());
-        newInfo.setMasothue(newCustomerInfo.getMasothue());
-        newInfo.setDaXoa(currentCustomerInfo.get().getDaXoa());
-        newInfo.setAccount(customerAccount);
-        newInfo.setHinhAnh(newCustomerInfo.getHinhAnh());
+        // * Customer(id, account_id, is_deleted) is kept original. Therefore there is no need to rewrite it!
+        customerRepository.update(customer.get().getId(), newCustomerProfile.makeCustomer());
 
-        customerRepository.update(customerAccount.getId(), newInfo);
+        return HttpStatus.OK.value();
+    }
+
+    @SuppressWarnings("null")
+    public Integer deleteCustomerInfo(String email) throws BadRequestException {
+        if (!isValidEmail(email)) {
+            throw new BadRequestException("Invalid email!");
+        }
+
+        Optional<Customer> customer = customerRepository.findByEmail(email);
+        if (!customer.isPresent()) {
+            return HttpStatus.NOT_FOUND.value();
+        }
+        else if (customer.get().getDaXoa() == true) {
+            return HttpStatus.NOT_FOUND.value();
+        }
+
+        //customerRepository.delete(customer.get());
+        customerRepository.updateDeleteStatus(customer.get().getId(), true);
+
+        return HttpStatus.OK.value();
+    }
+
+    // * Private methods ---
+
+    private Boolean isValidEmail(String email) {
+        final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        final Pattern pattern = Pattern.compile(EMAIL_REGEX);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
+
+    private Boolean isEmailTaken(String email) {
+        Optional<Customer> customer = customerRepository.findByEmail(email);
+        return customer.isPresent();
+    }
+
+    private Boolean isCitizenIdTaken(String citizenId) {
+        Optional<Customer> customer = customerRepository.findByCitizenId(citizenId);
+        return customer.isPresent();
+    }
+
+    private Boolean isTaxCodeTaken(String taxCode) {
+        Optional<Customer> customer = customerRepository.findByTaxCode(taxCode);
+        return customer.isPresent();
     }
 }

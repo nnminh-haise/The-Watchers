@@ -12,8 +12,6 @@ import org.springframework.security.web.session.SessionManagementFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import java.util.Arrays;
 
@@ -43,7 +41,8 @@ public class SecurityConfiguration {
         http.csrf(csrf -> csrf
             .disable())
             .authorizeHttpRequests(requests -> requests
-                .requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                //.requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                .requestMatchers("**")
                 .permitAll()
                 .anyRequest()
                 .authenticated())

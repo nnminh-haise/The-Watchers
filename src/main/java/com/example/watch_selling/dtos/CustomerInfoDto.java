@@ -1,13 +1,10 @@
 package com.example.watch_selling.dtos;
 
 import java.util.Date;
-import java.util.UUID;
 
 import com.example.watch_selling.model.Customer;
 
 public class CustomerInfoDto {
-    private UUID id;
-    
     private String cmnd;
 
     private String ho;
@@ -33,19 +30,6 @@ public class CustomerInfoDto {
     public CustomerInfoDto() {
     }
 
-    public CustomerInfoDto(UUID id, String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi, String sdt, String email, String masothue) {
-        this.id = id;
-        this.cmnd = cmnd;
-        this.ho = ho;
-        this.ten = ten;
-        this.gioitinh = gioitinh;
-        this.ngaysinh = ngaysinh;
-        this.diachi = diachi;
-        this.sdt = sdt;
-        this.email = email;
-        this.masothue = masothue;
-    }
-
     public CustomerInfoDto(String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi, String sdt, String email, String masothue) {
         this.cmnd = cmnd;
         this.ho = ho;
@@ -59,7 +43,6 @@ public class CustomerInfoDto {
     }
 
     public CustomerInfoDto(Customer customer) {
-        this.id = customer.getId();
         this.cmnd = customer.getCmnd();
         this.ho = customer.getHo();
         this.ten = customer.getTen();
@@ -69,14 +52,6 @@ public class CustomerInfoDto {
         this.sdt = customer.getSdt();
         this.email = customer.getEmail();
         this.masothue = customer.getMasothue();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
     }
 
     public String getCmnd() {
@@ -165,5 +140,22 @@ public class CustomerInfoDto {
 
     public void setJwt(String jwt) {
         this.jwt = jwt;
+    }
+
+    public Customer makeCustomer() {
+        Customer newCustomer = new Customer();
+
+        newCustomer.setCmnd(cmnd);
+        newCustomer.setEmail(email);
+        newCustomer.setHo(ho);
+        newCustomer.setTen(ten);
+        newCustomer.setGioitinh(gioitinh);
+        newCustomer.setNgaysinh(ngaysinh);
+        newCustomer.setDiachi(diachi);
+        newCustomer.setSdt(sdt);
+        newCustomer.setMasothue(masothue);
+        newCustomer.setHinhAnh(hinhAnh);
+
+        return newCustomer;
     }
 }
