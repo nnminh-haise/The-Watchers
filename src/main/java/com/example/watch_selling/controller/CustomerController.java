@@ -48,9 +48,10 @@ public class CustomerController {
         }
 
         ResponseDto<CustomerInfoDto> response = new ResponseDto<>();
-        response.setData(new CustomerInfoDto(currentCustomer.get()));
+        CustomerInfoDto responseBody = new CustomerInfoDto(currentCustomer.get());
+        responseBody.setJwt(authHeader.substring(7));
+        response.setData(responseBody);
         response.setStatusCode(HttpStatus.OK.value());
-        response.setJwt(authHeader.substring(7));
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

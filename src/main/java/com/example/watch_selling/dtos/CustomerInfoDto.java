@@ -28,6 +28,8 @@ public class CustomerInfoDto {
 
     private String hinhAnh;
 
+    private String jwt;
+
     public CustomerInfoDto() {
     }
 
@@ -155,5 +157,13 @@ public class CustomerInfoDto {
 
     public String getHinhAnh() {
         return hinhAnh;
+    }
+
+    public String getJwt() {
+        return jwt;
+    }
+
+    public void setJwt(String jwt) {
+        this.jwt = jwt;
     }
 }

@@ -11,8 +11,6 @@ public class ResponseDto<T> {
 
     private Integer statusCode;
 
-    private String jwt;
-
     public ResponseDto() {}
 
     public ResponseDto(T data) {
@@ -77,13 +75,5 @@ public class ResponseDto<T> {
 
     public void setStatusCode(Integer statusCode) {
         this.statusCode = statusCode;
-    }
-
-    public String getJwt() {
-        return jwt;
-    }
-
-    public void setJwt(String jwt) {
-        this.jwt = jwt;
     }
 }
