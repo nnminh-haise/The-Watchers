@@ -86,6 +86,8 @@ public class CustomerController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Account customerAccount = (Account) authentication.getPrincipal();
 
+        System.out.println("LOG - " + this.getAuthorizationToken(request));
+
         Optional<Customer> customer = customerService.getCustomerByEmail(customerAccount.getEmail());
         if (!customer.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto<>(
