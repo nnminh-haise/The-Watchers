@@ -46,7 +46,7 @@ public class CustomerController {
 
         // ! Temporary solution
         Optional<Customer> cus = customerService.getCustomerByEmail(customerAccount.getEmail());
-        if (cus.isPresent() && cus.get().getDaXoa() == true) {
+        if (cus.isPresent() && cus.get().getIsDeleted() == true) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto<>(
                 null,
                 "Cannot create new profile!",
@@ -96,7 +96,7 @@ public class CustomerController {
                 HttpStatus.NOT_FOUND.value())
             );
         }
-        else if (customer.get().getDaXoa() == true) {
+        else if (customer.get().getIsDeleted() == true) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto<>(
                 null,
                 "Cannot find customer's profile associated with this account!",

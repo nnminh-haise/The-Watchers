@@ -15,40 +15,36 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "customer_account")
+@Table(name = "account")
 public class Account implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false, unique = true)
     private UUID id;
-    
-    @Column(unique = true, nullable = false)
+
+    @Column(nullable = false, unique = true)
     private String email;
-    
+
     @Column(nullable = false)
     private String password;
-
-    @Column(name = "delete_status")
-    private Boolean deleteStatus;
+    
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
 
     public Account() {
+
     }
 
-    public Account(UUID id, String email, String password) {
-        this.id = id;
-        this.email = email;
-        this.password = password;
-        this.deleteStatus = false;
+    public Account(UUID id, String email, String password, Boolean isDeleted) {
+
     }
 
     public Account(String email, String password) {
-        this.email = email;
-        this.password = password;
-        this.deleteStatus = false;
+
     }
 
     public UUID getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(UUID id) {
@@ -56,7 +52,7 @@ public class Account implements UserDetails {
     }
 
     public String getEmail() {
-        return email;
+        return this.email;
     }
 
     public void setEmail(String email) {
@@ -64,21 +60,20 @@ public class Account implements UserDetails {
     }
 
     public String getPassword() {
-        return password;
+        return this.password;
     }
 
     public void setPassword(String password) {
         this.password = password;
     }
 
-    public Boolean getDeleteStatus() {
-        return deleteStatus;
+    public Boolean getIsDeleted() {
+        return this.isDeleted;
     }
 
-    public void setDeleteStatus(Boolean deleteStatus) {
-        this.deleteStatus = deleteStatus;
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         //* Return empty list because we dont cover the role-based access control in this project */

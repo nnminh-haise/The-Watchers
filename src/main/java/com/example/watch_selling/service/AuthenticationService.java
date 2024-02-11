@@ -61,7 +61,7 @@ public class AuthenticationService {
         Account account = new Account();
         account.setEmail(input.getEmail());
         account.setPassword(passwordEncoder.encode(input.getPassword()));
-        account.setDeleteStatus(false);
+        account.setIsDeleted(false);
 
         return accountRepository.save(account);
     }

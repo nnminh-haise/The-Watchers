@@ -22,98 +22,97 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "khach_hang")
+@Table(name = "customer")
 public class Customer implements UserDetails{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "makh", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private UUID id;
 
+    @Column(name = "citizen_id", unique = true, nullable = false)
+    private String citizenId;
+
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
+
+    @Column(name = "phone_number", unique = true, nullable = false)
+    private String phoneNumber;
+
     @Column(unique = true, nullable = false)
-    private String cmnd;
-
-    @Column(nullable = false)
-    private String ho;
-
-    @Column(nullable = false)
-    private String ten;
-
-    @Column(nullable = false)
-    private String gioitinh;
-
-    @Column(nullable = false)
-    private Date ngaysinh;
-
-    @Column(nullable = false)
-    private String diachi;
-
-    @Column(nullable = false)
-    private String sdt;
-
-    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false, unique = true)
-    private String masothue;
+    @Column(nullable = false)
+    private String gender;
 
-    @Column(name = "da_xoa")
-    private Boolean daXoa = false;
+    @Column(name = "date_of_birth", nullable = false)
+    private Date dateOfBirth;
+
+    @Column(unique = true, nullable = false)
+    private String address;
+
+    @Column(name = "tax_code", nullable = false)
+    private String taxCode;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+
+    @Column(nullable = true)
+    private String photo;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "account_id", referencedColumnName = "id", unique = true, nullable = false)
     @JsonIgnore
     private Account account;
 
-    @Column(name = "hinhanh", nullable = true)
-    private String hinhAnh;
-
     public Customer() {
     }
 
-    public Customer(UUID id, String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi,
-            String sdt, String email, String masothue, Boolean daXoa, Account account) {
+    public Customer(UUID id, String citizenId, String firstName, String lastName, String phoneNumber, String email, String gender, Date dateOfBirth, String address, String taxCode, Boolean isDeleted, String photo, Account account) {
         this.id = id;
-        this.cmnd = cmnd;
-        this.ho = ho;
-        this.ten = ten;
-        this.gioitinh = gioitinh;
-        this.ngaysinh = ngaysinh;
-        this.diachi = diachi;
-        this.sdt = sdt;
+        this.citizenId = citizenId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
         this.email = email;
-        this.masothue = masothue;
-        this.daXoa = daXoa;
+        this.gender = gender;
+        this.dateOfBirth = dateOfBirth;
+        this.address = address;
+        this.taxCode = taxCode;
+        this.isDeleted = isDeleted;
+        this.photo = photo;
         this.account = account;
     }
 
-    public Customer(String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi, String sdt,
-            String email, String masothue, Boolean daXoa, Account account) {
-        this.cmnd = cmnd;
-        this.ho = ho;
-        this.ten = ten;
-        this.gioitinh = gioitinh;
-        this.ngaysinh = ngaysinh;
-        this.diachi = diachi;
-        this.sdt = sdt;
+    public Customer(String citizenId, String firstName, String lastName, String phoneNumber, String email, String gender, Date dateOfBirth, String address, String taxCode, Boolean isDeleted, String photo, Account account) {
+        this.citizenId = citizenId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
         this.email = email;
-        this.masothue = masothue;
-        this.daXoa = daXoa;
+        this.gender = gender;
+        this.dateOfBirth = dateOfBirth;
+        this.address = address;
+        this.taxCode = taxCode;
+        this.isDeleted = isDeleted;
+        this.photo = photo;
         this.account = account;
     }
 
-    public Customer(String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi, String sdt,
-            String email, String masothue, Boolean daXoa) {
-        this.cmnd = cmnd;
-        this.ho = ho;
-        this.ten = ten;
-        this.gioitinh = gioitinh;
-        this.ngaysinh = ngaysinh;
-        this.diachi = diachi;
-        this.sdt = sdt;
+    public Customer(String citizenId, String firstName, String lastName, String phoneNumber, String email, String gender, Date dateOfBirth, String address, String taxCode, String photo) {
+        this.citizenId = citizenId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
         this.email = email;
-        this.masothue = masothue;
-        this.daXoa = daXoa;
-    }
+        this.gender = gender;
+        this.dateOfBirth = dateOfBirth;
+        this.address = address;
+        this.taxCode = taxCode;
+        this.photo = photo;
+    }    
 
     public UUID getId() {
         return id;
@@ -123,60 +122,36 @@ public class Customer implements UserDetails{
         this.id = id;
     }
 
-    public String getCmnd() {
-        return cmnd;
+    public String getCitizenId() {
+        return this.citizenId;
     }
 
-    public void setCmnd(String cmnd) {
-        this.cmnd = cmnd;
+    public void setCitizenId(String citizenId) {
+        this.citizenId = citizenId;
     }
 
-    public String getHo() {
-        return ho;
+    public String getFirstName() {
+        return this.firstName;
     }
 
-    public void setHo(String ho) {
-        this.ho = ho;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getTen() {
-        return ten;
+    public String getLastName() {
+        return this.lastName;
     }
 
-    public void setTen(String ten) {
-        this.ten = ten;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
-    public String getGioitinh() {
-        return gioitinh;
+    public String getPhoneNumber() {
+        return this.phoneNumber;
     }
 
-    public void setGioitinh(String gioitinh) {
-        this.gioitinh = gioitinh;
-    }
-
-    public Date getNgaysinh() {
-        return ngaysinh;
-    }
-
-    public void setNgaysinh(Date ngaysinh) {
-        this.ngaysinh = ngaysinh;
-    }
-
-    public String getDiachi() {
-        return diachi;
-    }
-
-    public void setDiachi(String diachi) {
-        this.diachi = diachi;
-    }
-
-    public String getSdt() {
-        return sdt;
-    }
-
-    public void setSdt(String sdt) {
-        this.sdt = sdt;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getEmail() {
@@ -187,20 +162,52 @@ public class Customer implements UserDetails{
         this.email = email;
     }
 
-    public String getMasothue() {
-        return masothue;
+    public String getGender() {
+        return this.gender;
     }
 
-    public void setMasothue(String masothue) {
-        this.masothue = masothue;
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
-    public Boolean getDaXoa() {
-        return daXoa;
+    public Date getDateOfBirth() {
+        return this.dateOfBirth;
     }
 
-    public void setDaXoa(Boolean daXoa) {
-        this.daXoa = daXoa;
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getAddress() {
+        return this.address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getTaxCode() {
+        return this.taxCode;
+    }
+
+    public void setTaxCode(String taxCode) {
+        this.taxCode = taxCode;
+    }
+
+    public Boolean getIsDeleted() {
+        return this.isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
+    public String getPhoto() {
+        return this.photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
     }
 
     public Account getAccount() {
@@ -209,14 +216,6 @@ public class Customer implements UserDetails{
 
     public void setAccount(Account account) {
         this.account = account;
-    }
-
-    public void setHinhAnh(String hinhAnh) {
-        this.hinhAnh = hinhAnh;
-    }
-
-    public String getHinhAnh() {
-        return hinhAnh;
     }
 
     //* Return empty list because we dont cover the role-based access control in this project */

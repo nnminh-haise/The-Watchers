@@ -41,7 +41,7 @@ public class CustomerService {
 
         Customer newCustomer = customerProfile.makeCustomer();
         newCustomer.setAccount(customerAccount);
-        newCustomer.setDaXoa(false);
+        newCustomer.setIsDeleted(false);
         customerRepository.save(newCustomer);
 
         return HttpStatus.CREATED.value();
@@ -56,7 +56,7 @@ public class CustomerService {
         if (!customer.isPresent()) {
             return HttpStatus.NOT_FOUND.value();
         }
-        else if (customer.get().getDaXoa() == true) {
+        else if (customer.get().getIsDeleted() == true) {
             return HttpStatus.NOT_FOUND.value();
         }
 
@@ -64,11 +64,11 @@ public class CustomerService {
             throw new BadRequestException("Unmatch email! Cannot change email!"); 
         }
 
-        if (!customer.get().getCmnd().equals(newCustomerProfile.getCmnd())) {
+        if (!customer.get().getCitizenId().equals(newCustomerProfile.getCitizenId())) {
             throw new BadRequestException("Unmatch citizen id! Cannot change citizen id!"); 
         }
 
-        if (!customer.get().getMasothue().equals(newCustomerProfile.getMasothue())) {
+        if (!customer.get().getTaxCode().equals(newCustomerProfile.getTaxCode())) {
             throw new BadRequestException("Unmatch tax code! Cannot change tax code!"); 
         }
 
@@ -88,12 +88,12 @@ public class CustomerService {
         if (!customer.isPresent()) {
             return HttpStatus.NOT_FOUND.value();
         }
-        else if (customer.get().getDaXoa() == true) {
+        else if (customer.get().getIsDeleted() == true) {
             return HttpStatus.NOT_FOUND.value();
         }
 
         //customerRepository.delete(customer.get());
-        customerRepository.updateDeleteStatus(customer.get().getId(), true);
+        customerRepository.updateIsDeleted(customer.get().getEmail(), true);
 
         return HttpStatus.OK.value();
     }
@@ -107,18 +107,18 @@ public class CustomerService {
         return matcher.matches();
     }
 
-    private Boolean isEmailTaken(String email) {
-        Optional<Customer> customer = customerRepository.findByEmail(email);
-        return customer.isPresent();
-    }
+    // private Boolean isEmailTaken(String email) {
+    //     Optional<Customer> customer = customerRepository.findByEmail(email);
+    //     return customer.isPresent();
+    // }
 
-    private Boolean isCitizenIdTaken(String citizenId) {
-        Optional<Customer> customer = customerRepository.findByCitizenId(citizenId);
-        return customer.isPresent();
-    }
+    // private Boolean isCitizenIdTaken(String citizenId) {
+    //     Optional<Customer> customer = customerRepository.findByCitizenId(citizenId);
+    //     return customer.isPresent();
+    // }
 
-    private Boolean isTaxCodeTaken(String taxCode) {
-        Optional<Customer> customer = customerRepository.findByTaxCode(taxCode);
-        return customer.isPresent();
-    }
+    // private Boolean isTaxCodeTaken(String taxCode) {
+    //     Optional<Customer> customer = customerRepository.findByTaxCode(taxCode);
+    //     return customer.isPresent();
+    // }
 }

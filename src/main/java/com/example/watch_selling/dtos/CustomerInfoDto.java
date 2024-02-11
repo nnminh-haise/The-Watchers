@@ -5,109 +5,109 @@ import java.util.Date;
 import com.example.watch_selling.model.Customer;
 
 public class CustomerInfoDto {
-    private String cmnd;
+    private String citizenId;
 
-    private String ho;
+    private String firstName;
 
-    private String ten;
+    private String lastName;
 
-    private String gioitinh;
+    private String gender;
 
-    private Date ngaysinh;
+    private Date dateOfBirth;
 
-    private String diachi;
+    private String address;
 
-    private String sdt;
+    private String phoneNumber;
 
     private String email;
 
-    private String masothue;
+    private String taxCode;
 
-    private String hinhAnh;
+    private String photo;
 
     private String jwt;
 
     public CustomerInfoDto() {
     }
 
-    public CustomerInfoDto(String cmnd, String ho, String ten, String gioitinh, Date ngaysinh, String diachi, String sdt, String email, String masothue) {
-        this.cmnd = cmnd;
-        this.ho = ho;
-        this.ten = ten;
-        this.gioitinh = gioitinh;
-        this.ngaysinh = ngaysinh;
-        this.diachi = diachi;
-        this.sdt = sdt;
+    public CustomerInfoDto(String citizenId, String firstName, String lastName, String gender, Date dateOfBirth, String address, String phoneNumber, String email, String taxCode) {
+        this.citizenId = citizenId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.gender = gender;
+        this.dateOfBirth = dateOfBirth;
+        this.address = address;
+        this.phoneNumber = phoneNumber;
         this.email = email;
-        this.masothue = masothue;
+        this.taxCode = taxCode;
     }
 
     public CustomerInfoDto(Customer customer) {
-        this.cmnd = customer.getCmnd();
-        this.ho = customer.getHo();
-        this.ten = customer.getTen();
-        this.gioitinh = customer.getGioitinh();
-        this.ngaysinh = customer.getNgaysinh();
-        this.diachi = customer.getDiachi();
-        this.sdt = customer.getSdt();
+        this.citizenId = customer.getCitizenId();
+        this.firstName = customer.getFirstName();
+        this.lastName = customer.getLastName();
+        this.gender = customer.getGender();
+        this.dateOfBirth = customer.getDateOfBirth();
+        this.address = customer.getAddress();
+        this.phoneNumber = customer.getPhoneNumber();
         this.email = customer.getEmail();
-        this.masothue = customer.getMasothue();
+        this.taxCode = customer.getTaxCode();
     }
 
-    public String getCmnd() {
-        return cmnd;
+    public String getCitizenId() {
+        return citizenId;
     }
 
-    public void setCmnd(String cmnd) {
-        this.cmnd = cmnd;
+    public void setCitizenId(String citizenId) {
+        this.citizenId = citizenId;
     }
 
-    public String getHo() {
-        return ho;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setHo(String ho) {
-        this.ho = ho;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getTen() {
-        return ten;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setTen(String ten) {
-        this.ten = ten;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
-    public String getGioitinh() {
-        return gioitinh;
+    public String getGender() {
+        return gender;
     }
 
-    public void setGioitinh(String gioitinh) {
-        this.gioitinh = gioitinh;
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
-    public Date getNgaysinh() {
-        return ngaysinh;
+    public Date getDateOfBirth() {
+        return dateOfBirth;
     }
 
-    public void setNgaysinh(Date ngaysinh) {
-        this.ngaysinh = ngaysinh;
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
-    public String getDiachi() {
-        return diachi;
+    public String getAddress() {
+        return address;
     }
 
-    public void setDiachi(String diachi) {
-        this.diachi = diachi;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    public String getSdt() {
-        return sdt;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setSdt(String sdt) {
-        this.sdt = sdt;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getEmail() {
@@ -118,20 +118,20 @@ public class CustomerInfoDto {
         this.email = email;
     }
 
-    public String getMasothue() {
-        return masothue;
+    public String getTaxCode() {
+        return taxCode;
     }
 
-    public void setMasothue(String masothue) {
-        this.masothue = masothue;
+    public void setTaxCode(String taxCode) {
+        this.taxCode = taxCode;
     }
 
-    public void setHinhAnh(String hinhAnh) {
-        this.hinhAnh = hinhAnh;
+    public void setPhoto(String photo) {
+        this.photo = photo;
     }
 
-    public String getHinhAnh() {
-        return hinhAnh;
+    public String getPhoto() {
+        return photo;
     }
 
     public String getJwt() {
@@ -145,16 +145,16 @@ public class CustomerInfoDto {
     public Customer makeCustomer() {
         Customer newCustomer = new Customer();
 
-        newCustomer.setCmnd(cmnd);
+        newCustomer.setCitizenId(citizenId);
         newCustomer.setEmail(email);
-        newCustomer.setHo(ho);
-        newCustomer.setTen(ten);
-        newCustomer.setGioitinh(gioitinh);
-        newCustomer.setNgaysinh(ngaysinh);
-        newCustomer.setDiachi(diachi);
-        newCustomer.setSdt(sdt);
-        newCustomer.setMasothue(masothue);
-        newCustomer.setHinhAnh(hinhAnh);
+        newCustomer.setFirstName(firstName);
+        newCustomer.setLastName(lastName);
+        newCustomer.setGender(gender);
+        newCustomer.setDateOfBirth(dateOfBirth);
+        newCustomer.setAddress(address);
+        newCustomer.setPhoneNumber(phoneNumber);
+        newCustomer.setTaxCode(taxCode);
+        newCustomer.setPhoto(photo);
 
         return newCustomer;
     }

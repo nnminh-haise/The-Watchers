@@ -18,25 +18,24 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID>{
     @Query("SELECT c FROM Customer c WHERE c.email = ?1")
     public Optional<Customer> findByEmail(String email);
 
-    @Query("SELECT c FROM Customer c WHERE c.cmnd = :citizenId")
-    public Optional<Customer> findByCitizenId(String citizenId);
+    // TODO: Rewrite these methods
 
-    @Query("SELECT c FROM Customer c WHERE c.cmnd = :taxCode")
-    public Optional<Customer> findByTaxCode(String taxCode);
+    // @Query("SELECT c FROM Customer c WHERE c.citizen_id = :citizenId")
+    // public Optional<Customer> findByCitizenId(String citizenId);
 
-    @Query("SELECT c.email FROM Customer c WHERE c.sdt = :sdt")
-    public Optional<String> findEmailByPhoneNumber(String sdt);
+    // @Query("SELECT c FROM Customer c WHERE c.tax_code = :taxCode")
+    // public Optional<Customer> findByTaxCode(String taxCode);
 
-    @Query("SELECT c.email FROM Customer c WHERE c.masothue = :masothue")
-    public Optional<String> findEmailByMasothue(String masothue);
+    // @Query("SELECT c.email FROM Customer c WHERE c.phone_number = :phoneNumber")
+    // public Optional<String> findEmailByPhoneNumber(String phoneNumber);
 
     @Transactional
     @Modifying
-    @Query("UPDATE Customer c SET c.ho = :#{#customer.ho}, c.ten = :#{#customer.ten}, c.gioitinh = :#{#customer.gioitinh}, c.ngaysinh = :#{#customer.ngaysinh}, c.diachi = :#{#customer.diachi}, c.sdt = :#{#customer.sdt}, c.hinhAnh = :#{#customer.hinhAnh} WHERE c.id = :id")
+    @Query(value = "UPDATE customer SET first_name = :#{#customer.firstName}, last_name = :#{#customer.lastName}, gender = :#{#customer.gender}, date_of_birth = :#{#customer.dateOfBirth}, address = :#{#customer.address}, phone_number = :#{#customer.phoneNumber}, photo = :#{#customer.photo} WHERE id = :id", nativeQuery = true)
     public void update(UUID id, @Param("customer") Customer customer);
 
     @Transactional
     @Modifying
-    @Query("UPDATE Customer c SET c.daXoa = :status WHERE c.id = :id")
-    public void updateDeleteStatus(UUID id, Boolean status);
+    @Query(value = "UPDATE customer SET is_deleted = :isDeleted WHERE email = :email", nativeQuery = true)
+    public void updateIsDeleted(String email, Boolean isDeleted);
 }
