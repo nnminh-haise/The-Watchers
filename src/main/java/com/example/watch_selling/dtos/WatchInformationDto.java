@@ -2,8 +2,6 @@ package com.example.watch_selling.dtos;
 
 import java.util.UUID;
 
-import com.example.watch_selling.model.Watch;
-
 public class WatchInformationDto {
     private UUID id;
 
@@ -19,15 +17,15 @@ public class WatchInformationDto {
 
     private String photo;
 
-    private UUID typeId;
+    private String type;
 
-    private UUID brandId;
+    private String brand;
 
     public WatchInformationDto() {
 
     }
 
-    public WatchInformationDto(UUID id, String name, Double price, Integer quantity, String description, String status, String photo, UUID typeId, UUID brandId) {
+    public WatchInformationDto(UUID id, String name, Double price, Integer quantity, String description, String status, String photo, String type, String brand) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -35,40 +33,19 @@ public class WatchInformationDto {
         this.description = description;
         this.status = status;
         this.photo = photo;
-        this.typeId = typeId;
-        this.brandId = brandId;
+        this.type = type;
+        this.brand = brand;
     }
 
-    public WatchInformationDto(String name, Double price, Integer quantity, String description, String status, String photo, UUID typeId, UUID brandId) {
+    public WatchInformationDto(String name, Double price, Integer quantity, String description, String status, String photo, String type, String brand) {
         this.name = name;
         this.price = price;
         this.quantity = quantity;
         this.description = description;
         this.status = status;
         this.photo = photo;
-        this.typeId = typeId;
-        this.brandId = brandId;
-    }
-
-    public WatchInformationDto(UUID id, String name, Double price, Integer quantity, String description, String status, String photo) {
-        this.name = name;
-        this.price = price;
-        this.quantity = quantity;
-        this.description = description;
-        this.status = status;
-        this.photo = photo;
-    }
-
-    public WatchInformationDto(Watch watch) {
-        this.id = watch.getId();
-        this.name = watch.getName();
-        this.price = watch.getPrice();
-        this.quantity = watch.getQuantity();
-        this.description = watch.getDescription();
-        this.status = watch.getStatus();
-        this.photo = watch.getPhoto();
-        this.typeId = watch.getType().getId();
-        this.brandId = watch.getBrand().getId();
+        this.type = type;
+        this.brand = brand;
     }
 
     public UUID getId() {
@@ -123,19 +100,19 @@ public class WatchInformationDto {
         this.photo = photo;
     }
 
-    public UUID getTypeId() {
-        return this.typeId;
+    public String getType() {
+        return this.type;
     }
 
-    public void setTypeId(UUID typeId) {
-        this.typeId = typeId;
+    public void setYype(String type) {
+        this.type = type;
     }
 
-    public UUID getBrandId() {
-        return this.brandId;
+    public String getBrand() {
+        return this.brand;
     }
 
-    public void setBrandId(UUID brandId) {
-        this.brandId = brandId;
+    public void setBrand(String brand) {
+        this.brand = brand;
     }
 }
