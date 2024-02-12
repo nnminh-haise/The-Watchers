@@ -92,7 +92,6 @@ public class CustomerService {
             return HttpStatus.NOT_FOUND.value();
         }
 
-        //customerRepository.delete(customer.get());
         customerRepository.updateIsDeleted(customer.get().getEmail(), true);
 
         return HttpStatus.OK.value();

@@ -149,8 +149,6 @@ public class CustomerController {
         );
     }
 
-    // TODO: Find another Http status return value. The current one maybe not
-    // describe the error correctly
     @DeleteMapping("delete")
     public ResponseEntity<ResponseDto<CustomerInfoDto>> deleteCustomerProfile(HttpServletRequest request) {
         validateToken(request);
