@@ -2,6 +2,8 @@ package com.example.watch_selling.dtos;
 
 import java.util.UUID;
 
+import com.example.watch_selling.model.Watch;
+
 public class WatchInformationDto {
     private UUID id;
 
@@ -114,5 +116,9 @@ public class WatchInformationDto {
 
     public void setBrand(String brand) {
         this.brand = brand;
+    }
+
+    public Watch build() {
+        return new Watch(id, name, price, quantity, description, status, photo);
     }
 }

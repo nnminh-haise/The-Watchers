@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "watch_brand")
 public class WatchBrand {
-        @Id
+    @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 

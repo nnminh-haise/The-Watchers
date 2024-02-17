@@ -81,6 +81,15 @@ public class Watch {
         this.brand = brand;
     }
 
+    public Watch(UUID id, String name, Double price, Integer quantity, String description, String status, String photo) {
+        this.name = name;
+        this.price = price;
+        this.quantity = quantity;
+        this.description = description;
+        this.status = status;
+        this.photo = photo;
+    }
+
     public UUID getId() {
         return this.id;
     }
