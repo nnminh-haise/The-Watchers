@@ -1,12 +1,5 @@
 package com.example.watch_selling.controller;
 
-import org.springframework.web.bind.annotation.RestController;
-
-import com.example.watch_selling.dtos.RequestDto;
-import com.example.watch_selling.dtos.ResponseDto;
-import com.example.watch_selling.model.WatchType;
-import com.example.watch_selling.service.WatchTypeService;
-
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,25 +7,29 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-
+import com.example.watch_selling.dtos.RequestDto;
+import com.example.watch_selling.dtos.ResponseDto;
+import com.example.watch_selling.model.WatchBrand;
+import com.example.watch_selling.service.WatchBrandService;
 
 @RestController
-@RequestMapping("api/watch/type")
-public class WatchTypeController {
-    private WatchTypeService watchTypeService;
+@RequestMapping("api/watch/brand")
+public class WatchBrandController {
+    private WatchBrandService watchBrandService;
 
-    public WatchTypeController(WatchTypeService watchTypeService) {
-        this.watchTypeService = watchTypeService;
+    public WatchBrandController(WatchBrandService watchBrandService) {
+        this.watchBrandService = watchBrandService;
     }
 
     @GetMapping("")
-    public ResponseEntity<ResponseDto<WatchType>> getWatchTypeById(@RequestParam("id") UUID id) {
-        Optional<WatchType> type = watchTypeService.getWatchTypeById(id);
+    public ResponseEntity<ResponseDto<WatchBrand>> getWatchBrandById(@RequestParam("id") UUID id) {
+        Optional<WatchBrand> type = watchBrandService.getWatchTypeById(id);
         if (!type.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto<>(
                 null,
@@ -49,8 +46,8 @@ public class WatchTypeController {
     }
     
     @GetMapping("search")
-    public ResponseEntity<ResponseDto<WatchType>> getWatchTypeByName(@RequestParam("name") String name) {
-        Optional<WatchType> type = watchTypeService.getWatchTypeByName(name);
+    public ResponseEntity<ResponseDto<WatchBrand>> getWatchTypeByName(@RequestParam("name") String name) {
+        Optional<WatchBrand> type = watchBrandService.getWatchTypeByName(name);
         if (!type.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto<>(
                 null,
@@ -67,8 +64,8 @@ public class WatchTypeController {
     }
 
     @PutMapping("new")
-    public ResponseEntity<ResponseDto<WatchType>> createNewWatchType(@RequestBody RequestDto<String> newTypeName) {
-        ResponseDto<WatchType> response = watchTypeService.createNewWatchType(newTypeName.getData());
+    public ResponseEntity<ResponseDto<WatchBrand>> createNewWatchType(@RequestBody RequestDto<String> newTypeName) {
+        ResponseDto<WatchBrand> response = watchBrandService.createNewWatchType(newTypeName.getData());
         if (!response.getStatus().equals(HttpStatus.CREATED.value())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);    
         }
@@ -76,11 +73,11 @@ public class WatchTypeController {
     }
 
     @PatchMapping("update")
-    public ResponseEntity<ResponseDto<WatchType>> updateWatchTypeName(
+    public ResponseEntity<ResponseDto<WatchBrand>> updateWatchTypeName(
         @RequestParam("id") UUID id,
         @RequestBody RequestDto<String> newTypeName
     ) {
-        ResponseDto<WatchType> response = watchTypeService.updateWatchTypeName(id, newTypeName.getData());
+        ResponseDto<WatchBrand> response = watchBrandService.updateWatchTypeName(id, newTypeName.getData());
         if (!response.getStatus().equals(HttpStatus.OK.value())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);    
         }
@@ -89,7 +86,7 @@ public class WatchTypeController {
 
     @PatchMapping("delete")
     public ResponseEntity<ResponseDto<String>> updateWatchTypeDeleteStatus(@RequestParam("id") UUID id) {
-        ResponseDto<String> response = watchTypeService.updateWatchTypeDeleteStatus(id, true);
+        ResponseDto<String> response = watchBrandService.updateWatchTypeDeleteStatus(id, true);
         if (!response.getStatus().equals(HttpStatus.OK.value())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);    
         }

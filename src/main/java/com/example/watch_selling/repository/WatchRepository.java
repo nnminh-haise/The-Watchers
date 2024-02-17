@@ -1,6 +1,5 @@
 package com.example.watch_selling.repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 

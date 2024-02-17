@@ -11,9 +11,37 @@ import com.example.watch_selling.model.WatchBrand;
 
 public interface WatchBrandRepository extends JpaRepository<WatchBrand, UUID> {
     @SuppressWarnings("null")
-    @Query("SELECT wb FROM WatchBrand wb WHERE wb.id = :id")
-    public Optional<WatchBrand> findById(@Param("id") UUID id);
+    @Query(
+        nativeQuery = true,
+        value = "SELECT * FROM watch_brand WHERE id = :id"
+    )
+    public Optional<WatchBrand> findById(
+        @Param("id") UUID id
+    );
 
-    @Query("SELECT wb FROM WatchBrand wb WHERE wb.name = :name")
-    public Optional<WatchBrand> findByName(@Param("name") String name);
+    @Query(
+        nativeQuery = true,
+        value = "SELECT * FROM watch_brand WHERE name = :name"
+    )
+    public Optional<WatchBrand> findByName(
+        @Param("name") String name
+    );
+
+    @Query(
+        nativeQuery = true,
+        value = "UPDATE watch_brand SET name = :name WHERE id = :id"
+    )
+    public void updateNameById(
+        @Param("id") UUID id,
+        @Param("name") String name
+    );
+
+    @Query(
+        nativeQuery = true,
+        value = "UPDATE watch_brand SET is_deleted = :status WHERE id = :id"
+    )
+    public Integer updateDeleteStatusbyId(
+        @Param("id") UUID id,
+        @Param("status") Boolean status
+    );
 }
