@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.example.watch_selling.dtos.CartDetailsDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.model.Cart;
@@ -75,6 +76,31 @@ public class CartService {
         );
     }
 
+    public ResponseDto<CartDetailsDto> findCartDetailById(UUID id) {
+        if (id.equals(null)) {
+            return new ResponseDto<>(
+                null,
+                "Cart ID cannot null! Invalid cart ID!",
+                HttpStatus.BAD_REQUEST.value()
+            );
+        }
+
+        Optional<CartDetailsDto> cart = cartRepository.findCartDetailById(id);
+        if (!cart.isPresent()) {
+            return new ResponseDto<>(
+                null,
+                "Cannot find cart with the given ID!",
+                HttpStatus.NOT_FOUND.value()
+            );    
+        }
+
+        return new ResponseDto<>(
+            cart.get(),
+            "Cart founded successfully!",
+            HttpStatus.OK.value()
+        );
+    }
+
     public ResponseDto<List<Cart>> findAllCarts() {
         List<Cart> carts = cartRepository.findAll();
         if (carts.size() == 0) {
@@ -111,36 +137,13 @@ public class CartService {
         }
 
         Optional<Cart> existingCartWithAccountID = cartRepository.findbyAccountId(newAccountId);
-        if (!existingCartWithAccountID.isPresent()) {
-            return new ResponseDto<>(
-                null,
-                "Cannot find cart with the given ID! Invalid ID!",
-                HttpStatus.BAD_REQUEST.value()
-            );
-        }
-        else if (!existingCartWithAccountID.get().getId().equals(id)) {
+        if (existingCartWithAccountID.isPresent() && !existingCartWithAccountID.get().getId().equals(id)) {
             return new ResponseDto<>(
                 null,
                 "Exist cart with the given account ID! Invalid account ID!",
                 HttpStatus.BAD_REQUEST.value()
             );            
         }
-
-        // * Bad example for if statement
-        // if (existingCartWithAccountID.isPresent() && !existingCartWithAccountID.get().getId().equals(id)) {
-        //     return new ResponseDto<>(
-        //         null,
-        //         "Exist cart with the given account ID! Invalid account ID!",
-        //         HttpStatus.BAD_REQUEST.value()
-        //     );
-        // }
-        // else if (!existingCartWithAccountID.isPresent()) {
-        //     return new ResponseDto<>(
-        //         null,
-        //         "Cannot find cart with the given ID! Invalid ID!",
-        //         HttpStatus.BAD_REQUEST.value()
-        //     );
-        // }
 
         cartRepository.updateAccountId(id, newAccountId);
         return new ResponseDto<>(

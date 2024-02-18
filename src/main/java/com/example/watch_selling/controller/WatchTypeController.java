@@ -7,19 +7,19 @@ import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.WatchType;
 import com.example.watch_selling.service.WatchTypeService;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
-
 
 @RestController
 @RequestMapping("api/watch/type")
@@ -66,6 +66,15 @@ public class WatchTypeController {
         ));
     }
 
+    @GetMapping("all")
+    public ResponseEntity<ResponseDto<List<WatchType>>> getAllWatchType() {
+        ResponseDto<List<WatchType>> response = watchTypeService.getAllWatchTypes();
+        if (!response.getStatus().equals(HttpStatus.OK.value())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @PutMapping("new")
     public ResponseEntity<ResponseDto<WatchType>> createNewWatchType(@RequestBody RequestDto<String> newTypeName) {
         ResponseDto<WatchType> response = watchTypeService.createNewWatchType(newTypeName.getData());
@@ -87,7 +96,7 @@ public class WatchTypeController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PatchMapping("delete")
+    @DeleteMapping("delete")
     public ResponseEntity<ResponseDto<String>> updateWatchTypeDeleteStatus(@RequestParam("id") UUID id) {
         ResponseDto<String> response = watchTypeService.updateWatchTypeDeleteStatus(id, true);
         if (!response.getStatus().equals(HttpStatus.OK.value())) {

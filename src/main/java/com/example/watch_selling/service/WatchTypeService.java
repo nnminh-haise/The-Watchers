@@ -1,5 +1,6 @@
 package com.example.watch_selling.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,9 +27,32 @@ public class WatchTypeService {
         return watchTypeRepository.findByName(name);
     }
 
+    public ResponseDto<List<WatchType>> getAllWatchTypes() {
+        List<WatchType> types = watchTypeRepository.findAll();
+        if (types.size() == 0) {
+            return new ResponseDto<>(
+                null,
+                "Cannot find any watch type!",
+                HttpStatus.NOT_FOUND.value()
+            );
+        }
+        return new ResponseDto<>(
+            types,
+            "Watch type found successfullt!",
+            HttpStatus.OK.value()
+        );
+    }
+
     public ResponseDto<WatchType> createNewWatchType(String name) {
-        Optional<WatchType> watch = watchTypeRepository.findByName(name);
-        if (watch.isPresent()) {
+        if (name.equals(null) || name.length() == 0) {
+            return new ResponseDto<>(
+                null,
+                "Type name must be at least one character! Invalid name!",
+                HttpStatus.BAD_REQUEST.value()
+            );
+        }
+
+        if (watchTypeRepository.findByName(name).isPresent()) {
             return new ResponseDto<>(
                 null,
                 "Type's name must be unique! Invalid type name!",
@@ -47,20 +71,26 @@ public class WatchTypeService {
     }
 
     public ResponseDto<WatchType> updateWatchTypeName(UUID id, String name) {
-        if (!watchTypeRepository.findById(id).isPresent()) {
-            return new ResponseDto<>(
-                null,
-                "Cannot find the watch type with the given ID! Invalid ID!",
-                HttpStatus.BAD_REQUEST.value()
-            );
-        }
+        if (id.equals(null)) return new ResponseDto<>(
+            null,
+            "Invalid ID!",
+            HttpStatus.BAD_REQUEST.value()
+        );
+
+        if (name.equals(null) || name.length() == 0) return new ResponseDto<>(
+            null,
+            "Name cannot be null! Invalid name!",
+            HttpStatus.BAD_REQUEST.value()
+        );
+
+        if (!watchTypeRepository.findById(id).isPresent()) return new ResponseDto<>(
+            null,
+            "Cannot find the watch type with the given ID! Invalid ID!",
+            HttpStatus.BAD_REQUEST.value()
+        );
         
         Optional<WatchType> watch = watchTypeRepository.findByName(name);
-        if (
-            watch.isPresent() &&
-            !watch.get().getId().equals(id) &&
-            watch.get().getName().equals(name)
-        ) {
+        if (watch.isPresent() && !watch.get().getId().equals(id) && watch.get().getName().equals(name)) {
             return new ResponseDto<>(
                 null,
                 "Type's name must be unique! Invalid type name!",
@@ -77,6 +107,18 @@ public class WatchTypeService {
     }
 
     public ResponseDto<String> updateWatchTypeDeleteStatus(UUID id, Boolean deleteStatus) {
+        if (id.equals(null)) return new ResponseDto<>(
+            null,
+            "Invalid ID!",
+            HttpStatus.BAD_REQUEST.value()
+        );
+
+        if (!watchTypeRepository.findById(id).isPresent()) return new ResponseDto<>(
+            null,
+            "Cannot find the watch type with the given ID! Invalid ID!",
+            HttpStatus.BAD_REQUEST.value()
+        );
+
         watchTypeRepository.updateDeleteStatusbyId(id, deleteStatus);
         return new ResponseDto<>(
             null,

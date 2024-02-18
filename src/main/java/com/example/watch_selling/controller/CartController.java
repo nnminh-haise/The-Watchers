@@ -9,19 +9,19 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.watch_selling.dtos.CartDetailsDto;
 import com.example.watch_selling.dtos.RequestDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Cart;
 import com.example.watch_selling.service.CartService;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-
 @RestController
-@RequestMapping(path = "api/cart/")
+@RequestMapping(path = "api/cart")
 public class CartController {
     private CartService cartService;
 
@@ -41,6 +41,15 @@ public class CartController {
     @GetMapping("")
     public ResponseEntity<ResponseDto<Cart>> readCartById(@RequestParam("id") UUID id) {
         ResponseDto<Cart> response = cartService.findCartById(id);
+        if (!response.getStatus().equals(HttpStatus.OK.value())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);    
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("detail")
+    public ResponseEntity<ResponseDto<CartDetailsDto>> readCartDetailById(@RequestParam("id") UUID id) {
+        ResponseDto<CartDetailsDto> response = cartService.findCartDetailById(id);
         if (!response.getStatus().equals(HttpStatus.OK.value())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);    
         }
