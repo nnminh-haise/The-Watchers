@@ -9,14 +9,14 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartDetailsDto {
+public class CartDetailDto {
     private UUID id;
 
-    private UUID accountId;
+    private UUID cartId;
+    
+    private UUID watchId;
+    
+    private Double price;
 
-    private String fullname;
-
-    private Integer itemCount = 0;
-
-    private Boolean isDeleted;
+    private Integer quantity;
 }

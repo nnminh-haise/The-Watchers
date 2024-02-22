@@ -21,16 +21,20 @@ public class AuthenticationService {
     
     private final AuthenticationManager authenticationManager;
 
+    private final CartService cartService;
+
     public AuthenticationService(
         AccountRepository accountRepository,
         AuthenticationManager authenticationManager,
         PasswordEncoder passwordEncoder,
-        AccountService accountService
+        AccountService accountService,
+        CartService cartService
     ) {
         this.authenticationManager = authenticationManager;
         this.accountRepository = accountRepository;
         this.passwordEncoder = passwordEncoder;
         this.accountService = accountService;
+        this.cartService = cartService;
     }
 
     public Account signup(RegisterDto input) {
@@ -58,12 +62,14 @@ public class AuthenticationService {
             throw new BadCredentialsException("Email is already taken");
         }
 
-        Account account = new Account();
-        account.setEmail(input.getEmail());
-        account.setPassword(passwordEncoder.encode(input.getPassword()));
-        account.setIsDeleted(false);
+        Account buffer = new Account();
+        buffer.setEmail(input.getEmail());
+        buffer.setPassword(passwordEncoder.encode(input.getPassword()));
+        buffer.setIsDeleted(false);
+        Account newAccount = accountRepository.save(buffer);
+        cartService.createNewCart(newAccount.getId());
 
-        return accountRepository.save(account);
+        return newAccount;
     }
 
     public Account authenticate(LoginDto input) {
@@ -80,10 +86,10 @@ public class AuthenticationService {
         }
 
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        input.getEmail(),
-                        input.getPassword()
-                )
+            new UsernamePasswordAuthenticationToken(
+                input.getEmail(),
+                input.getPassword()
+            )
         );
 
         return accountRepository.findByEmail(input.getEmail())

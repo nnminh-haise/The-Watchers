@@ -48,7 +48,9 @@ public class SecurityConfiguration {
                     "/swagger-ui.html",
                     "/api/customer/**",
                     "/api/watch/**",
-                    "/api/cart/**"
+                    "/api/cart/**",
+                    "/api/order/**",
+                    "/api/account/**" // Dev purpose only
                 )
                 .permitAll()
                 .anyRequest()

@@ -12,6 +12,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 import com.example.watch_selling.dtos.WatchInformationDto;
 import com.example.watch_selling.model.Watch;
+import com.example.watch_selling.model.WatchBrand;
+import com.example.watch_selling.model.WatchType;
 
 import jakarta.transaction.Transactional;
 
@@ -66,9 +68,29 @@ public interface WatchRepository extends PagingAndSortingRepository<Watch, UUID>
     )
     public void updateWatchById(@Param("id") UUID id, @Param("information") WatchInformationDto information);
 
-
-    @Transactional
+    @Query("UPDATE Watch w SET w.price = :price WHERE w.id = :id AND w.isDeleted = false")
     @Modifying
+    @Transactional
+    public Integer updateWatchPriceById(@Param("id") UUID id, @Param("price") Double price);
+
+    @Query("UPDATE Watch w SET w.quantity = :quantity WHERE w.id = :id AND w.isDeleted = false")
+    @Modifying
+    @Transactional
+    public Integer updateWatchQuantityById(@Param("id") UUID id, @Param("quantity") Integer quantity);
+
+    @Query("UPDATE Watch w SET w.quantity = w.quantity - :quantity WHERE w.id = :id AND w.isDeleted = false")
+    @Modifying
+    @Transactional
+    public Integer decreaseWatchQuantityById(@Param("id") UUID id, @Param("quantity") Integer quantity);
+
+    @Modifying
+    @Transactional
     @Query("UPDATE Watch w SET w.isDeleted = :status WHERE w.id = :id")
     public int updateDeleteStatus(@Param("id") UUID id, @Param("status") Boolean status);
+
+    @Query("SELECT w.type FROM Watch AS w WHERE w.id = :id")
+    public WatchType findWatchTypeByWatchId(@Param("id") UUID id);
+
+    @Query("SELECT w.brand FROM Watch AS w WHERE w.id = :id")
+    public WatchBrand findWatchBrandByWatchId(@Param("id") UUID id);
 }

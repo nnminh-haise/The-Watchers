@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.example.watch_selling.dtos.CartDetailsDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.model.Cart;
@@ -61,31 +60,6 @@ public class CartService {
         }
 
         Optional<Cart> cart = cartRepository.findById(id);
-        if (!cart.isPresent()) {
-            return new ResponseDto<>(
-                null,
-                "Cannot find cart with the given ID!",
-                HttpStatus.NOT_FOUND.value()
-            );    
-        }
-
-        return new ResponseDto<>(
-            cart.get(),
-            "Cart founded successfully!",
-            HttpStatus.OK.value()
-        );
-    }
-
-    public ResponseDto<CartDetailsDto> findCartDetailById(UUID id) {
-        if (id.equals(null)) {
-            return new ResponseDto<>(
-                null,
-                "Cart ID cannot null! Invalid cart ID!",
-                HttpStatus.BAD_REQUEST.value()
-            );
-        }
-
-        Optional<CartDetailsDto> cart = cartRepository.findCartDetailById(id);
         if (!cart.isPresent()) {
             return new ResponseDto<>(
                 null,

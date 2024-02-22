@@ -3,6 +3,8 @@ package com.example.watch_selling.dtos;
 import java.util.UUID;
 
 import com.example.watch_selling.model.Watch;
+import com.example.watch_selling.model.WatchBrand;
+import com.example.watch_selling.model.WatchType;
 
 public class WatchInformationDto {
     private UUID id;
@@ -48,6 +50,21 @@ public class WatchInformationDto {
         this.photo = photo;
         this.type = type;
         this.brand = brand;
+    }
+
+    public Watch toModel(Boolean deleteStatus, WatchType watchType, WatchBrand watchBrand) {
+        return new Watch(
+            this.id,
+            this.name,
+            this.price,
+            this.quantity,
+            this.description,
+            this.status,
+            this.photo,
+            deleteStatus,
+            watchType,
+            watchBrand
+        );
     }
 
     public UUID getId() {
