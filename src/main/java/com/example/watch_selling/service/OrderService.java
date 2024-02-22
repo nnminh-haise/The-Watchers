@@ -123,9 +123,7 @@ public class OrderService {
             "Delivery date must comes after order date! Invalid order and delivery date!",
             HttpStatus.BAD_REQUEST.value()
         );
-
         
-
         Order order = orderRepository.save(newOrder.get());
         return new ResponseDto<>(
             order,
