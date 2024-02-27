@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.watch_selling.dtos.OrderUpdateDto;
 import com.example.watch_selling.model.Order;
 
 import jakarta.transaction.Transactional;
