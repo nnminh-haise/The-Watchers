@@ -55,14 +55,14 @@ public interface WatchRepository extends PagingAndSortingRepository<Watch, UUID>
     @Modifying
     @Query(
         value = "UPDATE watch SET " + 
-                "name = :#{#information.name}, " +
-                "price = :#{#information.price}, " +
-                "quantity = :#{#information.quantity}, " +
-                "description = :#{#information.description}, " +
-                "status = :#{#information.status}, " +
-                "photo = :#{#information.photo}, " +
-                "type_id = (SELECT watch_type.id FROM watch_type WHERE watch_type.name = :#{#information.type}), " +
-                "brand_id = (SELECT watch_brand.id FROM watch_brand WHERE watch_brand.name = :#{#information.brand}) " +
+                    "name = :#{#information.name}, " +
+                    "price = :#{#information.price}, " +
+                    "quantity = :#{#information.quantity}, " +
+                    "description = :#{#information.description}, " +
+                    "status = :#{#information.status}, " +
+                    "photo = :#{#information.photo}, " +
+                    "type_id = (SELECT watch_type.id FROM watch_type WHERE watch_type.name = :#{#information.type}), " +
+                    "brand_id = (SELECT watch_brand.id FROM watch_brand WHERE watch_brand.name = :#{#information.brand}) " +
                 "WHERE id = :id",
         nativeQuery = true
     )

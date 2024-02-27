@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -22,10 +23,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
-
 @RestController
 @RequestMapping(path = "api/watch")
+@CrossOrigin(origins = "*")
 public class WatchController {
     private WatchService watchService;
 
@@ -34,6 +34,7 @@ public class WatchController {
     }
     
     @GetMapping("all")
+    @CrossOrigin(origins = "*")
     public ResponseEntity<ResponseDto<List<Watch>>> getAllWatches(
         @RequestParam(name = "page", defaultValue = "0") Integer page,
         @RequestParam(name = "size", defaultValue = "10") Integer size

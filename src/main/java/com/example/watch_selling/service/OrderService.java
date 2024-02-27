@@ -1,14 +1,19 @@
 package com.example.watch_selling.service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.example.watch_selling.dtos.OrderDto;
+import com.example.watch_selling.dtos.OrderUpdateDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.filters.CustomFilters;
 import com.example.watch_selling.model.Account;
@@ -43,6 +48,48 @@ public class OrderService {
         return new ResponseDto<>(
             orders,
             "Orders found successfully!",
+            HttpStatus.OK.value()
+        );
+    }
+
+    public ResponseDto<Order> findById(UUID id) {
+        if (id.equals(null)) return new ResponseDto<>(
+            null,
+            "Invalid ID!",
+            HttpStatus.BAD_REQUEST.value()
+        );
+
+        Optional<Order> order = orderRepository.findById(id);
+        if (!order.isPresent()) return new ResponseDto<>(
+            null,
+            "Cannot find order with the given ID!",
+            HttpStatus.BAD_REQUEST.value()
+        );
+
+        return new ResponseDto<>(
+            order.get(),
+            "Order found successfully!",
+            HttpStatus.OK.value()
+        );
+    }
+
+    public ResponseDto<List<Order>> findByOrderDate(Date date) {
+        if (date.equals(null)) return new ResponseDto<>(
+            null,
+            "Invalid date!",
+            HttpStatus.BAD_REQUEST.value()
+        );
+
+        Optional<List<Order>> orders = orderRepository.findByOrderDate(date);
+        if (!orders.isPresent()) return new ResponseDto<>(
+            null,
+            "Cannot find any order in the given date!",
+            HttpStatus.BAD_REQUEST.value()
+        );
+
+        return new ResponseDto<>(
+            orders.get(),
+            "Order found successfully!",
             HttpStatus.OK.value()
         );
     }
@@ -128,6 +175,105 @@ public class OrderService {
         return new ResponseDto<>(
             order,
             "Orders found successfully!",
+            HttpStatus.OK.value()
+        );
+    }
+
+    public ResponseDto<Order> updateOrderById(UUID id, OrderUpdateDto updateOrder) {
+        if (id.equals(null)) return new ResponseDto<>(
+            null,
+            "Invalid ID!",
+            HttpStatus.BAD_REQUEST.value()
+        );
+
+        Optional<Order> targetingOrder = orderRepository.findById(id);
+        if (!targetingOrder.isPresent()) return new ResponseDto<>(
+            null,
+            "Cannot find any order with the given ID!",
+            HttpStatus.BAD_REQUEST.value()
+        );
+
+        if (!CustomFilters.dateValidation(updateOrder.getOrderDate())) {
+            return new ResponseDto<>(
+                null,
+                "Invalid order date!",
+                HttpStatus.BAD_REQUEST.value()
+            );
+        }
+
+        if (!CustomFilters.dateValidation(updateOrder.getDeliveryDate())) {
+            return new ResponseDto<>(
+                null,
+                "Invalid delivery date!",
+                HttpStatus.BAD_REQUEST.value()
+            );
+        }
+
+        if (updateOrder.getAddress().isEmpty() || updateOrder.getAddress().isBlank()) {
+            return new ResponseDto<>(
+                null,
+                "Invalid address!",
+                HttpStatus.BAD_REQUEST.value()
+            );
+        }
+
+        if (updateOrder.getName().isEmpty() || updateOrder.getName().isBlank()) {
+            return new ResponseDto<>(
+                null,
+                "Invalid address!",
+                HttpStatus.BAD_REQUEST.value()
+            );
+        }
+
+        if (updateOrder.getPhoneNumber().isEmpty() || updateOrder.getPhoneNumber().isBlank()) {
+            return new ResponseDto<>(
+                null,
+                "Invalid address!",
+                HttpStatus.BAD_REQUEST.value()
+            );
+        }
+
+        Order newOrder = targetingOrder.get();
+        newOrder.setName(updateOrder.getName());
+        newOrder.setAddress(updateOrder.getAddress());
+        newOrder.setPhoneNumber(updateOrder.getPhoneNumber());
+        try {
+            newOrder.setOrderDate(new SimpleDateFormat("yyyy-MM-dd").parse(updateOrder.getOrderDate()));
+            newOrder.setDeliveryDate(new SimpleDateFormat("yyyy-MM-dd").parse(updateOrder.getDeliveryDate()));
+        }
+        catch (ParseException e) {
+            return new ResponseDto<>(
+                null,
+                e.getMessage(),
+                HttpStatus.BAD_REQUEST.value()
+            );
+        }
+        orderRepository.updateById(id, newOrder);
+        return new ResponseDto<>(
+            newOrder,
+            "Update order successfully!",
+            HttpStatus.OK.value()
+        );
+    }
+
+    public ResponseDto<String> updateDeleteStatus(UUID id, Boolean status) {
+        if (id.equals(null)) return new ResponseDto<>(
+            null,
+            "Invalid ID!",
+            HttpStatus.BAD_REQUEST.value()
+        );
+
+        Optional<Order> targetingOrder = orderRepository.findById(id);
+        if (!targetingOrder.isPresent()) return new ResponseDto<>(
+            null,
+            "Cannot find any order with the given ID!",
+            HttpStatus.BAD_REQUEST.value()
+        );
+
+        orderRepository.updateDeleteStatus(id, status);
+        return new ResponseDto<>(
+            null,
+            "Delete status update successfully!",
             HttpStatus.OK.value()
         );
     }
