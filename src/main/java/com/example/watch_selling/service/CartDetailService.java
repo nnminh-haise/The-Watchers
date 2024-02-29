@@ -13,6 +13,7 @@ import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.dtos.WatchInformationDto;
 import com.example.watch_selling.model.Cart;
 import com.example.watch_selling.model.CartDetail;
+import com.example.watch_selling.model.Watch;
 import com.example.watch_selling.repository.CartDetailRepository;
 import com.example.watch_selling.repository.CartRepository;
 import com.example.watch_selling.repository.WatchRepository;
@@ -131,7 +132,7 @@ public class CartDetailService {
             HttpStatus.BAD_REQUEST.value()
         );
 
-        Optional<WatchInformationDto> watch = watchRepository.findById(detail.getWatchId());
+        Optional<Watch> watch = watchRepository.findById(detail.getWatchId());
         if (!watch.isPresent()) return new ResponseDto<>(
             null,
             "Cannot find watch with the given ID!",
@@ -149,11 +150,7 @@ public class CartDetailService {
         CartDetail newDetail = new CartDetail(
             null,
             cart.get(),
-            watch.get().toModel(
-                false,
-                watchRepository.findWatchTypeByWatchId(watch.get().getId()),
-                watchRepository.findWatchBrandByWatchId(watch.get().getId())
-            ),
+            watch.get(),
             detail.getPrice(),
             detail.getQuantity()
         );

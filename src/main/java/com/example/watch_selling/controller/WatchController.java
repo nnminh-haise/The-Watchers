@@ -6,15 +6,15 @@ import com.example.watch_selling.dtos.RequestDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.dtos.WatchInformationDto;
 import com.example.watch_selling.model.Watch;
+import com.example.watch_selling.repository.WatchRepository;
 import com.example.watch_selling.service.WatchService;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -23,48 +23,41 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+
 @RestController
 @RequestMapping(path = "api/watch")
-@CrossOrigin(origins = "*")
 public class WatchController {
+    @Autowired
     private WatchService watchService;
-
-    public WatchController(WatchService watchService) {
-        this.watchService = watchService;
-    }
     
+    @GetMapping("")
+    public ResponseEntity<ResponseDto<Watch>> getFullWatchById(@RequestParam UUID id) {
+        ResponseDto<Watch> response = watchService.findWatchById(id);
+        if (!response.getStatus().equals(HttpStatus.OK.value())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("name")
+    public ResponseEntity<ResponseDto<Watch>> getFullWatchByName(@RequestParam String name) {
+        ResponseDto<Watch> response = watchService.findWatchByName(name);
+        if (!response.getStatus().equals(HttpStatus.OK.value())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @GetMapping("all")
-    @CrossOrigin(origins = "*")
-    public ResponseEntity<ResponseDto<List<Watch>>> getAllWatches(
+    public ResponseEntity<ResponseDto<List<Watch>>> getFullAllWatch(
         @RequestParam(name = "page", defaultValue = "0") Integer page,
         @RequestParam(name = "size", defaultValue = "10") Integer size
     ) {
-        
-        List<Watch> watches = watchService.getAllWatches(page, size);
-
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto<>(
-            watches,
-            "Request process complete!",
-            HttpStatus.OK.value()
-        ));
-    }
-
-    @GetMapping("info")
-    public ResponseEntity<ResponseDto<WatchInformationDto>> getWatchById(@RequestParam("id") UUID id) {
-        Optional<WatchInformationDto> watch = watchService.getWatchById(id);
-        if (!watch.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto<>(
-                null,
-                "Cannot found watch with the given name!",
-                HttpStatus.NOT_FOUND.value()
-            ));
+        ResponseDto<List<Watch>> response = watchService.findAll(page, size);
+        if (!response.getStatus().equals(HttpStatus.OK.value())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
-
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto<>(
-            watch.get(),
-            "Watch found successfully!",
-            HttpStatus.OK.value()
-        ));
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping("new")

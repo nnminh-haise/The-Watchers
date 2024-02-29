@@ -3,8 +3,6 @@ package com.example.watch_selling.model;
 import java.util.Date;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -50,8 +48,7 @@ public class Order {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "account_id", referencedColumnName = "id", unique = true, nullable = false)
-    @JsonIgnore
     private Account account;
 }

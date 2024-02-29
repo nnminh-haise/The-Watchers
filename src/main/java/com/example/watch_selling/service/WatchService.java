@@ -35,17 +35,59 @@ public class WatchService {
         this.watchBrandRepository = watchBrandRepository;
     }
 
-    public Optional<WatchInformationDto> getWatchByName(String name) {
-        return watchRepository.findByName(name);
+    public ResponseDto<Watch> findWatchByName(String name) {
+        ResponseDto<Watch> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST.value());
+
+        if (name.isEmpty() || name.isBlank()) {
+            response.setMessage("Invalid name!");
+            return response;
+        }
+
+        Optional<Watch> watch = watchRepository.findByName(name);
+        if (!watch.isPresent()) {
+            response.setMessage("Cannot find any watch with the given name!");
+            return response;
+        }
+
+        response.setData(watch.get());
+        response.setMessage("Successfully!");
+        response.setStatus(HttpStatus.OK.value());
+        return response;
     }
 
-    public Optional<WatchInformationDto> getWatchById(UUID id) {
-        return watchRepository.findById(id);
+    public ResponseDto<Watch> findWatchById(UUID id) {
+        ResponseDto<Watch> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST.value());
+
+        if (id.equals(null)) {
+            response.setMessage("Invalid ID!");
+            return response;
+        }
+
+        Optional<Watch> watch = watchRepository.findById(id);
+        if (!watch.isPresent()) {
+            response.setMessage("Cannot find any watch with the given ID!");
+            return response;
+        }
+
+        response.setData(watch.get());
+        response.setMessage("Successfully!");
+        response.setStatus(HttpStatus.OK.value());
+        return response;
     }
 
-    public List<Watch> getAllWatches(int page, int size) {
+    public ResponseDto<List<Watch>> findAll(int page, int size) {
+        ResponseDto<List<Watch>> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST.value());
+
         List<Watch> watches = watchRepository.findAll(PageRequest.of(page, size)).getContent();
-        return watches;
+        if (watches.isEmpty()) {
+            response.setMessage("Cannot find any watch!");
+            return response;
+        }
+
+        response.setData(watches);
+        response.setMessage("Successfully!");
+        response.setStatus(HttpStatus.OK.value());
+        return response;
     }
 
     public ResponseDto<WatchInformationDto> createWatch(WatchInformationDto watchInfomation) {
@@ -124,7 +166,7 @@ public class WatchService {
             );
         }
 
-        Optional<WatchInformationDto> watch = watchRepository.findByName(newWatchInformation.getName());
+        Optional<Watch> watch = watchRepository.findByName(newWatchInformation.getName());
         if (
             watch.isPresent() &&
             !watch.get().getId().equals(targetingWatchId) &&

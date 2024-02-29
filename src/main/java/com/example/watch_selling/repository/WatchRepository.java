@@ -21,33 +21,14 @@ import jakarta.transaction.Transactional;
 public interface WatchRepository extends PagingAndSortingRepository<Watch, UUID> {
 
     @SuppressWarnings("null")
-    @Query(
-        "SELECT new com.example.watch_selling.dtos.WatchInformationDto(w.id, w.name, w.price, w.quantity, w.description, w.status, w.photo, w.type.name, w.brand.name) FROM Watch w WHERE w.isDeleted = false"
-    )
+    @Query("SELECT w FROM Watch AS w WHERE w.isDeleted = false")
     public Page<Watch> findAll(Pageable pageable);
 
-    /**
-     * SQL:
-     * SELECT 
-     *  W.ID,
-     *  W.NAME,
-     *  W.PRICE,
-     *  W.QUANTITY,
-     *  W.DESCRIPTION,
-     *  W.STATUS,
-     *  W.PHOTO,
-     *  (SELECT WATCH_TYPE.NAME FROM WATCH_TYPE WHERE WATCH_TYPE.ID = W.TYPE_ID) AS TYPE,
-     *  (SELECT WATCH_BRAND.NAME FROM WATCH_BRAND WHERE WATCH_BRAND.ID = W.BRAND_ID) AS BRAND
-     * FROM WATCH AS W
-     * WHERE W.NAME = 'W1' AND W.IS_DELETED = FALSE
-     * @param name
-     * @return an optional WatchInformationDto object contains the watch's information
-     */
-    @Query("SELECT new com.example.watch_selling.dtos.WatchInformationDto(w.id, w.name, w.price, w.quantity, w.description, w.status, w.photo, w.type.name, w.brand.name) FROM Watch w WHERE w.name = :name AND w.isDeleted = false")
-    public Optional<WatchInformationDto> findByName(@Param("name") String name);
+    @Query("SELECT w FROM Watch w WHERE w.name = :name AND w.isDeleted = false")
+    public Optional<Watch> findByName(@Param("name") String name);
 
-    @Query("SELECT new com.example.watch_selling.dtos.WatchInformationDto(w.id, w.name, w.price, w.quantity, w.description, w.status, w.photo, w.type.name, w.brand.name) FROM Watch w WHERE w.id = :id AND w.isDeleted = false")
-    public Optional<WatchInformationDto> findById(@Param("id") UUID id);
+    @Query("SELECT w FROM Watch AS w WHERE w.isDeleted = false AND w.id = :id")
+    public Optional<Watch> findById(@Param("id") UUID id);
 
     public Watch save(Watch watch);
 

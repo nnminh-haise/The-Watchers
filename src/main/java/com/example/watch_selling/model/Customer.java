@@ -8,8 +8,6 @@ import java.util.UUID;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,7 +27,7 @@ public class Customer implements UserDetails{
     @Column(nullable = false, unique = true)
     private UUID id;
 
-    @Column(name = "citizen_id", unique = true, nullable = false)
+    @Column(name = "citizen_id", nullable = false)
     private String citizenId;
 
     @Column(name = "first_name", nullable = false)
@@ -40,9 +38,6 @@ public class Customer implements UserDetails{
 
     @Column(name = "phone_number", unique = true, nullable = false)
     private String phoneNumber;
-
-    @Column(unique = true, nullable = false)
-    private String email;
 
     @Column(nullable = false)
     private String gender;
@@ -62,21 +57,18 @@ public class Customer implements UserDetails{
     @Column(nullable = true)
     private String photo;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "account_id", referencedColumnName = "id", unique = true, nullable = false)
-    @JsonIgnore
     private Account account;
 
-    public Customer() {
-    }
+    public Customer() {}
 
-    public Customer(UUID id, String citizenId, String firstName, String lastName, String phoneNumber, String email, String gender, Date dateOfBirth, String address, String taxCode, Boolean isDeleted, String photo, Account account) {
+    public Customer(UUID id, String citizenId, String firstName, String lastName, String phoneNumber, String gender, Date dateOfBirth, String address, String taxCode, Boolean isDeleted, String photo, Account account) {
         this.id = id;
         this.citizenId = citizenId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
-        this.email = email;
         this.gender = gender;
         this.dateOfBirth = dateOfBirth;
         this.address = address;
@@ -86,12 +78,11 @@ public class Customer implements UserDetails{
         this.account = account;
     }
 
-    public Customer(String citizenId, String firstName, String lastName, String phoneNumber, String email, String gender, Date dateOfBirth, String address, String taxCode, Boolean isDeleted, String photo, Account account) {
+    public Customer(String citizenId, String firstName, String lastName, String phoneNumber, String gender, Date dateOfBirth, String address, String taxCode, Boolean isDeleted, String photo, Account account) {
         this.citizenId = citizenId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
-        this.email = email;
         this.gender = gender;
         this.dateOfBirth = dateOfBirth;
         this.address = address;
@@ -101,12 +92,11 @@ public class Customer implements UserDetails{
         this.account = account;
     }
 
-    public Customer(String citizenId, String firstName, String lastName, String phoneNumber, String email, String gender, Date dateOfBirth, String address, String taxCode, String photo) {
+    public Customer(String citizenId, String firstName, String lastName, String phoneNumber, String gender, Date dateOfBirth, String address, String taxCode, String photo) {
         this.citizenId = citizenId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
-        this.email = email;
         this.gender = gender;
         this.dateOfBirth = dateOfBirth;
         this.address = address;
@@ -152,14 +142,6 @@ public class Customer implements UserDetails{
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getGender() {
@@ -231,7 +213,7 @@ public class Customer implements UserDetails{
 
     @Override
     public String getUsername() {
-        return email;
+        return this.account.getEmail();
     }
 
     //* The below methods are unnecessary for this project */

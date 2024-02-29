@@ -28,14 +28,12 @@ public class CartDetail {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "cart_id", referencedColumnName = "id", unique = true, nullable = false)
-    @JsonIgnore
     private Cart cart;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "watch_id", referencedColumnName = "id", unique = true, nullable = false)
-    @JsonIgnore
     private Watch watch;
 
     @Column(nullable = false)

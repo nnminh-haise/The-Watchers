@@ -1,9 +1,6 @@
 package com.example.watch_selling.controller;
 
-import java.util.Optional;
-
-import org.apache.coyote.BadRequestException;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -16,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.watch_selling.model.Customer;
-import com.example.watch_selling.dtos.CustomerInfoDto;
+import com.example.watch_selling.dtos.CustomerProfileDto;
 import com.example.watch_selling.dtos.RequestDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
@@ -28,157 +25,71 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RestController
 @RequestMapping(path = "/api/customer")
 public class CustomerController {
+    @Autowired
     private CustomerService customerService;
 
-    public CustomerController(CustomerService customerService) {
-        this.customerService = customerService;
-    }
-
+    @SuppressWarnings("null")
     @PutMapping("new")
-    public ResponseEntity<ResponseDto<CustomerInfoDto>> createNewCustomerProfile(
+    public ResponseEntity<ResponseDto<Customer>> createNewCustomerProfile(
         HttpServletRequest request,
-        @RequestBody RequestDto<CustomerInfoDto> customerProfile
+        @RequestBody RequestDto<CustomerProfileDto> customerProfile
     ) {
         validateToken(request);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Account customerAccount = (Account) authentication.getPrincipal();
 
-        // ! Temporary solution
-        Optional<Customer> cus = customerService.getCustomerByEmail(customerAccount.getEmail());
-        if (cus.isPresent() && cus.get().getIsDeleted() == true) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto<>(
-                null,
-                "Cannot create new profile!",
-                "Forbidden email!",
-                HttpStatus.CONFLICT.value())
-            );
-        }
-
-        try {
-            Integer customerProfileCreated = customerService.createCustomerProfile(customerAccount, customerProfile.getData());
-            if (customerProfileCreated == HttpStatus.CONFLICT.value()) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto<>(
-                    customerProfile.getData(),
-                    "Customer's profile existed! Cannot create new profile!",
-                    HttpStatus.CONFLICT.value())
-                );
-            }
-        } catch (BadRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDto<>(
-                null,
-                e.getMessage(),
-                HttpStatus.BAD_REQUEST.value())
-            );
-        }
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDto<>(
-            customerProfile.getData(),
-            "Created customer's profile successfully!",
-            HttpStatus.CREATED.value())
+        ResponseDto<Customer> response = customerService.createNewCustomer(
+            customerAccount.getId(), customerProfile.getData()
         );
+
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
+    @SuppressWarnings("null")
     @GetMapping("/me")
-    public ResponseEntity<ResponseDto<CustomerInfoDto>> readCustomerProfile(HttpServletRequest request) {
+    public ResponseEntity<ResponseDto<Customer>> readCustomerProfile(HttpServletRequest request) {
         validateToken(request);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Account customerAccount = (Account) authentication.getPrincipal();
 
-        System.out.println("LOG - " + this.getAuthorizationToken(request));
+        ResponseDto<Customer> response = customerService.findCustomerByEmail(customerAccount.getEmail());
 
-        Optional<Customer> customer = customerService.getCustomerByEmail(customerAccount.getEmail());
-        if (!customer.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto<>(
-                null,
-                "Cannot find customer's profile associated with this account!",
-                HttpStatus.NOT_FOUND.value())
-            );
-        }
-        else if (customer.get().getIsDeleted() == true) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto<>(
-                null,
-                "Cannot find customer's profile associated with this account!",
-                HttpStatus.NOT_FOUND.value())
-            );
-        }
-
-        CustomerInfoDto responseBody = new CustomerInfoDto(customer.get());
-        responseBody.setJwt(this.getAuthorizationToken(request));
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto<>(
-            responseBody,
-            "Successfully read customer's profile!",
-            HttpStatus.OK.value())
-        );
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
+    @SuppressWarnings("null")
     @PatchMapping("/update")
-    public ResponseEntity<ResponseDto<CustomerInfoDto>> updateProfile(
+    public ResponseEntity<ResponseDto<Customer>> updateProfile(
         HttpServletRequest request,
-        @RequestBody RequestDto<CustomerInfoDto> newCustomerInfo
+        @RequestBody RequestDto<CustomerProfileDto> newCustomerProfile
     ) {
         validateToken(request);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Account customerAccount = (Account) authentication.getPrincipal();
 
-        System.out.println("Passed through token validation!");
-
-        try {
-            Integer customerProfileUpdated = customerService.updateCustomerProfile(customerAccount, newCustomerInfo.getData());
-            if (customerProfileUpdated == HttpStatus.NOT_FOUND.value()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto<>(
-                    new CustomerInfoDto(customerService.getCustomerByEmail(customerAccount.getEmail()).get()),
-                    "Cannot find customer profile with the associated account!",
-                    HttpStatus.NOT_FOUND.value())
-                );
-            }
-        } catch (BadRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDto<>(
-                new CustomerInfoDto(customerService.getCustomerByEmail(customerAccount.getEmail()).get()),
-                e.getMessage(),
-                HttpStatus.BAD_REQUEST.value())
-            );
-        }
-
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ResponseDto<>(
-            new CustomerInfoDto(customerService.getCustomerByEmail(customerAccount.getEmail()).get()),
-            "Customer's profile update successfully!",
-            HttpStatus.OK.value())
+        ResponseDto<Customer> response = customerService.updateCustomerProfile(
+            customerAccount.getId(), newCustomerProfile.getData()
         );
+
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
+    @SuppressWarnings("null")
     @DeleteMapping("delete")
-    public ResponseEntity<ResponseDto<CustomerInfoDto>> deleteCustomerProfile(HttpServletRequest request) {
+    public ResponseEntity<ResponseDto<String>> deleteCustomerProfile(HttpServletRequest request) {
         validateToken(request);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Account customerAccount = (Account) authentication.getPrincipal();
 
-        try {
-            Integer deleteProcessComplete = customerService.deleteCustomerInfo(customerAccount.getEmail());
-            if (deleteProcessComplete == HttpStatus.NOT_FOUND.value()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto<>(
-                    null,
-                    "Cannot remove customer's profile! Customer's profile is not found",
-                    HttpStatus.NOT_FOUND.value())
-                );
-            }
-        }
-        catch (BadRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDto<>(
-                new CustomerInfoDto(customerService.getCustomerByEmail(customerAccount.getEmail()).get()),
-                e.getMessage(),
-                HttpStatus.BAD_REQUEST.value())
-            );
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto<>(
-            null,
-            "Successfully removed customer's profile",
-            HttpStatus.OK.value())
+        ResponseDto<String> response = customerService.updateDeleteStatusById(
+            customerAccount.getId(), true
         );
+
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     // * Private methods ----

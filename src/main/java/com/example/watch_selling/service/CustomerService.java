@@ -1,123 +1,165 @@
 package com.example.watch_selling.service;
 
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.UUID;
 
-import org.apache.coyote.BadRequestException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.example.watch_selling.dtos.CustomerInfoDto;
+import com.example.watch_selling.dtos.CustomerProfileDto;
+import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.model.Customer;
+import com.example.watch_selling.repository.AccountRepository;
 import com.example.watch_selling.repository.CustomerRepository;
 
 @Service
 public class CustomerService {
+    @Autowired
     private CustomerRepository customerRepository;
 
-    public CustomerService(CustomerRepository customerRepository) {
-        this.customerRepository = customerRepository;
-    }
+    @Autowired
+    private AccountRepository accountRepository;
 
-    public Optional<Customer> getCustomerByEmail(String email) {
-        return customerRepository.findByEmail(email);
-    }
+    public ResponseDto<Customer> findCustomerById(UUID id) {
+        ResponseDto<Customer> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-    public Integer createCustomerProfile(Account customerAccount, CustomerInfoDto customerProfile) throws BadRequestException {
-        if (!isValidEmail(customerAccount.getEmail())) {
-            throw new BadRequestException("Invalid email!");
+        if (id == null) {
+            response.setMessage("Invalid ID!");
+            return response;
         }
 
-        Optional<Customer> customer = customerRepository.findByEmail(customerAccount.getEmail());
-        if (customer.isPresent()) {
-            return HttpStatus.CONFLICT.value();
-        }
-
-        if (!customerProfile.getEmail().equals(customerAccount.getEmail())) {
-            throw new BadRequestException("Wrong customer' email!");
-        }
-
-        Customer newCustomer = customerProfile.makeCustomer();
-        newCustomer.setAccount(customerAccount);
-        newCustomer.setIsDeleted(false);
-        customerRepository.save(newCustomer);
-
-        return HttpStatus.CREATED.value();
-    }
-
-    public Integer updateCustomerProfile(Account customerAccount, CustomerInfoDto newCustomerProfile) throws BadRequestException {
-        if (!isValidEmail(customerAccount.getEmail())) {
-            throw new BadRequestException("Invalid email!");
-        }
-
-        Optional<Customer> customer = customerRepository.findByEmail(customerAccount.getEmail());
+        Optional<Customer> customer = customerRepository.findById(id);
         if (!customer.isPresent()) {
-            return HttpStatus.NOT_FOUND.value();
-        }
-        else if (customer.get().getIsDeleted() == true) {
-            return HttpStatus.NOT_FOUND.value();
+            response.setMessage("Cannot find any customer with the given ID!");
         }
 
-        if (!customer.get().getEmail().equals(newCustomerProfile.getEmail())) {
-            throw new BadRequestException("Unmatch email! Cannot change email!"); 
-        }
-
-        if (!customer.get().getCitizenId().equals(newCustomerProfile.getCitizenId())) {
-            throw new BadRequestException("Unmatch citizen id! Cannot change citizen id!"); 
-        }
-
-        if (!customer.get().getTaxCode().equals(newCustomerProfile.getTaxCode())) {
-            throw new BadRequestException("Unmatch tax code! Cannot change tax code!"); 
-        }
-
-        // * Customer(id, account_id, is_deleted) is kept original. Therefore there is no need to rewrite it!
-        customerRepository.update(customer.get().getId(), newCustomerProfile.makeCustomer());
-
-        return HttpStatus.OK.value();
+        response.setData(customer.get());
+        response.setMessage("Successful!");
+        response.setStatus(HttpStatus.OK);
+        return response;
     }
 
-    @SuppressWarnings("null")
-    public Integer deleteCustomerInfo(String email) throws BadRequestException {
-        if (!isValidEmail(email)) {
-            throw new BadRequestException("Invalid email!");
+    public ResponseDto<Customer> findCustomerByEmail(String email) {
+        ResponseDto<Customer> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
+        if (email == null || email.isEmpty() || email.isBlank()) {
+            response.setMessage("Invalid email!");
+            return response;
         }
 
         Optional<Customer> customer = customerRepository.findByEmail(email);
         if (!customer.isPresent()) {
-            return HttpStatus.NOT_FOUND.value();
-        }
-        else if (customer.get().getIsDeleted() == true) {
-            return HttpStatus.NOT_FOUND.value();
+            response.setMessage("Cannot find any customer with the given email!");
+            response.setStatus(HttpStatus.NOT_FOUND);
         }
 
-        customerRepository.updateIsDeleted(customer.get().getEmail(), true);
-
-        return HttpStatus.OK.value();
+        response.setData(customer.get());
+        response.setMessage("Successful!");
+        response.setStatus(HttpStatus.OK);
+        return response;
     }
 
-    // * Private methods ---
+    public ResponseDto<Customer> createNewCustomer(UUID accountID, CustomerProfileDto customerProfile) {
+        ResponseDto<Customer> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-    private Boolean isValidEmail(String email) {
-        final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-        final Pattern pattern = Pattern.compile(EMAIL_REGEX);
-        Matcher matcher = pattern.matcher(email);
-        return matcher.matches();
+        if (accountID == null) {
+            response.setMessage("Invalid account ID!");
+            return response;
+        }
+
+        Optional<Account> associtatedAccount = accountRepository.findById(accountID);
+        if (!associtatedAccount.isPresent()) {
+            response.setMessage("Cannot find any account with the given account ID!");
+            return response;
+        }
+
+        // * Check for duplicated account ID
+        if (customerRepository.findByAccountId(accountID).isPresent()) {
+            response.setMessage("The given account ID's profile is already exist!");
+            return response;
+        }
+
+        ResponseDto<String> dtoValidationResponse = CustomerProfileDto.validDto(customerProfile);
+        if (dtoValidationResponse.getStatus().equals(HttpStatus.BAD_REQUEST)) {
+            response.setMessage(dtoValidationResponse.getMessage());
+            return response;
+        }
+
+        // * Check for duplicated citizen ID among the active profiles
+        if (customerRepository.existProfileByCitizenId(customerProfile.getCitizenId()).isPresent()) {
+            response.setMessage("This is citizen ID is used!");
+            return response;
+        }
+
+        // * Check for duplicated citizen ID among the active profiles
+        if (customerRepository.existProfileByPhonenumber(customerProfile.getPhoneNumber()).isPresent()) {
+            response.setMessage("This is phonenumber is used!");
+            return response;
+        }
+
+        Customer newCustomer = CustomerProfileDto.toModel(customerProfile);
+        newCustomer.setAccount(associtatedAccount.get());
+        newCustomer.setIsDeleted(false);
+        newCustomer.setId(null);
+
+        customerRepository.save(newCustomer);
+
+        response.setData(newCustomer);
+        response.setMessage("Created new customer successfully!");
+        response.setStatus(HttpStatus.OK);
+        return response;
     }
 
-    // private Boolean isEmailTaken(String email) {
-    //     Optional<Customer> customer = customerRepository.findByEmail(email);
-    //     return customer.isPresent();
-    // }
+    public ResponseDto<Customer> updateCustomerProfile(UUID id, CustomerProfileDto updateCustomerProfile) {
+        ResponseDto<Customer> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-    // private Boolean isCitizenIdTaken(String citizenId) {
-    //     Optional<Customer> customer = customerRepository.findByCitizenId(citizenId);
-    //     return customer.isPresent();
-    // }
+        if (id == null) {
+            response.setMessage("Invalid ID!");
+            return response;
+        }
 
-    // private Boolean isTaxCodeTaken(String taxCode) {
-    //     Optional<Customer> customer = customerRepository.findByTaxCode(taxCode);
-    //     return customer.isPresent();
-    // }
+        Optional<Customer> targetingCustomer = customerRepository.findById(id);
+        if (!targetingCustomer.isPresent()) {
+            response.setMessage("Cannot find any customer with the given ID!");
+            response.setStatus(HttpStatus.NOT_FOUND);
+            return response;
+        }
+
+        ResponseDto<String> dtoValidationResponse = CustomerProfileDto.validDto(updateCustomerProfile);
+        if (dtoValidationResponse.getStatus().equals(HttpStatus.BAD_REQUEST)) {
+            response.setMessage(dtoValidationResponse.getMessage());
+            return response;
+        }
+
+        Customer updatedCustomer = customerRepository.updateCustomerProfileById(id, updateCustomerProfile);
+
+        response.setData(updatedCustomer);
+        response.setMessage("Customer profile updated successfully!");
+        response.setStatus(HttpStatus.OK);
+        return response;
+    }
+
+    public ResponseDto<String> updateDeleteStatusById(UUID id, Boolean status) {
+        ResponseDto<String> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
+        if (id == null) {
+            response.setMessage("Invalid ID!");
+            return response;
+        }
+
+        Optional<Customer> targetingCustomer = customerRepository.findById(id);
+        if (!targetingCustomer.isPresent()) {
+            response.setMessage("Cannot find any customer with the given ID!");
+            response.setStatus(HttpStatus.NOT_FOUND);
+            return response;
+        }
+
+        customerRepository.updateDeleteStatusById(id, status);
+
+        response.setMessage("Customer delete status updated successfully!");
+        response.setStatus(HttpStatus.OK);
+        return response;
+    }
 }
