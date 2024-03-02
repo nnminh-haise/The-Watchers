@@ -71,7 +71,7 @@ public class CartDetailController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDto<>(
                 null,
                 "Received a null body from request!",
-                HttpStatus.BAD_REQUEST.value()
+                HttpStatus.BAD_REQUEST
             ));
         }
         ResponseDto<CartDetail> response = cartDetailService.createNewCartDetail(details.getData());

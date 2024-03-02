@@ -27,103 +27,107 @@ public class WatchTypeService {
         return watchTypeRepository.findByName(name);
     }
 
+    public ResponseDto<WatchType> findWatchTypeByID(UUID id) {
+        ResponseDto<WatchType> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        if (id == null) {
+            return res.setMessage("Invalid ID!");
+        }
+
+        Optional<WatchType> type = watchTypeRepository.findById(id);
+        if (!type.isPresent()) {
+            return res.setMessage("Cannot find any watch type with the given ID!");
+        }
+
+        return res
+            .setData(type.get())
+            .setMessage("Watch type found successfully!")
+            .setStatus(HttpStatus.OK);
+    }
+
     public ResponseDto<List<WatchType>> getAllWatchTypes() {
+        ResponseDto<List<WatchType>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
         List<WatchType> types = watchTypeRepository.findAll();
         if (types.size() == 0) {
-            return new ResponseDto<>(
-                null,
-                "Cannot find any watch type!",
-                HttpStatus.NOT_FOUND.value()
-            );
+            return res
+                .setMessage("Cannot find any watch type!")
+                .setStatus(HttpStatus.NOT_FOUND);
         }
-        return new ResponseDto<>(
-            types,
-            "Watch type found successfullt!",
-            HttpStatus.OK.value()
-        );
+
+        return res
+            .setData(types)
+            .setMessage("Watch types found successfully!")
+            .setStatus(HttpStatus.OK);
     }
 
     public ResponseDto<WatchType> createNewWatchType(String name) {
+        ResponseDto<WatchType> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
         if (name.equals(null) || name.length() == 0) {
-            return new ResponseDto<>(
-                null,
-                "Type name must be at least one character! Invalid name!",
-                HttpStatus.BAD_REQUEST.value()
-            );
+            return res
+                .setMessage("Type name must be at least one character! Invalid name!");
         }
 
         if (watchTypeRepository.findByName(name).isPresent()) {
-            return new ResponseDto<>(
-                null,
-                "Type's name must be unique! Invalid type name!",
-                HttpStatus.BAD_REQUEST.value()
-            );    
+            return res
+                .setMessage("Type's name must be unique! Invalid type name!");
         }
 
         WatchType newType = new WatchType(null, name, false);
         watchTypeRepository.save(newType);
 
-        return new ResponseDto<>(
-            newType,
-            "New watch type created successfully!",
-            HttpStatus.CREATED.value()
-        );
+        return res
+            .setData(newType)
+            .setMessage("New watch type create successfully!")
+            .setStatus(HttpStatus.OK);
     }
 
     public ResponseDto<WatchType> updateWatchTypeName(UUID id, String name) {
-        if (id.equals(null)) return new ResponseDto<>(
-            null,
-            "Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        ResponseDto<WatchType> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (name.equals(null) || name.length() == 0) return new ResponseDto<>(
-            null,
-            "Name cannot be null! Invalid name!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        if (id == null) {
+            return res.setMessage("Invalid ID!");
+        }
 
-        if (!watchTypeRepository.findById(id).isPresent()) return new ResponseDto<>(
-            null,
-            "Cannot find the watch type with the given ID! Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        if (name == null || name.length() == 0) {
+            return res.setMessage("Invalid name");
+        }
+
+        if (!watchTypeRepository.findById(id).isPresent()) {
+            return res
+                .setMessage("Cannot find the watch type with the given ID! Invalid ID!")
+                .setStatus(HttpStatus.NOT_FOUND);
+        }
         
         Optional<WatchType> watch = watchTypeRepository.findByName(name);
         if (watch.isPresent() && !watch.get().getId().equals(id) && watch.get().getName().equals(name)) {
-            return new ResponseDto<>(
-                null,
-                "Type's name must be unique! Invalid type name!",
-                HttpStatus.BAD_REQUEST.value()
-            );
+            return res.setMessage("Type's name must be unique! Invalid type name!");
         }
 
         watchTypeRepository.updateNameById(id, name);
-        return new ResponseDto<>(
-            null,
-            "New watch type created successfully!",
-            HttpStatus.OK.value()
-        );
+        WatchType updatedType = watch.get();
+        updatedType.setName(name);
+        return res
+            .setMessage("New watch type created successfully!")
+            .setStatus(HttpStatus.OK)
+            .setData(updatedType);
     }
 
     public ResponseDto<String> updateWatchTypeDeleteStatus(UUID id, Boolean deleteStatus) {
-        if (id.equals(null)) return new ResponseDto<>(
-            null,
-            "Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        if (id == null) {
+            return res.setMessage("Invalid ID!");
+        }
 
-        if (!watchTypeRepository.findById(id).isPresent()) return new ResponseDto<>(
-            null,
-            "Cannot find the watch type with the given ID! Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        if (!watchTypeRepository.findById(id).isPresent()) {
+            return res
+                .setMessage("Cannot find the watch type with the given ID! Invalid ID!")
+                .setStatus(HttpStatus.NOT_FOUND);
+        }
 
         watchTypeRepository.updateDeleteStatusbyId(id, deleteStatus);
-        return new ResponseDto<>(
-            null,
-            "Watch type delete status updated successfully!",
-            HttpStatus.OK.value()
-        );
+        return res
+            .setMessage("Watch type delete status updated successfully!")
+            .setStatus(HttpStatus.OK);
     }
 }

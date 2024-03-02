@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -15,141 +16,128 @@ import com.example.watch_selling.repository.CartRepository;
 
 @Service
 public class CartService {
+    @Autowired
     private CartRepository cartRepository;
 
+    @Autowired
     private AccountRepository accountRepository;
 
-    public CartService(CartRepository cartRepository, AccountRepository accountRepository) {
-        this.cartRepository = cartRepository;
-        this.accountRepository = accountRepository;
-    }
-
     public ResponseDto<Cart> createNewCart(UUID accountId) {
-        if (accountId.equals(null)) {
-            return new ResponseDto<>(
-                null,
-                "Account ID cannot null! Invalid account ID!",
-                HttpStatus.BAD_REQUEST.value()
-            );
+        ResponseDto<Cart> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
+        if (accountId == null) {
+            res.setMessage("Invalid account ID!");
+            return res;
         }
 
-        if (cartRepository.findbyAccountId(accountId).isPresent()) {
-            return new ResponseDto<>(
-                null,
-                "The given account already had a shopping cart! Invalid account ID!",
-                HttpStatus.BAD_REQUEST.value()
-            );
+        Optional<Account> associtatedAccount = accountRepository.findById(accountId);
+        if (!associtatedAccount.isPresent()) {
+            res.setMessage("Cannot find any account with the given account ID");
+            return res;
         }
 
-        Cart newCart = cartRepository.save(new Cart(null, accountRepository.findById(accountId).get(), false));
+        Cart newCart = cartRepository.save(new Cart(null, associtatedAccount.get(), false));
 
-        return new ResponseDto<>(
-            newCart,
-            "New cart created successfully!",
-            HttpStatus.CREATED.value()
-        );
+        res.setData(newCart);
+        res.setMessage("New cart created successfully!");
+        res.setStatus(HttpStatus.OK);
+        return res;
     }
 
     public ResponseDto<Cart> findCartById(UUID id) {
-        if (id.equals(null)) {
-            return new ResponseDto<>(
-                null,
-                "Cart ID cannot null! Invalid cart ID!",
-                HttpStatus.BAD_REQUEST.value()
-            );
+        ResponseDto<Cart> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
+        if (id == null) {
+            res.setMessage("Invalid ID!");
+            return res;
         }
 
         Optional<Cart> cart = cartRepository.findById(id);
         if (!cart.isPresent()) {
-            return new ResponseDto<>(
-                null,
-                "Cannot find cart with the given ID!",
-                HttpStatus.NOT_FOUND.value()
-            );    
+            res.setMessage("Cannot find any cart with the given cart ID!");
+            return res;   
         }
 
-        return new ResponseDto<>(
-            cart.get(),
-            "Cart founded successfully!",
-            HttpStatus.OK.value()
-        );
+        res.setData(cart.get());
+        res.setMessage("Cart found successfully!");
+        res.setStatus(HttpStatus.OK);
+        return res;
     }
 
     public ResponseDto<List<Cart>> findAllCarts() {
+        ResponseDto<List<Cart>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
         List<Cart> carts = cartRepository.findAll();
         if (carts.size() == 0) {
-            return new ResponseDto<>(
-                null,
-                "Cannot find any carts!",
-                HttpStatus.NOT_FOUND.value()
-            );    
+            res.setMessage("Cannot find any carts!");
+            return res;
         }
 
-        return new ResponseDto<>(
-            carts,
-            "Carts founded successfully!",
-            HttpStatus.OK.value()
-        );
+        res.setData(carts);
+        res.setMessage("Carts found successfully!");
+        res.setStatus(HttpStatus.OK);
+        return res;
     }
 
-    public ResponseDto<String> updateAccountId(UUID id, UUID newAccountId) {
-        if (id.equals(null) || newAccountId.equals(null)) {
-            return new ResponseDto<>(
-                null,
-                "Invalid request!",
-                HttpStatus.BAD_REQUEST.value()
-            );
+    public ResponseDto<Cart> updateAccountId(UUID id, UUID newAccountId) {
+        ResponseDto<Cart> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
+        if (id == null) {
+            res.setMessage("Invalid ID!");
+            return res;
+        }
+        
+        if (newAccountId == null) {
+            res.setMessage("Invalid account ID!");
+            return res;
         }
 
-        Optional<Account> account = accountRepository.findById(newAccountId);
-        if (!account.isPresent()) {
-            return new ResponseDto<>(
-                null,
-                "Cannot find account with the given ID! Invalid account ID!",
-                HttpStatus.BAD_REQUEST.value()
-            );
+        Optional<Account> newAccount = accountRepository.findById(newAccountId);
+        if (!newAccount.isPresent()) {
+            res.setMessage("Cannot find any account with the given account ID! Invalid account ID!");
+            return res;
         }
 
         Optional<Cart> existingCartWithAccountID = cartRepository.findbyAccountId(newAccountId);
         if (existingCartWithAccountID.isPresent() && !existingCartWithAccountID.get().getId().equals(id)) {
-            return new ResponseDto<>(
-                null,
-                "Exist cart with the given account ID! Invalid account ID!",
-                HttpStatus.BAD_REQUEST.value()
-            );            
-        }
-
-        cartRepository.updateAccountId(id, newAccountId);
-        return new ResponseDto<>(
-            null,
-            "Cart updated successfully!",
-            HttpStatus.OK.value()
-        );
-    }
-
-    public ResponseDto<String> updateDeleteStatus(UUID id, Boolean status) {
-        if (id.equals(null)) {
-            return new ResponseDto<>(
-                null,
-                "Invalid ID!",
-                HttpStatus.BAD_REQUEST.value()
-            );
+            res.setMessage("Exist cart with the given account ID! Invalid account ID!");
+            return res;
         }
 
         Optional<Cart> cart = cartRepository.findById(id);
         if (!cart.isPresent()) {
-            return new ResponseDto<>(
-                null,
-                "Cannot find cart with the given ID! Invalid ID!",
-                HttpStatus.BAD_REQUEST.value()
-            );
+            res.setMessage("Cannot find any cart with the given ID! Invalid ID!");
+            return res;
+        }
+
+        cartRepository.updateAccountId(id, newAccountId);
+
+        Cart updatedCart = cart.get();
+        updatedCart.setAccount(newAccount.get());
+        res.setData(updatedCart);
+        res.setMessage("Cart updated successfully!");
+        res.setStatus(HttpStatus.OK);
+        return res;
+    }
+
+    public ResponseDto<String> updateDeleteStatus(UUID id, Boolean status) {
+        ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
+        if (id == null) {
+            res.setMessage("Invalid ID!");
+            return res;
+        }
+
+        Optional<Cart> cart = cartRepository.findById(id);
+        if (!cart.isPresent()) {
+            res.setMessage("Cannot find any cart with the given ID! Invalid ID!");
+            return res;
         }
 
         cartRepository.updateDeleteStatus(id, status);
-        return new ResponseDto<>(
-            null,
-            "Cart updated successfully!",
-            HttpStatus.OK.value()
-        );
+
+        res.setStatus(HttpStatus.OK);
+        res.setMessage("Cart updated successfully!");
+        return res;
     }
 }

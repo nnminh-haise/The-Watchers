@@ -51,26 +51,6 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("search")
-    public ResponseEntity<ResponseDto<List<Order>>> getOrderByOrderDate(@RequestParam String date) {
-        Date validDate;
-        try {
-            validDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
-        }
-        catch (ParseException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDto<>(
-                null,
-                "Invalid date! Date must follow the format YYYY-MM-DD!",
-                HttpStatus.BAD_REQUEST.value()
-            ));
-        }
-        ResponseDto<List<Order>> response = orderService.findByOrderDate(validDate);
-        if (!response.getStatus().equals(HttpStatus.OK.value())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
     @PutMapping("new")
     public ResponseEntity<ResponseDto<Order>> createNewOrder(@RequestBody RequestDto<OrderDto> newOrder) {
         ResponseDto<Order> response = orderService.createNewOrder(newOrder.getData());

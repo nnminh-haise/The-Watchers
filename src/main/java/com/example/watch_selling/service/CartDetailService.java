@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.hibernate.validator.cfg.defs.pl.REGONDef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -33,206 +34,195 @@ public class CartDetailService {
     private CartRepository cartRepository;
 
     public ResponseDto<List<CartDetail>> findAllCartDetail() {
-        return new ResponseDto<>(
-            cartDetailRepository.findAll(),
-            "Finding process completed!",
-            HttpStatus.OK.value()
-        );
+        ResponseDto<List<CartDetail>> response = new ResponseDto<>(null, "", HttpStatus.NOT_FOUND);
+
+        List<CartDetail> cartDetails = cartDetailRepository.findAll();
+
+        if (cartDetails.isEmpty()) {
+            response.setMessage("Cannot find any cart detail!");
+            return response;
+        }
+
+        response.setData(cartDetails);
+        response.setMessage("Cart details found successfully!");
+        response.setStatus(HttpStatus.OK);
+        return response;
     }
 
     public ResponseDto<CartDetail> findCartDetailById(UUID id) {
-        if (id.equals(null)) return new ResponseDto<>(
-            null,
-            "Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        ResponseDto<CartDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        if (id.equals(null)) {
+            response.setMessage("Invalid ID!");
+            return response;
+        }
 
         Optional<CartDetail> detail = cartDetailRepository.findById(id);
-        if (!detail.isPresent()) return new ResponseDto<>(
-            null,
-            "Cannot find any cart detail with the given ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        if (!detail.isPresent()) {
+            response.setMessage("Cannot find any card detail with the given cart detail ID!");
+            response.setStatus(HttpStatus.NOT_FOUND);
+            return response;
+        }
 
-        return new ResponseDto<>(
-            detail.get(),
-            "Cart detail found successfully!",
-            HttpStatus.OK.value()
-        );
+        response.setData(detail.get());
+        response.setMessage("Cart detail found successfully!");
+        response.setStatus(HttpStatus.OK);
+        return response;
     }
 
     public ResponseDto<List<CartDetail>> findCartDetailsWithWatchId(UUID watchId) {
-        if (watchId.equals(null)) return new ResponseDto<>(
-            null,
-            "Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        ResponseDto<List<CartDetail>> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
+        if (watchId.equals(null)) {
+            response.setMessage("Invalid watch ID!");
+            return response;
+        }
 
         List<CartDetail> details = cartDetailRepository.findAllDetailWithWatchId(watchId);
-        if (details.isEmpty()) return new ResponseDto<>(
-            null,
-            "Cannot find any cart detail with the given watch ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        if (details.isEmpty()) {
+            response.setMessage("Cannot find any card detail with the given watch ID!");
+            response.setStatus(HttpStatus.NOT_FOUND);
+            return response;
+        }
 
-        return new ResponseDto<>(
-            details,
-            "Cart detail found successfully!",
-            HttpStatus.OK.value()
-        );
+        response.setData(details);
+        response.setMessage("Cart detail found successfully!");
+        response.setStatus(HttpStatus.OK);
+        return response;
     }
 
     public ResponseDto<List<CartDetail>> findCartDetailsWithCartId(UUID cartId) {
-        if (cartId.equals(null)) return new ResponseDto<>(
-            null,
-            "Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        ResponseDto<List<CartDetail>> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        List<CartDetail> details = cartDetailRepository.findAllDetailWithCartId(cartId);
-        if (details.isEmpty()) return new ResponseDto<>(
-            null,
-            "Cannot find any cart detail with the given cart ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
-
-        return new ResponseDto<>(
-            details,
-            "Cart detail found successfully!",
-            HttpStatus.OK.value()
-        );
-    }
-
-    public ResponseDto<CartDetail> createNewCartDetail(CartDetailDto detail) {
-        if (
-            detail.getCartId().equals(null) ||
-            detail.getWatchId().equals(null)
-        ) return new ResponseDto<>(
-            null,
-            "Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
-
-        if (detail.getPrice() < 0) return new ResponseDto<>(
-            null,
-            "Price must be at least 0!",
-            HttpStatus.BAD_REQUEST.value()
-        );
-
-        if (detail.getQuantity() < 0) return new ResponseDto<>(
-            null,
-            "Quantity must be at least 1!",
-            HttpStatus.BAD_REQUEST.value()
-        );
-
-        Optional<Cart> cart = cartRepository.findById(detail.getCartId());
-        if (!cart.isPresent()) return new ResponseDto<>(
-            null,
-            "Cannot find cart with the given ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
-
-        Optional<Watch> watch = watchRepository.findById(detail.getWatchId());
-        if (!watch.isPresent()) return new ResponseDto<>(
-            null,
-            "Cannot find watch with the given ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
-
-        if (cartDetailRepository.findCartDetailWithWatchAndCartId(cart.get().getId(), watch.get().getId()).isPresent()) {
-            return new ResponseDto<>(
-                null,
-                "Cart detail already existed!",
-                HttpStatus.BAD_REQUEST.value()
-            );
+        if (cartId.equals(null)) {
+            response.setMessage("Invalid cart ID!");
+            return response;
         }
 
-        CartDetail newDetail = new CartDetail(
-            null,
-            cart.get(),
-            watch.get(),
-            detail.getPrice(),
-            detail.getQuantity()
-        );
-        cartDetailRepository.save(newDetail);
-        watchRepository.decreaseWatchQuantityById(watch.get().getId(), detail.getQuantity());
-        return new ResponseDto<>(
-            null,
-            "New cart detail created successfully!",
-            HttpStatus.OK.value()
-        );
+        List<CartDetail> details = cartDetailRepository.findAllDetailWithCartId(cartId);
+        if (details.isEmpty()) {
+            response.setMessage("Cannot find any card detail with the given cart ID!");
+            response.setStatus(HttpStatus.NOT_FOUND);
+            return response;
+        }
+
+        response.setData(details);
+        response.setMessage("Cart detail found successfully!");
+        response.setStatus(HttpStatus.OK);
+        return response;
     }
 
-    public ResponseDto<CartDetail> updateCartDetailPriceById(UUID id, Double price) {
-        if (id.equals(null)) return new ResponseDto<>(
-            null,
-            "Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+    // TODO: When adding a new watch to the cart, decrease the quantity of the watch inside the watch table and also checking the sending price is equal to the price of the watch
+    public ResponseDto<CartDetail> createNewCartDetail(CartDetailDto detail) {
+        ResponseDto<CartDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        
+        ResponseDto<String> cartDetailValidationResponse = CartDetailDto.validDto(detail);
+        if (!cartDetailValidationResponse.getStatus().equals(HttpStatus.OK)) {
+            response.setMessage(cartDetailValidationResponse.getMessage());
+            response.setStatus(cartDetailValidationResponse.getStatus());
+            return response;
+        }
 
-        if (price < 0) return new ResponseDto<>(
-            null,
-            "Price must be at least 0!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        Optional<Cart> cart = cartRepository.findById(detail.getCartId());
+        if (!cart.isPresent()) {
+            response.setMessage("Cannot find any cart with the given Card ID!");
+            response.setStatus(HttpStatus.NOT_FOUND);
+            return response;
+        }
+
+        Optional<Watch> watch = watchRepository.findById(detail.getWatchId());
+        if (!watch.isPresent()) {
+            response.setMessage("Cannot find any watch with the given Watch ID!");
+            response.setStatus(HttpStatus.NOT_FOUND);
+            return response;
+        }
+
+        CartDetail newDetail = CartDetailDto.toModel(detail, cart.get(), watch.get());
+        cartDetailRepository.save(newDetail);
+        // watchRepository.decreaseWatchQuantityById(watch.get().getId(), detail.getQuantity());
+
+        response.setData(newDetail);
+        response.setMessage("Cart detail created successfully!");
+        response.setStatus(HttpStatus.OK);
+        return response;
+    }
+
+    // TODO: Checking if the price is similar to the price of the watch inside the watch table
+    public ResponseDto<CartDetail> updateCartDetailPriceById(UUID id, Double price) {
+        ResponseDto<CartDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        if (id == null) {
+            response.setMessage("Invalid ID!");
+            return response;
+        }
+
+        if (!CartDetailDto.validPrice(price)) {
+            response.setMessage("Invalid price!");
+            return response;
+        }
 
         Optional<CartDetail> detail = cartDetailRepository.findById(id);
-        if (!detail.isPresent()) return new ResponseDto<>(
-            null,
-            "Cannot find cart detail with the given ID! Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        if (!detail.isPresent()) {
+            response.setMessage("Cannot find any cart detail with the given ID!");
+            response.setStatus(HttpStatus.NOT_FOUND);
+            return response;
+        }
 
         cartDetailRepository.updateCartDetailPriceById(id, price);
-        detail.get().setPrice(price);
-        return new ResponseDto<>(
-            detail.get(),
-            "Cart detail updated successfully!",
-            HttpStatus.OK.value()
-        );
+        // detail.get().setPrice(price);
+
+        CartDetail updatedDetail = detail.get();
+        updatedDetail.setPrice(price);
+        response.setData(updatedDetail);
+        response.setMessage("Cart detail updated successfully!");
+        response.setStatus(HttpStatus.OK);
+        return response;
     }
 
     public ResponseDto<CartDetail> updateCartDetailQuantityById(UUID id, Integer quantity) {
-        if (id.equals(null)) return new ResponseDto<>(
-            null,
-            "Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        ResponseDto<CartDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        if (id == null) {
+            response.setMessage("Invalid ID!");
+            return response;
+        }
 
-        if (quantity < 0) return new ResponseDto<>(
-            null,
-            "Quantity must be at least 1!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        if (!CartDetailDto.validQuantity(quantity)) {
+            response.setMessage("Invalid price!");
+            return response;
+        }
 
         Optional<CartDetail> detail = cartDetailRepository.findById(id);
-        if (!detail.isPresent()) return new ResponseDto<>(
-            null,
-            "Cannot find cart detail with the given ID! Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        if (!detail.isPresent()) {
+            response.setMessage("Cannot find any cart detail with the given ID!");
+            response.setStatus(HttpStatus.NOT_FOUND);
+            return response;
+        }
 
         cartDetailRepository.updateCartDetailQuantityById(id, quantity);
-        detail.get().setQuantity(quantity);
-        return new ResponseDto<>(
-            detail.get(),
-            "Cart detail updated successfully!",
-            HttpStatus.OK.value()
-        );
+        // detail.get().setPrice(price);
+
+        CartDetail updatedDetail = detail.get();
+        updatedDetail.setQuantity(quantity);
+        response.setData(updatedDetail);
+        response.setMessage("Cart detail updated successfully!");
+        response.setStatus(HttpStatus.OK);
+        return response;
     }
 
     public ResponseDto<String> deleteCartDetailById(UUID id) {
-        if (id.equals(null)) return new ResponseDto<>(
-            null,
-            "Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        ResponseDto<String> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        if (id == null) {
+            response.setMessage("Invalid ID!");
+            return response;
+        }
+
+        if (!cartDetailRepository.findById(id).isPresent()) {
+            response.setMessage("Cannot find any cart detail with the given ID!");
+            response.setStatus(HttpStatus.NOT_FOUND);
+            return response;
+        }
 
         cartDetailRepository.deleteById(id);
-        return new ResponseDto<>(
-            null,
-            "Cart detail deleted successfully!",
-            HttpStatus.OK.value()
-        );
+        response.setStatus(HttpStatus.OK);
+        response.setMessage("Cart detail deleted successfully!");
+        return response;
     }
 }

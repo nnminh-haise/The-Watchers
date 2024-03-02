@@ -1,14 +1,23 @@
 package com.example.watch_selling.dtos;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
 
 import com.example.watch_selling.model.Watch;
 import com.example.watch_selling.model.WatchBrand;
 import com.example.watch_selling.model.WatchType;
 
-public class WatchInformationDto {
-    private UUID id;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class WatchInformationDto {
     private String name;
 
     private Double price;
@@ -21,121 +30,105 @@ public class WatchInformationDto {
 
     private String photo;
 
-    private String type;
+    private String typeName;
 
-    private String brand;
+    private String brandName;
 
-    public WatchInformationDto() {
-
+    public static Boolean validName(String name) {
+        return name != null && !name.isBlank() && !name.isEmpty();
     }
 
-    public WatchInformationDto(UUID id, String name, Double price, Integer quantity, String description, String status, String photo, String type, String brand) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.quantity = quantity;
-        this.description = description;
-        this.status = status;
-        this.photo = photo;
-        this.type = type;
-        this.brand = brand;
+    public static Boolean validPrice(Double price) {
+        return price >= 0;
     }
 
-    public WatchInformationDto(String name, Double price, Integer quantity, String description, String status, String photo, String type, String brand) {
-        this.name = name;
-        this.price = price;
-        this.quantity = quantity;
-        this.description = description;
-        this.status = status;
-        this.photo = photo;
-        this.type = type;
-        this.brand = brand;
+    public static Boolean validQuantity(Integer quantity) {
+        return quantity > 0;
     }
 
-    public Watch toModel(Boolean deleteStatus, WatchType watchType, WatchBrand watchBrand) {
-        return new Watch(
-            this.id,
-            this.name,
-            this.price,
-            this.quantity,
-            this.description,
-            this.status,
-            this.photo,
-            deleteStatus,
-            watchType,
-            watchBrand
-        );
+    public static Boolean validStatus(String status) {
+        if (status == null) {
+            return false;
+        }
+
+        List<String> values = new ArrayList<>();
+        values.add("Đang kinh doanh");
+        values.add("Ngừng kinh doanh");
+        
+        for (String value: values) {
+            if (status.equals(value)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    public UUID getId() {
-        return this.id;
+    public static ResponseDto<String> validDto(WatchInformationDto dto) {
+        ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        if (dto == null) {
+            return res.setMessage("Invalid DTO!");
+        }
+
+        if (!WatchInformationDto.validName(dto.getName())) {
+            return res.setMessage("Invalid name");
+        }
+        
+        if (!WatchInformationDto.validPrice(dto.getPrice())) {
+            return res.setMessage("Invalid price");
+        }
+        
+        if (!WatchInformationDto.validQuantity(dto.getQuantity())) {
+            return res.setMessage("Invalid quantity");
+        }
+
+        if (!WatchInformationDto.validStatus(dto.getStatus())) {
+            return res.setMessage("Invalid status");
+        }
+
+        return res
+            .setMessage("Valid!")
+            .setStatus(HttpStatus.OK);
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public static Optional<Watch> toModel(
+        WatchInformationDto dto,
+        Boolean deleteStatus,
+        WatchType type,
+        WatchBrand brand
+    ) {
+        if (!WatchInformationDto.validDto(dto).getStatus().equals(HttpStatus.OK)) {
+            return Optional.empty();
+        }
+
+        Watch watch = new Watch();
+        watch.setId(null);
+        watch.setName(dto.getName());
+        watch.setPrice(dto.getPrice());
+        watch.setQuantity(dto.getQuantity());
+        watch.setDescription(dto.getDescription());
+        watch.setStatus(dto.getStatus());
+        watch.setPhoto(dto.getPhoto());
+        watch.setType(type);
+        watch.setBrand(brand);
+        watch.setIsDeleted(deleteStatus);
+        return Optional.of(watch);
     }
 
-    public String getName() {
-        return this.name;
-    }
+    public static Optional<WatchInformationDto> toDto(Watch watch) {
+        if (watch == null) {
+            return Optional.empty();
+        }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Double getPrice() {
-        return this.price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public Integer getQuantity() {
-        return this.quantity;
-    }
-
-    public String getDescription() {
-        return this.description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getStatus() {
-        return this.status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getPhoto() {
-        return this.photo;
-    }
-
-    public void setPhoto(String photo) {
-        this.photo = photo;
-    }
-
-    public String getType() {
-        return this.type;
-    }
-
-    public void setYype(String type) {
-        this.type = type;
-    }
-
-    public String getBrand() {
-        return this.brand;
-    }
-
-    public void setBrand(String brand) {
-        this.brand = brand;
-    }
-
-    public Watch build() {
-        return new Watch(id, name, price, quantity, description, status, photo);
+        WatchInformationDto dto = new WatchInformationDto();
+        dto.setName(watch.getName());
+        dto.setPrice(watch.getPrice());
+        dto.setQuantity(watch.getQuantity());
+        dto.setDescription(watch.getDescription());
+        dto.setStatus(watch.getStatus());
+        dto.setPhoto(watch.getPhoto());
+        dto.setTypeName(watch.getType().getName());
+        dto.setBrandName(watch.getBrand().getName());
+        return Optional.of(dto);
     }
 }

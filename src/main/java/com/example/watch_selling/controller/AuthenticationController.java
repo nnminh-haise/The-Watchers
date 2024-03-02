@@ -56,7 +56,7 @@ public class AuthenticationController {
 
         ResponseDto<Account> response = new ResponseDto<>();
         response.setData(registeredAccount);
-        response.setStatus(HttpStatus.ACCEPTED.value());
+        response.setStatus(HttpStatus.ACCEPTED);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -68,7 +68,7 @@ public class AuthenticationController {
 
         ResponseDto<LoginResponse> response = new ResponseDto<>();
         response.setData(loginResponse);
-        response.setStatus(HttpStatus.ACCEPTED.value());
+        response.setStatus(HttpStatus.ACCEPTED);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

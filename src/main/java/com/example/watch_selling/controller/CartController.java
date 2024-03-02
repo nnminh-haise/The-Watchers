@@ -56,11 +56,11 @@ public class CartController {
     }
 
     @PatchMapping("update")
-    public ResponseEntity<ResponseDto<String>> updateCartById(
+    public ResponseEntity<ResponseDto<Cart>> updateCartById(
         @RequestParam("id") UUID id,
         @RequestBody RequestDto<UUID> newAccountId
     ) {
-        ResponseDto<String> response = cartService.updateAccountId(id, newAccountId.getData());
+        ResponseDto<Cart> response = cartService.updateAccountId(id, newAccountId.getData());
         if (!response.getStatus().equals(HttpStatus.OK.value())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }

@@ -28,14 +28,14 @@ public class AccountService {
             return new ResponseDto<>(
                 null,
                 "Cannot find any accounts!",
-                HttpStatus.NOT_FOUND.value()
+                HttpStatus.NOT_FOUND
             );
         }
 
         return new ResponseDto<>(
             accounts,
             "",
-            HttpStatus.OK.value()
+            HttpStatus.OK
         );
     }
 
@@ -44,15 +44,14 @@ public class AccountService {
     }
 
     public ResponseDto<String> updateDeleteStatus(String email, Boolean status) {
-        if (
-            email.equals(null) ||
+        if (email.equals(null) ||
             email.isBlank() ||
             !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")
         ) {
             return new ResponseDto<>(
                 null,
                 "Invalid email!",
-                HttpStatus.BAD_REQUEST.value()
+                HttpStatus.BAD_REQUEST
             );
         }
 
@@ -60,7 +59,7 @@ public class AccountService {
         return new ResponseDto<>(
             null,
             "",
-            HttpStatus.OK.value()
+            HttpStatus.OK
         );
     }
 }

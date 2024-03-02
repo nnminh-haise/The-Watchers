@@ -36,14 +36,14 @@ public class WatchBrandController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto<>(
                 null,
                 "Cannot find watch brand with the given ID",
-                HttpStatus.NOT_FOUND.value()
+                HttpStatus.NOT_FOUND
             ));
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto<>(
             brand.get(),
             "Successfully found the watch type!",
-            HttpStatus.OK.value()
+            HttpStatus.OK
         ));
     }
     
@@ -54,14 +54,14 @@ public class WatchBrandController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto<>(
                 null,
                 "Cannot find watch brand with the given name",
-                HttpStatus.NOT_FOUND.value()
+                HttpStatus.NOT_FOUND
             ));
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto<>(
             brand.get(),
             "Successfully found the watch brand!",
-            HttpStatus.OK.value()
+            HttpStatus.OK
         ));
     }
 

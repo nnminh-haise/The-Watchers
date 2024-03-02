@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.WatchBrand;
+import com.example.watch_selling.model.WatchType;
 import com.example.watch_selling.repository.WatchBrandRepository;
 
 @Service
@@ -27,103 +28,107 @@ public class WatchBrandService {
         return watchBrandRepository.findByName(name);
     }
 
-    public ResponseDto<List<WatchBrand>> getAllWatchBrands() {
-        List<WatchBrand> types = watchBrandRepository.findAll();
-        if (types.size() == 0) {
-            return new ResponseDto<>(
-                null,
-                "Cannot find any watch brand!",
-                HttpStatus.NOT_FOUND.value()
-            );
+    public ResponseDto<WatchBrand> findWatchTypeByID(UUID id) {
+        ResponseDto<WatchBrand> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        if (id == null) {
+            return res.setMessage("Invalid ID!");
         }
-        return new ResponseDto<>(
-            types,
-            "Watch brand found successfullt!",
-            HttpStatus.OK.value()
-        );
+
+        Optional<WatchBrand> brand = watchBrandRepository.findById(id);
+        if (!brand.isPresent()) {
+            return res.setMessage("Cannot find any watch brand with the given ID!");
+        }
+
+        return res
+            .setData(brand.get())
+            .setMessage("Watch brand found successfully!")
+            .setStatus(HttpStatus.OK);
+    }
+
+    public ResponseDto<List<WatchBrand>> getAllWatchBrands() {
+        ResponseDto<List<WatchBrand>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
+        List<WatchBrand> brands = watchBrandRepository.findAll();
+        if (brands.size() == 0) {
+            return res
+                .setMessage("Cannot find any watch brand!")
+                .setStatus(HttpStatus.NOT_FOUND);
+        }
+
+        return res
+            .setData(brands)
+            .setMessage("Watch brands found successfully!")
+            .setStatus(HttpStatus.OK);
     }
 
     public ResponseDto<WatchBrand> createNewWatchBrand(String name) {
+        ResponseDto<WatchBrand> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
         if (name.equals(null) || name.length() == 0) {
-            return new ResponseDto<>(
-                null,
-                "Brand name must be at least one character! Invalid name!",
-                HttpStatus.BAD_REQUEST.value()
-            );
+            return res
+                .setMessage("Brand name must be at least one character! Invalid name!");
         }
 
         if (watchBrandRepository.findByName(name).isPresent()) {
-            return new ResponseDto<>(
-                null,
-                "Brand's name must be unique! Invalid brand name!",
-                HttpStatus.BAD_REQUEST.value()
-            );    
+            return res
+                .setMessage("Brand's name must be unique! Invalid brand name!");
         }
 
         WatchBrand newBrand = new WatchBrand(null, name, false);
         watchBrandRepository.save(newBrand);
 
-        return new ResponseDto<>(
-            newBrand,
-            "New watch brand created successfully!",
-            HttpStatus.CREATED.value()
-        );
+        return res
+            .setData(newBrand)
+            .setMessage("New watch brand create successfully!")
+            .setStatus(HttpStatus.OK);
     }
 
     public ResponseDto<WatchBrand> updateWatchBrandName(UUID id, String name) {
-        if (id.equals(null)) return new ResponseDto<>(
-            null,
-            "Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        ResponseDto<WatchBrand> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (name.equals(null) || name.length() == 0) return new ResponseDto<>(
-            null,
-            "Name cannot be null! Invalid name!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        if (id == null) {
+            return res.setMessage("Invalid ID!");
+        }
 
-        if (!watchBrandRepository.findById(id).isPresent()) return new ResponseDto<>(
-            null,
-            "Cannot find the watch brand with the given ID! Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        if (name == null || name.length() == 0) {
+            return res.setMessage("Invalid name");
+        }
+
+        if (!watchBrandRepository.findById(id).isPresent()) {
+            return res
+                .setMessage("Cannot find the watch brand with the given ID! Invalid ID!")
+                .setStatus(HttpStatus.NOT_FOUND);
+        }
         
         Optional<WatchBrand> watch = watchBrandRepository.findByName(name);
         if (watch.isPresent() && !watch.get().getId().equals(id) && watch.get().getName().equals(name)) {
-            return new ResponseDto<>(
-                null,
-                "Brand's name must be unique! Invalid brand name!",
-                HttpStatus.BAD_REQUEST.value()
-            );
+            return res.setMessage("Brand's name must be unique! Invalid brand name!");
         }
 
         watchBrandRepository.updateNameById(id, name);
-        return new ResponseDto<>(
-            null,
-            "New watch brand created successfully!",
-            HttpStatus.OK.value()
-        );
+        WatchBrand updatedBrand = watch.get();
+        updatedBrand.setName(name);
+        return res
+            .setMessage("New watch brand created successfully!")
+            .setStatus(HttpStatus.OK)
+            .setData(updatedBrand);
     }
 
     public ResponseDto<String> updateWatchBrandDeleteStatus(UUID id, Boolean deleteStatus) {
-        if (id.equals(null)) return new ResponseDto<>(
-            null,
-            "Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        if (id == null) {
+            return res.setMessage("Invalid ID!");
+        }
 
-        if (!watchBrandRepository.findById(id).isPresent()) return new ResponseDto<>(
-            null,
-            "Cannot find the watch brand with the given ID! Invalid ID!",
-            HttpStatus.BAD_REQUEST.value()
-        );
+        if (!watchBrandRepository.findById(id).isPresent()) {
+            return res
+                .setMessage("Cannot find the watch brand with the given ID! Invalid ID!")
+                .setStatus(HttpStatus.NOT_FOUND);
+        }
 
         watchBrandRepository.updateDeleteStatusbyId(id, deleteStatus);
-        return new ResponseDto<>(
-            null,
-            "Watch brand delete status updated successfully!",
-            HttpStatus.OK.value()
-        );
+        return res
+            .setMessage("Watch brand delete status updated successfully!")
+            .setStatus(HttpStatus.OK);
     }
 }

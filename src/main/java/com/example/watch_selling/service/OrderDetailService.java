@@ -29,43 +29,40 @@ public class OrderDetailService {
     private WatchRepository watchRepository;
 
     public ResponseDto<OrderDetail> findById(UUID id) {
-        ResponseDto<OrderDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST.value());
+        ResponseDto<OrderDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
         if (id.equals(null)) {
-            response.setMessage("Invalid ID!");
-            return response;
+            return response.setMessage("Invalid ID!");
         }
 
         Optional<OrderDetail> orderDetail = orderDetailRepository.findById(id);
         if (!orderDetail.isPresent()) {
-            response.setMessage("Cannot find any order detail with the given ID!");
-            return response;
+            return response.setMessage("Cannot find any order detail with the given ID!");
         }
 
-        response.setData(orderDetail.get());
-        response.setMessage("Order detail found successfully!");
-        response.setStatus(HttpStatus.OK.value());
-        return response;
+        return response
+            .setData(orderDetail.get())
+            .setMessage("Order detail found successfully!")
+            .setStatus(HttpStatus.OK);
     }
 
     public ResponseDto<List<OrderDetail>> findAll() {
-        ResponseDto<List<OrderDetail>> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST.value());
+        ResponseDto<List<OrderDetail>> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
         List<OrderDetail> orderDetails = orderDetailRepository.findAll();
         if (orderDetails.isEmpty()) {
-            response.setMessage("Cannot find any order detail!");
-            return response;
+            return response.setMessage("Cannot find any order detail!");
         }
 
-        response.setData(orderDetails);
-        response.setMessage("Order details found successfully!");
-        response.setStatus(HttpStatus.OK.value());
-        return response;
+        
+        return response
+            .setData(orderDetails)
+            .setMessage("Order details found successfully!")
+            .setStatus(HttpStatus.OK);
     }
 
-    // TODO: Handle the unique constraints {Order, Watch}
     public ResponseDto<OrderDetail> createNewOrderDetail(OrderDetailDto orderDetail) {
-        ResponseDto<OrderDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST.value());
+        ResponseDto<OrderDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
         if (orderDetail.equals(null)) {
             response.setMessage("Invalid order detail!");
@@ -110,12 +107,12 @@ public class OrderDetailService {
         orderDetailRepository.save(newOrderDetail);
         response.setData(newOrderDetail);
         response.setMessage("Order detail found successfully!");
-        response.setStatus(HttpStatus.OK.value());
+        response.setStatus(HttpStatus.OK);
         return response;
     }
 
     public ResponseDto<OrderDetail> updateOrderDetailById(UUID id, OrderDetailDto updateOrderDetail) {
-        ResponseDto<OrderDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST.value());
+        ResponseDto<OrderDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
         Optional<OrderDetail> targetingOrderDetail = orderDetailRepository.findById(id);
         if (!targetingOrderDetail.isPresent()) {
@@ -159,12 +156,12 @@ public class OrderDetailService {
         
         response.setData(updatedOrderDetail);
         response.setMessage("Order detail updated successfully!");
-        response.setStatus(HttpStatus.OK.value());
+        response.setStatus(HttpStatus.OK);
         return response;
     }
 
     public ResponseDto<String> updateOrderDetailDeleteStatus(UUID id, Boolean status) {
-        ResponseDto<String> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST.value());
+        ResponseDto<String> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
         Optional<OrderDetail> targetingOrderDetail = orderDetailRepository.findById(id);
         if (!targetingOrderDetail.isPresent()) {
@@ -175,7 +172,7 @@ public class OrderDetailService {
         orderDetailRepository.updateOrderDetailDeleteStatusById(id, status);
 
         response.setMessage("Order detail delete status updated successfully!");
-        response.setStatus(HttpStatus.OK.value());
+        response.setStatus(HttpStatus.OK);
         return response;
     }
 }

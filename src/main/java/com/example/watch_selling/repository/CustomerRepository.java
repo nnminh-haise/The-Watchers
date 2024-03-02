@@ -58,6 +58,6 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID>{
 
     @Transactional
     @Modifying
-    @Query("UPDATE customer AS c SET c.isDeleted = :status WHERE c.id = :id")
+    @Query("UPDATE Customer AS c SET c.isDeleted = :status WHERE c.id = :id")
     public void updateDeleteStatusById(@Param("id") UUID id, @Param("status") Boolean status);
 }

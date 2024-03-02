@@ -114,6 +114,10 @@ public class Watch {
         return this.quantity;
     }
 
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
     public String getDescription() {
         return this.description;
     }

@@ -2,11 +2,11 @@ package com.example.watch_selling.dtos;
 
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
+
 import com.example.watch_selling.model.Order;
 import com.example.watch_selling.model.OrderDetail;
 import com.example.watch_selling.model.Watch;
-import com.example.watch_selling.repository.OrderRepository;
-import com.example.watch_selling.repository.WatchRepository;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,8 +26,54 @@ public class OrderDetailDto {
 
     private Integer quantity;
 
+    public static Boolean validID(UUID id) {
+        return id != null;
+    }
+
+    public static Boolean validOrderID(UUID orderId) {
+        return orderId != null;
+    }
+
+    public static Boolean validWatchID(UUID watchId) {
+        return watchId != null;
+    }
+
+    public static Boolean validPrice(Double price) {
+        return price >= 0;
+    }
+
+    public static Boolean validQuantity(Integer quantity) {
+        return quantity >= 0;
+    }
+
+    public static ResponseDto<String> validDto(OrderDetailDto dto) {
+        ResponseDto<String> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
+        if (!OrderDetailDto.validOrderID(dto.getOrderId())) {
+            response.setMessage("Invalid Order ID!");
+            return response;
+        }
+
+        if (!OrderDetailDto.validWatchID(dto.getWatchId())) {
+            response.setMessage("Invalid Watch ID!");
+            return response;
+        }
+
+        if (!OrderDetailDto.validPrice(dto.getPrice())) {
+            response.setMessage("Invalid price!");
+            return response;
+        }
+
+        if (!OrderDetailDto.validQuantity(dto.getQuantity())) {
+            response.setMessage("Invalid quantity!");
+            return response;
+        }
+
+        return response;
+    }
+
     public static OrderDetailDto toDto(OrderDetail orderDetail) {
-        if (orderDetail.equals(null)) {
+        if (orderDetail ==null) {
             return new OrderDetailDto();
         }
 
@@ -43,7 +89,7 @@ public class OrderDetailDto {
     /*
      * Creating a new order detail base on the given OrderDetailDto object.
      * The return OrderDetail object will not have an id and the isDeleted field will use the default value of isDeleted field of OrderDetail object.
-     * The return object should be best use for Create new object functionality.
+     * The return object should be best use for create new object functionality.
      * @Param: OrderDetailDto object
      * @Return: OrderDetail object
      */

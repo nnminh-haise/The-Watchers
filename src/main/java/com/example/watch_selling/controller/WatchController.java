@@ -33,7 +33,7 @@ public class WatchController {
     @GetMapping("")
     public ResponseEntity<ResponseDto<Watch>> getFullWatchById(@RequestParam UUID id) {
         ResponseDto<Watch> response = watchService.findWatchById(id);
-        if (!response.getStatus().equals(HttpStatus.OK.value())) {
+        if (!response.getStatus().equals(HttpStatus.OK)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -61,10 +61,9 @@ public class WatchController {
     }
 
     @PutMapping("new")
-    public ResponseEntity<ResponseDto<WatchInformationDto>> createNewWatch(@RequestBody RequestDto<WatchInformationDto> watchInformation) {
-        // System.out.println("bug: " + watchInformation.getData().getName());
-        ResponseDto<WatchInformationDto> response = watchService.createWatch(watchInformation.getData());
-        if (response.getStatus() == HttpStatus.BAD_REQUEST.value()) {
+    public ResponseEntity<ResponseDto<Watch>> createNewWatch(@RequestBody RequestDto<WatchInformationDto> watchInformation) {
+        ResponseDto<Watch> response = watchService.createWatch(watchInformation.getData());
+        if (response.getStatus() == HttpStatus.BAD_REQUEST) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
@@ -72,11 +71,11 @@ public class WatchController {
     }
 
     @PatchMapping("update")
-    public ResponseEntity<ResponseDto<WatchInformationDto>> updateWatchInformation(
+    public ResponseEntity<ResponseDto<Watch>> updateWatchInformation(
         @RequestParam("id") UUID id,
         @RequestBody RequestDto<WatchInformationDto> newWatchInformation
     ) {
-        ResponseDto<WatchInformationDto> response = watchService.updateWatchInformation(id, newWatchInformation.getData());
+        ResponseDto<Watch> response = watchService.updateWatchInformation(id, newWatchInformation.getData());
         if (response.getStatus().equals(HttpStatus.BAD_REQUEST.value())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);    
         }
@@ -85,19 +84,18 @@ public class WatchController {
     
     @DeleteMapping("delete")
     public ResponseEntity<ResponseDto<String>> deleteWatchById(@RequestParam("id") UUID id) {
+        ResponseDto<String> res = new ResponseDto<>();
         Integer removedEntities = watchService.updateDeleteStatus(id, true);
         if (removedEntities == 0) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto<>(
-                null,
-                "No record was deleted!",
-                HttpStatus.NOT_FOUND.value()
-            ));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res
+                .setMessage("No record was deleted!")
+                .setStatus(HttpStatus.NOT_FOUND)
+            );
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto<>(
-            "Deteled watch Id: " + id,
-            "Delete process successfully!",
-            HttpStatus.OK.value()
-        ));
+        return ResponseEntity.status(HttpStatus.OK).body(res
+            .setMessage("Watch deleted successfully!")
+            .setStatus(HttpStatus.OK)
+        );
     }
 }
