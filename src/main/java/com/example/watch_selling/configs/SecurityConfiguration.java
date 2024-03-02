@@ -51,6 +51,7 @@ public class SecurityConfiguration {
                     "/api/watch/**",
                     "/api/cart/**",
                     "/api/order/**",
+                    "/api/invoice/**",
                     "/api/account/**" // Dev purpose only
                 )
                 .permitAll()
