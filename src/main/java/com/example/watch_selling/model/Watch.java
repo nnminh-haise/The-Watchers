@@ -2,6 +2,8 @@ package com.example.watch_selling.model;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,6 +41,7 @@ public class Watch {
     private String photo;
 
     @Column(name = "is_deleted")
+    @JsonIgnore
     private Boolean isDeleted = false;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)

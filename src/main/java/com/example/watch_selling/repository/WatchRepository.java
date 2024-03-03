@@ -1,9 +1,9 @@
 package com.example.watch_selling.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,10 +19,27 @@ import jakarta.transaction.Transactional;
 
 
 public interface WatchRepository extends PagingAndSortingRepository<Watch, UUID> {
+    @Query(
+        "SELECT w FROM Watch AS w " +
+        "WHERE w.isDeleted = false AND (cast(:typeId as uuid) IS null OR w.type.id = :typeId) AND (cast(:brandId as uuid) IS null OR w.brand.id = :brandId)" +
+        "ORDER BY w.price ASC"
+    )
+    public List<Watch> findWatchesByTypeASC(
+        @Param("typeId") UUID typeId,
+        @Param("brandId") UUID brandId,
+        Pageable pageable
+    );
 
-    @SuppressWarnings("null")
-    @Query("SELECT w FROM Watch AS w WHERE w.isDeleted = false")
-    public Page<Watch> findAll(Pageable pageable);
+    @Query(
+        "SELECT w FROM Watch AS w " +
+        "WHERE w.isDeleted = false AND (cast(:typeId as uuid) IS null OR w.type.id = :typeId) AND (cast(:brandId as uuid) IS null OR w.brand.id = :brandId)" +
+        "ORDER BY w.price DESC"
+    )
+    public List<Watch> findWatchesByTypeDESC(
+        @Param("typeId") UUID typeId,
+        @Param("brandId") UUID brandId,
+        Pageable pageable
+    );
 
     @Query("SELECT w FROM Watch w WHERE w.name = :name AND w.isDeleted = false")
     public Optional<Watch> findByName(@Param("name") String name);

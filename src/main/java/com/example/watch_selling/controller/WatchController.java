@@ -6,7 +6,6 @@ import com.example.watch_selling.dtos.RequestDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.dtos.WatchInformationDto;
 import com.example.watch_selling.model.Watch;
-import com.example.watch_selling.repository.WatchRepository;
 import com.example.watch_selling.service.WatchService;
 
 import java.util.List;
@@ -42,7 +41,7 @@ public class WatchController {
     @GetMapping("name")
     public ResponseEntity<ResponseDto<Watch>> getFullWatchByName(@RequestParam String name) {
         ResponseDto<Watch> response = watchService.findWatchByName(name);
-        if (!response.getStatus().equals(HttpStatus.OK.value())) {
+        if (!response.getStatus().equals(HttpStatus.OK)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -51,10 +50,15 @@ public class WatchController {
     @GetMapping("all")
     public ResponseEntity<ResponseDto<List<Watch>>> getFullAllWatch(
         @RequestParam(name = "page", defaultValue = "0") Integer page,
-        @RequestParam(name = "size", defaultValue = "10") Integer size
+        @RequestParam(name = "size", defaultValue = "10") Integer size,
+        @RequestParam(name = "type_id", required = false) UUID typeId,
+        @RequestParam(name = "brand_id", required = false) UUID brandId,
+        @RequestParam(name = "sort_by", defaultValue = "asc", required = false) String sortBy
     ) {
-        ResponseDto<List<Watch>> response = watchService.findAll(page, size);
-        if (!response.getStatus().equals(HttpStatus.OK.value())) {
+        ResponseDto<List<Watch>> response = watchService.findAll(
+            page, size, typeId, brandId, sortBy
+        );
+        if (!response.getStatus().equals(HttpStatus.OK)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -63,11 +67,7 @@ public class WatchController {
     @PutMapping("new")
     public ResponseEntity<ResponseDto<Watch>> createNewWatch(@RequestBody RequestDto<WatchInformationDto> watchInformation) {
         ResponseDto<Watch> response = watchService.createWatch(watchInformation.getData());
-        if (response.getStatus() == HttpStatus.BAD_REQUEST) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @PatchMapping("update")
@@ -76,10 +76,7 @@ public class WatchController {
         @RequestBody RequestDto<WatchInformationDto> newWatchInformation
     ) {
         ResponseDto<Watch> response = watchService.updateWatchInformation(id, newWatchInformation.getData());
-        if (response.getStatus().equals(HttpStatus.BAD_REQUEST.value())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);    
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
     
     @DeleteMapping("delete")

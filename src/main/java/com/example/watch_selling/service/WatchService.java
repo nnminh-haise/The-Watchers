@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -65,11 +66,19 @@ public class WatchService {
             .setMessage("Successfully!");
     }
 
-    public ResponseDto<List<Watch>> findAll(int page, int size) {
+    public ResponseDto<List<Watch>> findAll(
+        int page, int size, UUID typeId, UUID brandId, String sortBy
+    ) {
         ResponseDto<List<Watch>> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        List<Watch> watches = watchRepository.findAll(PageRequest.of(page, size)).getContent();
-        if (watches.isEmpty()) {
+        if (!(sortBy.equalsIgnoreCase("desc") || sortBy.equalsIgnoreCase("asc"))) {
+            return response.setMessage("Invalid sort by value!");
+        }
+
+        Pageable selectingPage = PageRequest.of(page, size);
+        List<Watch> watches = sortBy.equalsIgnoreCase("asc") ? watchRepository.findWatchesByTypeASC(typeId, brandId, selectingPage) : watchRepository.findWatchesByTypeDESC(typeId, brandId, selectingPage);
+
+        if (watches == null || watches.isEmpty()) {
             return response.setMessage("Cannot find any watch!");
         }
 
