@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.watch_selling.dtos.CustomerProfileDto;
 import com.example.watch_selling.model.Customer;
 
 import jakarta.transaction.Transactional;
@@ -19,21 +18,45 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID>{
     public List<Customer> findAll();
 
     @SuppressWarnings("null")
-    @Query("SELECT c FROM Customer c WHERE c.id = :id AND c.isDeleted = false")
+    @Query("SELECT c FROM Customer c WHERE c.isDeleted = false AND c.id = :id")
     public Optional<Customer> findById(@Param("id") UUID id);
 
-    @Query("SELECT c FROM Customer AS c WHERE c.isDeleted = false AND c.account.email = :email")
-    public Optional<Customer> findByEmail(@Param("email") String email);
-
-    @Query("SELECT c FROM Customer c WHERE c.account.id = :accountId AND c.isDeleted = false")
+    @Query("SELECT c FROM Customer c WHERE c.isDeleted = false AND c.account.id = :accountId")
     public Optional<Customer> findByAccountId(@Param("accountId") UUID accountId);
 
-    @Query("SELECT c FROM Customer AS c WHERE c.isDeleted = false AND c.citizenId = :citizenId")
-    public Optional<Customer> existProfileByCitizenId(@Param("citizenId") String citizenId);
+    @Query(
+        "SELECT c FROM Customer AS c " +
+        "WHERE c.isDeleted = false " +
+            "AND c.citizenId = :citizenId " +
+            "AND c.account.id != :excludeAccountId"
+    )
+    public Optional<Customer> existProfileWithCitizenId(
+        @Param("citizenId") String citizenId,
+        @Param("excludeAccountId") UUID excludeAccountId
+    );
 
-    @Query("SELECT c FROM Customer AS c WHERE c.isDeleted = false AND c.phoneNumber = :phonenumber")
-    public Optional<Customer> existProfileByPhonenumber(@Param("phonenumber") String phonenumber);
-    
+    @Query(
+        "SELECT c FROM Customer AS c " +
+        "WHERE c.isDeleted = false " +
+            "AND c.phoneNumber = :phonenumber " +
+            "AND c.account.id != :excludeAccountId"
+    )
+    public Optional<Customer> existProfileWithPhonenumber(
+        @Param("phonenumber") String phonenumber,
+        @Param("excludeAccountId") UUID excludeAccountId
+    );
+
+    @Query(
+        "SELECT c FROM Customer AS c " +
+        "WHERE c.isDeleted = false " +
+            "AND c.taxCode = :taxCode " +
+            "AND c.account.id != :excludeAccountId"
+    )
+    public Optional<Customer> existProfileWithTaxCode(
+        @Param("taxCode") String taxCode,
+        @Param("excludeAccountId") UUID excludeAccountId
+    );
+
     @SuppressWarnings({ "null", "unchecked" })
     public Customer save(Customer customer);
 
@@ -49,15 +72,19 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID>{
                     "address = :#{#customer.address}, " +
                     "phone_number = :#{#customer.phoneNumber}, " +
                     "photo = :#{#customer.photo} " +
-                "WHERE id = :id AND is_deleted = false"
+                "WHERE account_id = :accountId AND is_deleted = false"
     )
-    public Customer updateCustomerProfileById(
-        @Param("id") UUID id,
-        @Param("customer") CustomerProfileDto updateCustomerProfile
+    public Integer updateCustomerProfileByAccountId(
+        @Param("accountId") UUID accountId,
+        @Param("customer") Customer updateCustomerProfile
     );
 
     @Transactional
     @Modifying
-    @Query("UPDATE Customer AS c SET c.isDeleted = :status WHERE c.id = :id")
-    public void updateDeleteStatusById(@Param("id") UUID id, @Param("status") Boolean status);
+    @Query(
+        "UPDATE Customer AS c SET " +
+            "c.isDeleted = true " +
+        "WHERE c.account.id = :accountId"
+    )
+    public void deleteProfileByAccountId(@Param("accountId") UUID accountId);
 }

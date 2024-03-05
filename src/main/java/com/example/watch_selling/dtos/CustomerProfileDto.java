@@ -3,8 +3,7 @@ package com.example.watch_selling.dtos;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 
@@ -54,8 +53,9 @@ public class CustomerProfileDto {
     public static Boolean validTaxCode(String taxCode) {
         if (taxCode == null ||
             taxCode.isEmpty() ||
-            taxCode.isBlank() //||
-            // taxCode.length() != 10
+            taxCode.isBlank() ||
+            taxCode.length() < 10 ||
+            taxCode.length() > 13
         ) {
             return false;
         }
@@ -85,6 +85,7 @@ public class CustomerProfileDto {
         return true;
     }
 
+    // TODO: Consider changing to Enum class
     public static Boolean validGender(String gender) {
         if (gender.equals("Nam") == false &&
             gender.equals("Nữ") == false
@@ -134,6 +135,10 @@ public class CustomerProfileDto {
             null, "", HttpStatus.BAD_REQUEST
         );
 
+        if (dto == null) {
+            return response.setMessage("Invalid DTO");
+        }
+
         if (!CustomerProfileDto.validCitizenId(dto.getCitizenId())) {
             response.setMessage("Invalid citized ID!");
             return response;
@@ -178,7 +183,13 @@ public class CustomerProfileDto {
         return response;
     }
 
-    public static Customer toModel(CustomerProfileDto dto) {
+    /*
+     * Creating new Customer object from the CustomerProfileDto object.
+     * <p>
+     * This method should only use for createing new Customer from the DTO object.
+     * </p>
+     */
+    public static Optional<Customer> toModel(CustomerProfileDto dto) {
         Customer newCustomer = new Customer();
 
         Date dob = null;
@@ -186,7 +197,7 @@ public class CustomerProfileDto {
             dob = new SimpleDateFormat("yyyy-MM-dd").parse(dto.getDateOfBirth());
         }
         catch (ParseException e) {
-            return new Customer();
+            return Optional.empty();
         }
 
         newCustomer.setCitizenId(dto.getCitizenId());
@@ -199,6 +210,6 @@ public class CustomerProfileDto {
         newCustomer.setTaxCode(dto.getTaxCode());
         newCustomer.setPhoto(dto.getPhoto());
 
-        return newCustomer;
+        return Optional.of(newCustomer);
     }
 }

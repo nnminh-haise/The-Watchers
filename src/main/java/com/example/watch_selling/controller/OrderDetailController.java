@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.watch_selling.dtos.OrderDetailDto;
 import com.example.watch_selling.dtos.RequestDto;
 import com.example.watch_selling.dtos.ResponseDto;
-import com.example.watch_selling.model.CartDetail;
 import com.example.watch_selling.model.OrderDetail;
 import com.example.watch_selling.service.OrderDetailService;
 

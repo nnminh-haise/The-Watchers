@@ -22,144 +22,197 @@ public class CustomerService {
     @Autowired
     private AccountRepository accountRepository;
 
-    public ResponseDto<Customer> findCustomerById(UUID id) {
-        ResponseDto<Customer> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+    /*
+     * Find profile by associtated account ID
+     * <p>
+     * Each account will only have one associated profile.
+     * Therefore we can consider account ID as a primary key
+     * </p>
+     */
+    public ResponseDto<Customer> findCustomerByAccountId(UUID accountId) {
+        ResponseDto<Customer> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (id == null) {
-            response.setMessage("Invalid ID!");
-            return response;
+        if (accountId == null) {
+            return res.setMessage("Invalid account ID!");
         }
 
-        Optional<Customer> customer = customerRepository.findById(id);
+        Optional<Customer> customer = customerRepository.findByAccountId(accountId);
         if (!customer.isPresent()) {
-            response.setMessage("Cannot find any customer with the given ID!");
+            return res
+                .setMessage("Cannot find any customer with the given account ID!")
+                .setStatus(HttpStatus.NOT_FOUND);
         }
 
-        response.setData(customer.get());
-        response.setMessage("Successful!");
-        response.setStatus(HttpStatus.OK);
-        return response;
+        return res
+            .setData(customer.get())
+            .setMessage("Successful!")
+            .setStatus(HttpStatus.OK);
     }
 
-    public ResponseDto<Customer> findCustomerByEmail(String email) {
-        ResponseDto<Customer> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+    public ResponseDto<Customer> createNewCustomer(
+        UUID accountId,
+        CustomerProfileDto newProfile
+    ) {
+        ResponseDto<Customer> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (email == null || email.isEmpty() || email.isBlank()) {
-            response.setMessage("Invalid email!");
-            return response;
+        if (accountId == null) {
+            return res.setMessage("Invalid account ID!");
         }
 
-        Optional<Customer> customer = customerRepository.findByEmail(email);
-        if (!customer.isPresent()) {
-            response.setMessage("Cannot find any customer with the given email!");
-            response.setStatus(HttpStatus.NOT_FOUND);
-        }
-
-        response.setData(customer.get());
-        response.setMessage("Successful!");
-        response.setStatus(HttpStatus.OK);
-        return response;
-    }
-
-    public ResponseDto<Customer> createNewCustomer(UUID accountID, CustomerProfileDto customerProfile) {
-        ResponseDto<Customer> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
-
-        if (accountID == null) {
-            response.setMessage("Invalid account ID!");
-            return response;
-        }
-
-        Optional<Account> associtatedAccount = accountRepository.findById(accountID);
-        if (!associtatedAccount.isPresent()) {
-            response.setMessage("Cannot find any account with the given account ID!");
-            return response;
+        Optional<Account> existingAccount = accountRepository.findById(accountId);
+        if (!existingAccount.isPresent()) {
+            return res.setMessage("Cannot find any account with the given account ID!");
         }
 
         // * Check for duplicated account ID
-        if (customerRepository.findByAccountId(accountID).isPresent()) {
-            response.setMessage("The given account ID's profile is already exist!");
-            return response;
+        if (customerRepository.findByAccountId(accountId).isPresent()) {
+            return res.setMessage("The given account ID's profile is already exist!");
         }
 
-        ResponseDto<String> dtoValidationResponse = CustomerProfileDto.validDto(customerProfile);
-        if (dtoValidationResponse.getStatus().equals(HttpStatus.BAD_REQUEST)) {
-            response.setMessage(dtoValidationResponse.getMessage());
-            return response;
+        ResponseDto<String> dtoValidationResponse = CustomerProfileDto.validDto(newProfile);
+        if (!dtoValidationResponse.getStatus().equals(HttpStatus.OK)) {
+            return res
+                .setMessage(dtoValidationResponse.getMessage())
+                .setStatus(dtoValidationResponse.getStatus());
         }
 
-        // * Check for duplicated citizen ID among the active profiles
-        if (customerRepository.existProfileByCitizenId(customerProfile.getCitizenId()).isPresent()) {
-            response.setMessage("This is citizen ID is used!");
-            return response;
+        if (customerRepository
+            .existProfileWithCitizenId(newProfile.getCitizenId(), accountId).isPresent()) {
+            return res
+                .setMessage("Duplicated citizen ID! Invalid citizen ID!")
+                .setStatus(HttpStatus.FORBIDDEN);
         }
 
-        // * Check for duplicated citizen ID among the active profiles
-        if (customerRepository.existProfileByPhonenumber(customerProfile.getPhoneNumber()).isPresent()) {
-            response.setMessage("This is phonenumber is used!");
-            return response;
+        if (customerRepository
+            .existProfileWithPhonenumber(newProfile.getPhoneNumber(), accountId).isPresent()) {
+            return res
+                .setMessage("Duplicated phonenumber! Invalid phonenumber!")
+                .setStatus(HttpStatus.FORBIDDEN);
         }
 
-        Customer newCustomer = CustomerProfileDto.toModel(customerProfile);
-        newCustomer.setAccount(associtatedAccount.get());
-        newCustomer.setIsDeleted(false);
-        newCustomer.setId(null);
+        if (customerRepository
+            .existProfileWithTaxCode(newProfile.getTaxCode(), accountId).isPresent()) {
+            return res
+                .setMessage("Duplicated tax code! Invalid tax code!")
+                .setStatus(HttpStatus.FORBIDDEN);
+        }
 
-        customerRepository.save(newCustomer);
+        Optional<Customer> newCustomer = CustomerProfileDto.toModel(newProfile);
+        if (!newCustomer.isPresent()) {
+            return res
+                .setMessage("Cannot convert DTO object into Model! [Customer profile]");
+        }
+        Customer cus = newCustomer.get();
+        cus.setAccount(existingAccount.get());
+        cus.setIsDeleted(false);
+        cus.setId(null);
 
-        response.setData(newCustomer);
-        response.setMessage("Created new customer successfully!");
-        response.setStatus(HttpStatus.OK);
-        return response;
+        customerRepository.save(cus);
+
+        return res
+            .setData(cus)
+            .setMessage("Created new customer successfully!")
+            .setStatus(HttpStatus.OK);
     }
 
-    public ResponseDto<Customer> updateCustomerProfile(UUID id, CustomerProfileDto updateCustomerProfile) {
-        ResponseDto<Customer> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+    public ResponseDto<Customer> updateCustomerProfile(
+        UUID accountId,
+        CustomerProfileDto updatedProfile
+    ) {
+        ResponseDto<Customer> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (id == null) {
-            response.setMessage("Invalid ID!");
-            return response;
+        if (accountId == null) {
+            return res.setMessage("Invalid ID!");
         }
 
-        Optional<Customer> targetingCustomer = customerRepository.findById(id);
-        if (!targetingCustomer.isPresent()) {
-            response.setMessage("Cannot find any customer with the given ID!");
-            response.setStatus(HttpStatus.NOT_FOUND);
-            return response;
+        Optional<Customer> targetingCustomerProfile = customerRepository.findByAccountId(accountId);
+        if (!targetingCustomerProfile.isPresent()) {
+            return res
+                .setMessage("Cannot find any customer profile associated with the given account!")
+                .setStatus(HttpStatus.NOT_FOUND);
         }
 
-        ResponseDto<String> dtoValidationResponse = CustomerProfileDto.validDto(updateCustomerProfile);
-        if (dtoValidationResponse.getStatus().equals(HttpStatus.BAD_REQUEST)) {
-            response.setMessage(dtoValidationResponse.getMessage());
-            return response;
+        if (updatedProfile.getJwt() != null) {
+            return res.setMessage("JWT must be null!");
         }
 
-        Customer updatedCustomer = customerRepository.updateCustomerProfileById(id, updateCustomerProfile);
+        ResponseDto<String> dtoValidationResponse = CustomerProfileDto.validDto(updatedProfile);
+        if (!dtoValidationResponse.getStatus().equals(HttpStatus.OK)) {
+            return res
+                .setMessage(dtoValidationResponse.getMessage())
+                .setStatus(dtoValidationResponse.getStatus());
+        }
 
-        response.setData(updatedCustomer);
-        response.setMessage("Customer profile updated successfully!");
-        response.setStatus(HttpStatus.OK);
-        return response;
+        if (!updatedProfile.getCitizenId().equals(targetingCustomerProfile.get().getCitizenId())) {
+            return res.setMessage("Cannot change citizen ID!");
+        }
+
+        if (!updatedProfile.getTaxCode().equals(targetingCustomerProfile.get().getTaxCode())) {
+            return res.setMessage("Cannot change tax code!");
+        }
+
+        if (customerRepository
+            .existProfileWithCitizenId(updatedProfile.getCitizenId(), accountId).isPresent()) {
+            return res
+                .setMessage("Duplicated citizen ID! Invalid citizen ID!")
+                .setStatus(HttpStatus.FORBIDDEN);
+        }
+
+        if (customerRepository
+            .existProfileWithPhonenumber(updatedProfile.getPhoneNumber(), accountId).isPresent()) {
+            return res
+                .setMessage("Duplicated phonenumber! Invalid phonenumber!")
+                .setStatus(HttpStatus.FORBIDDEN);
+        }
+
+        if (customerRepository
+            .existProfileWithTaxCode(updatedProfile.getTaxCode(), accountId).isPresent()) {
+            return res
+                .setMessage("Duplicated tax code! Invalid tax code!")
+                .setStatus(HttpStatus.FORBIDDEN);
+        }
+
+        Optional<Customer> newProfileBuffer = CustomerProfileDto.toModel(updatedProfile);
+        if (!newProfileBuffer.isPresent()) {
+            return res.setMessage("Cannot create new profile from the given data!");
+        }
+        Customer newProfile = newProfileBuffer.get();
+        newProfile.setId(targetingCustomerProfile.get().getId());
+        newProfile.setAccount(targetingCustomerProfile.get().getAccount());
+
+        customerRepository.updateCustomerProfileByAccountId(accountId, newProfile);
+
+        return res
+            .setData(newProfile)
+            .setMessage("Customer profile updated successfully!")
+            .setStatus(HttpStatus.OK);
     }
 
-    public ResponseDto<String> updateDeleteStatusById(UUID id, Boolean status) {
-        ResponseDto<String> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+    /*
+     * Deleting customer profile.
+     * <p>
+     * Deleteing customer profile will also deleting the associtated account of that profile!
+     * </p>
+     */
+    public ResponseDto<String> updateDeleteStatusById(UUID accountId) {
+        ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (id == null) {
-            response.setMessage("Invalid ID!");
-            return response;
+        if (accountId == null) {
+            return res.setMessage("Invalid acount ID!");
         }
 
-        Optional<Customer> targetingCustomer = customerRepository.findById(id);
-        if (!targetingCustomer.isPresent()) {
-            response.setMessage("Cannot find any customer with the given ID!");
-            response.setStatus(HttpStatus.NOT_FOUND);
-            return response;
+        Optional<Customer> targetingProfile = customerRepository.findByAccountId(accountId);
+        if (!targetingProfile.isPresent()) {
+            return res
+                .setMessage("Cannot find any customer with the given account ID!")
+                .setStatus(HttpStatus.NOT_FOUND);
         }
 
-        customerRepository.updateDeleteStatusById(id, status);
+        customerRepository.deleteProfileByAccountId(accountId);
+        accountRepository.deleteAccountById(accountId);
 
-        response.setMessage("Customer delete status updated successfully!");
-        response.setStatus(HttpStatus.OK);
-        return response;
+        return res
+            .setMessage("Customer delete status updated successfully!")
+            .setStatus(HttpStatus.OK);
     }
 }

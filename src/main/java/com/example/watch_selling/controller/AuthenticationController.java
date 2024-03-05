@@ -38,6 +38,7 @@ class LoginResponse {
     }
 }
 
+// TODO: Set exprire jwt time
 @RestController
 @RequestMapping(path = "/auth")
 public class AuthenticationController {
