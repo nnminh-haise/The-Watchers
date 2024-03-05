@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,12 +21,14 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.example.watch_selling.service.JwtService;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+
 import java.io.IOException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final HandlerExceptionResolver handlerExceptionResolver;
-
     @Autowired
     private final JwtService jwtService;
 
@@ -33,21 +37,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
-            UserDetailsService userDetailsService,
-            HandlerExceptionResolver handlerExceptionResolver) {
+            UserDetailsService userDetailsService) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
-        this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain) throws ServletException, IOException {
+            @NonNull FilterChain filterChain) throws ServletException, IOException, NullPointerException {
         final String authHeader = request.getHeader("Authorization");
+        final String requestPath = request.getRequestURI();
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        System.out.println("---------------");
+        System.out.println("[LOG] Called API: " + requestPath);
+
+        if (requestPath.startsWith("/auth")
+            && (authHeader == null || !authHeader.startsWith("Bearer "))) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -73,8 +80,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             filterChain.doFilter(request, response);
-        } catch (Exception exception) {
-            handlerExceptionResolver.resolveException(request, response, null, exception);
         }
+        catch (JwtException e) {
+            int statusCode = HttpStatus.UNAUTHORIZED.value();
+
+            String errorMessage = "Unauthorized";
+            if (e instanceof ExpiredJwtException) {
+                errorMessage = "Token expired";
+            } else if (e instanceof MalformedJwtException) {
+                errorMessage = "Invalid token format";
+            }
+
+            response.setStatus(statusCode);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.getWriter().write(createErrorBody(errorMessage));
+        }
+        catch (NullPointerException e) {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.getWriter().write(createErrorBody("Token not found!"));
+        }
+    }
+
+    private String createErrorBody(String errorMessage) {
+        return "{\"error\": \"" + errorMessage + "\"}";
     }
 }

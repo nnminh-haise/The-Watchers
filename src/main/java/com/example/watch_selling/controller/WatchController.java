@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 
 @RestController
@@ -34,20 +35,24 @@ public class WatchController {
     @Autowired
     private WatchService watchService;
     
+    @SuppressWarnings("null")
     @GetMapping("")
     public ResponseEntity<ResponseDto<Watch>> readWatchById(
-        HttpServletRequest request,
+        @RequestHeader(value = "Authorization", required = false) String token,
         @RequestParam UUID id
     ) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // Account customerAccount = (Account)authentication.getPrincipal();
-        
-        ResponseDto<Watch> response = watchService.findWatchById(id);
+        ResponseDto<Watch> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (!response.getStatus().equals(HttpStatus.OK)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        if (token == null) {
+            return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(res
+                    .setMessage("Invalid token").setStatus(HttpStatus.UNAUTHORIZED));
         }
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        
+        res = watchService.findWatchById(id);
+
+        return ResponseEntity.status(res.getStatus()).body(res);
     }
 
     @GetMapping("all")

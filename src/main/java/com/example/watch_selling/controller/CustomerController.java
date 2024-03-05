@@ -1,9 +1,7 @@
 package com.example.watch_selling.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,7 +19,6 @@ import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.service.CustomerService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
@@ -36,18 +33,9 @@ public class CustomerController {
         @RequestHeader(value = "Authorization", required = false) String token,
         @RequestBody RequestDto<CustomerProfileDto> customerProfile
     ) {
-        ResponseDto<Customer> res = new ResponseDto<>(null, "", HttpStatus.FORBIDDEN);
-        if (token == null) {
-            return ResponseEntity
-                .status(res.getStatus())
-                .body(res
-                    .setMessage("Invalid token"));
-        }
+        Account customerAccount = getAssociatedAccount();
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Account customerAccount = (Account) authentication.getPrincipal();
-
-        res = customerService.createNewCustomer(
+        ResponseDto<Customer> res = customerService.createNewCustomer(
             customerAccount.getId(), customerProfile.getData()
         );
 
@@ -59,17 +47,9 @@ public class CustomerController {
     public ResponseEntity<ResponseDto<Customer>> readCustomerProfile(
         @RequestHeader(value = "Authorization", required = false) String token
     ) {
-        ResponseDto<Customer> res = new ResponseDto<>(null, "", HttpStatus.FORBIDDEN);
-        if (token == null) {
-            return ResponseEntity.status(res.getStatus()).body(res
-                .setMessage("Invalid token")
-            );
-        }
+        Account customerAccount = getAssociatedAccount();
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Account customerAccount = (Account) authentication.getPrincipal();
-
-        res = customerService.findCustomerByAccountId(customerAccount.getId());
+        ResponseDto<Customer> res = customerService.findCustomerByAccountId(customerAccount.getId());
 
         return ResponseEntity.status(res.getStatus()).body(res);
     }
@@ -80,17 +60,9 @@ public class CustomerController {
         @RequestHeader(value = "Authorization", required = false) String token,
         @RequestBody RequestDto<CustomerProfileDto> updatedProfile
     ) {
-        ResponseDto<Customer> res = new ResponseDto<>(null, "", HttpStatus.FORBIDDEN);
-        if (token == null) {
-            return ResponseEntity.status(res.getStatus()).body(res
-                .setMessage("Invalid token")
-            );
-        }
+        Account account = getAssociatedAccount();
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Account account = (Account) authentication.getPrincipal();
-
-        res = customerService.updateCustomerProfile(
+        ResponseDto<Customer> res = customerService.updateCustomerProfile(
             account.getId(), updatedProfile.getData()
         );
 
@@ -102,32 +74,15 @@ public class CustomerController {
     public ResponseEntity<ResponseDto<String>> deleteCustomerProfile(
         @RequestHeader(value = "Authorization", required = false) String token
     ) {
-        ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.FORBIDDEN);
-        if (token == null) {
-            return ResponseEntity.status(res.getStatus()).body(res
-                .setMessage("Invalid token")
-            );
-        }
+        Account customerAccount = getAssociatedAccount();
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Account customerAccount = (Account) authentication.getPrincipal();
-
-        res = customerService.updateDeleteStatusById(customerAccount.getId());
+        ResponseDto<String> res = customerService.updateDeleteStatusById(customerAccount.getId());
 
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
-    // * Private methods ----
-
-    private void validateToken(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || authHeader.startsWith("Bearer ") == false) {
-            throw new BadCredentialsException("Invalid token!");
-        }
-    }
-
-    private String getAuthorizationToken(HttpServletRequest request) {
-        this.validateToken(request);
-        return request.getHeader("Authorization").substring(7);
+    private Account getAssociatedAccount() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (Account) authentication.getPrincipal();
     }
 }
