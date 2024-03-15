@@ -12,6 +12,7 @@ import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.model.Customer;
 import com.example.watch_selling.repository.AccountRepository;
+import com.example.watch_selling.repository.CartRepository;
 import com.example.watch_selling.repository.CustomerRepository;
 
 @Service
@@ -20,7 +21,10 @@ public class CustomerService {
     private CustomerRepository customerRepository;
 
     @Autowired
-    private AccountRepository accountRepository;
+    private AccountService accountService;
+
+    @Autowired
+    private CartService cartService;
 
     /*
      * Find profile by associtated account ID
@@ -59,7 +63,7 @@ public class CustomerService {
             return res.setMessage("Invalid account ID!");
         }
 
-        Optional<Account> existingAccount = accountRepository.findById(accountId);
+        Optional<Account> existingAccount = accountService.findById(accountId);
         if (!existingAccount.isPresent()) {
             return res.setMessage("Cannot find any account with the given account ID!");
         }
@@ -208,8 +212,19 @@ public class CustomerService {
                 .setStatus(HttpStatus.NOT_FOUND);
         }
 
+        // try {
+        //     customerRepository.deleteProfileByAccountId(accountId);
+        //     accountService.deleteAccount(accountId);
+        //     cartService.deleteByAccountId(accountId);
+        // }
+        // catch (Exception e) {
+        //     return res
+        //         .setMessage(e.getMessage());
+        // }
+
         customerRepository.deleteProfileByAccountId(accountId);
-        accountRepository.deleteAccountById(accountId);
+        accountService.deleteAccount(accountId);
+        cartService.deleteByAccountId(accountId);
 
         return res
             .setMessage("Customer delete status updated successfully!")

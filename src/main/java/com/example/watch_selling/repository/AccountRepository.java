@@ -29,11 +29,12 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
         @Param("email") String email,
         @Param("status") Boolean status
     );
-
+    
     @Query("UPDATE Account AS a SET a.isDeleted = true WHERE a.id = :id")
     @Transactional
     @Modifying
-    public Integer deleteAccountById(@Param("id") UUID id);
+    @SuppressWarnings("null")
+    public void deleteById(@Param("id") UUID id);
 
     @SuppressWarnings({ "null", "unchecked" })
     public Account save(Account acount);

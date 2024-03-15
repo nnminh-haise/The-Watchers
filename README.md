@@ -1,6 +1,6 @@
 # A watch website
 
-*A simple watch selling website*
+_A simple watch selling website_
 
 ---
 
@@ -41,7 +41,7 @@ Website đồng hồ sẽ lưu giữ các thông tin sau:
 ### Quy ước
 
 - <u>**Khóa chính**</u>: In đậm và gạch chân.
-- *Khóa tương đương*: in nghiêng.
+- _Khóa tương đương_: in nghiêng.
 - **Khóa ngoại**: in đậm.
 
 ### Mô hình dữ liệu
@@ -49,13 +49,13 @@ Website đồng hồ sẽ lưu giữ các thông tin sau:
 1. LOAIDONGHO (**<u>MALOAIDH</u>**, TENLOAI)
 2. HANGDONGHO (<u>**MAHANGDH**</u>, TENHANG)
 3. DONGHO (<u>**MADH**</u>, TENDH, GIA, SLTON, MOTA, TRANGTHAI, HINHANH, **LOAIDH**, **HANGDH**, DA_XOA)
-4. NHACUNGCAP (<u>**MANCC**</u>, *TENNCC*, DIACHI, *EMAIL*, *SDT*, DA_XOA)
+4. NHACUNGCAP (<u>**MANCC**</u>, _TENNCC_, DIACHI, _EMAIL_, _SDT_, DA_XOA)
 5. CT_CUNGCAP (<u>**MANCC, MADH**</u>, DA_XOA)
 6. DONDATHANG (<u>**MADDH**</u>, NGAYDH, **MANCC**, DA_XOA)
 7. CT_DONDATHANG (<u>**MADDH, MADH**</u>, SL, GIA, DA_XOA)
 8. PHIEUDAT (<u>**MAPD**</u>, NGAY_DAT, HOTEN_NGUOI_NHAN, DIACHI_NGUOI_NHAN, SDT_NGUOI_NHAN, NGAYGIO_GIAOHANG, TRANGTHAI, **MAKH**, DA_XOA)
 9. CT_PHIEUDAT (<u>**MAPD, MADH**</u>, SOLUONG, GIA, DA_XOA)
-10. KHACHHANG (<u>**MAKH**</u>, *EMAIL*, *CMND*, HO, TEN, GIOITINH, NGAYSINH, DIACHI, *SDT*, *MASO_THUE*, DA_XOA, **ACCOUNT_ID**)
+10. KHACHHANG (<u>**MAKH**</u>, _EMAIL_, _CMND_, HO, TEN, GIOITINH, NGAYSINH, DIACHI, _SDT_, _MASO_THUE_, DA_XOA, **ACCOUNT_ID**)
 11. HOADON (<u>**SOHD**</u>, NGAY_IN_HD, TONG_TIEN, MA_SOTHUE, **MAPD**, DA_XOA)
 12. CUSTOMER_ACCOUNT(<u>**ID**</u>, EMAIL, PASSWORD, DELETE_STATUS)
 

@@ -24,7 +24,7 @@ public class Watch {
 
     @Column(unique = true, nullable = false)
     private String name;
-    
+
     @Column(nullable = false)
     private Double price;
 
@@ -56,7 +56,8 @@ public class Watch {
 
     }
 
-    public Watch(UUID id, String name, Double price, Integer quantity, String description, String status, String photo, Boolean isDeleted, WatchType type, WatchBrand brand) {
+    public Watch(UUID id, String name, Double price, Integer quantity, String description, String status, String photo,
+            Boolean isDeleted, WatchType type, WatchBrand brand) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -69,7 +70,8 @@ public class Watch {
         this.brand = brand;
     }
 
-    public Watch(String name, Double price, Integer quantity, String description, String status, String photo, WatchType type, WatchBrand brand) {
+    public Watch(String name, Double price, Integer quantity, String description, String status, String photo,
+            WatchType type, WatchBrand brand) {
         this.name = name;
         this.price = price;
         this.quantity = quantity;
@@ -80,7 +82,8 @@ public class Watch {
         this.brand = brand;
     }
 
-    public Watch(UUID id, String name, Double price, Integer quantity, String description, String status, String photo) {
+    public Watch(UUID id, String name, Double price, Integer quantity, String description, String status,
+            String photo) {
         this.name = name;
         this.price = price;
         this.quantity = quantity;

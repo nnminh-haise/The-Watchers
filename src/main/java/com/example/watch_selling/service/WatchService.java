@@ -23,115 +23,111 @@ import com.example.watch_selling.repository.WatchTypeRepository;
 public class WatchService {
     @Autowired
     private WatchRepository watchRepository;
-    
+
     @Autowired
     private WatchTypeRepository watchTypeRepository;
 
     @Autowired
     private WatchBrandRepository watchBrandRepository;
 
-    public ResponseDto<Watch> findWatchByName(String name) {
-        ResponseDto<Watch> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
-
-        if (name.isEmpty() || name.isBlank()) {
-            return response.setMessage("Invalid name!");
-        }
-
-        Optional<Watch> watch = watchRepository.findByName(name);
-        if (!watch.isPresent()) {
-            return response.setMessage("Cannot find any watch with the given name!");
-        }
-
-        return response
-            .setData(watch.get())
-            .setStatus(HttpStatus.OK)
-            .setMessage("Successfully!");
-    }
-
     public ResponseDto<Watch> findWatchById(UUID id) {
-        ResponseDto<Watch> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        ResponseDto<Watch> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (id.equals(null)) {
-            return response.setMessage("Invalid ID!");
+        if (id == null) {
+            return res.setMessage("Invalid ID!");
         }
 
         Optional<Watch> watch = watchRepository.findById(id);
         if (!watch.isPresent()) {
-            return response.setMessage("Cannot find any watch with the given ID!");
+            return res
+                    .setMessage("Cannot find any watch with the given ID!")
+                    .setStatus(HttpStatus.NOT_FOUND);
         }
 
-        return response
-            .setData(watch.get())
-            .setStatus(HttpStatus.OK)
-            .setMessage("Successfully!");
+        return res
+                .setData(watch.get())
+                .setStatus(HttpStatus.OK)
+                .setMessage("Successful!");
     }
 
-    public ResponseDto<List<Watch>> findAll(
-        int page, int size, UUID typeId, UUID brandId, String sortBy
-    ) {
-        ResponseDto<List<Watch>> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+    public ResponseDto<List<Watch>> findAll(int page, int size, UUID typeId, UUID brandId, String sortBy) {
+        ResponseDto<List<Watch>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
         if (!(sortBy.equalsIgnoreCase("desc") || sortBy.equalsIgnoreCase("asc"))) {
-            return response.setMessage("Invalid sort by value!");
+            return res.setMessage("Invalid sort by value!");
         }
 
         Pageable selectingPage = PageRequest.of(page, size);
-        List<Watch> watches = sortBy.equalsIgnoreCase("asc") ? watchRepository.findWatchesByTypeASC(typeId, brandId, selectingPage) : watchRepository.findWatchesByTypeDESC(typeId, brandId, selectingPage);
+        try {
+            List<Watch> watches = sortBy.equalsIgnoreCase("asc")
+                    ? watchRepository.findWatchesByTypeASC(typeId, brandId, selectingPage)
+                    : watchRepository.findWatchesByTypeDESC(typeId, brandId, selectingPage);
 
-        if (watches == null || watches.isEmpty()) {
-            return response.setMessage("Cannot find any watch!");
+            if (watches == null || watches.isEmpty()) {
+                return res
+                        .setStatus(HttpStatus.NOT_FOUND)
+                        .setMessage("Cannot find any watch!");
+            }
+
+            return res
+                    .setData(watches)
+                    .setStatus(HttpStatus.OK)
+                    .setMessage("Successfully!");
+        } catch (Exception e) {
+            return res
+                    .setMessage(e.getMessage())
+                    .setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return response
-            .setData(watches)
-            .setStatus(HttpStatus.OK)
-            .setMessage("Successfully!");
     }
 
-    public ResponseDto<Watch> createWatch(WatchInformationDto watchInfomation) {
+    public ResponseDto<Watch> createWatch(WatchInformationDto watchInformation) {
         ResponseDto<Watch> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (watchRepository.findByName(watchInfomation.getName()).isPresent()) {
+        if (watchRepository.findByName(watchInformation.getName()).isPresent()) {
             return res.setMessage("Duplicated watch's name! Watch's name must be unique!");
         }
 
-        Optional<WatchType> watchType = watchTypeRepository.findByName(watchInfomation.getTypeName());
+        Optional<WatchType> watchType = watchTypeRepository.findByName(watchInformation.getTypeName());
         if (!watchType.isPresent()) {
             return res
-                .setMessage("Cannot find any watch type with the given type name! Invalid type name!")
-                .setStatus(HttpStatus.NOT_FOUND);
+                    .setMessage("Cannot find any watch type with the given type name! Invalid type name!")
+                    .setStatus(HttpStatus.NOT_FOUND);
         }
 
-        Optional<WatchBrand> watchBrand = watchBrandRepository.findByName(watchInfomation.getBrandName());
+        Optional<WatchBrand> watchBrand = watchBrandRepository.findByName(watchInformation.getBrandName());
         if (!watchBrand.isPresent()) {
             return res
-                .setMessage("Cannot find any watch brand with the given brand name! Invalid brand name!")
-                .setStatus(HttpStatus.NOT_FOUND);
+                    .setMessage("Cannot find any watch brand with the given brand name! Invalid brand name!")
+                    .setStatus(HttpStatus.NOT_FOUND);
         }
-        
-        ResponseDto<String> dtoValidationResponse = WatchInformationDto.validDto(watchInfomation);
+
+        ResponseDto<String> dtoValidationResponse = WatchInformationDto.validDto(watchInformation);
         if (!dtoValidationResponse.getStatus().equals(HttpStatus.OK)) {
             return res
-                .setStatus(dtoValidationResponse.getStatus())
-                .setMessage(dtoValidationResponse.getMessage());
+                    .setStatus(dtoValidationResponse.getStatus())
+                    .setMessage(dtoValidationResponse.getMessage());
         }
-
 
         Optional<Watch> newWatch = WatchInformationDto.toModel(
-            watchInfomation, false, watchType.get(), watchBrand.get()
-        );
+                watchInformation, false, watchType.get(), watchBrand.get());
         if (!newWatch.isPresent()) {
             return res
-                .setMessage("Cannot convert Watch DTO to Watch model!")
-                .setStatus(HttpStatus.CONFLICT);
+                    .setStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .setMessage("Cannot convert Watch DTO to Watch model!");
         }
 
-        watchRepository.save(newWatch.get());
+        try {
+            watchRepository.save(newWatch.get());
+            return res
+                    .setData(newWatch.get())
+                    .setStatus(HttpStatus.OK)
+                    .setMessage("New watch created successfully!");
+        } catch (Exception e) {
+            return res
+                    .setMessage(e.getMessage())
+                    .setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-        return res
-            .setData(newWatch.get())
-            .setMessage("New watch created successfully!")
-            .setStatus(HttpStatus.OK);
     }
 
     public ResponseDto<Watch> updateWatchInformation(UUID targetingWatchId, WatchInformationDto newWatchInformation) {
@@ -141,40 +137,119 @@ public class WatchService {
             return res.setMessage("Invalid ID!");
         }
 
-        Optional<Watch> watch = watchRepository.findById(targetingWatchId);
-        if (!watch.isPresent()) {
-            return res
-                .setMessage("Cannot find any watch with the given ID!")
-                .setStatus(HttpStatus.NOT_FOUND);
+        Optional<Watch> existingWatchWithName = watchRepository.findByName(newWatchInformation.getName());
+        if (existingWatchWithName.isPresent() && !existingWatchWithName.get().getId().equals(targetingWatchId)) {
+            return res.setMessage("Duplicated watch's name! Watch's name must be unique!");
         }
 
-        Optional<WatchType> watchType = watchTypeRepository.findByName(newWatchInformation.getTypeName());
-        if (!watchType.isPresent()) {
+        Optional<Watch> targetingWatch = watchRepository.findById(targetingWatchId);
+        if (!targetingWatch.isPresent()) {
+            return res
+                    .setStatus(HttpStatus.NOT_FOUND)
+                    .setMessage("Cannot find any watch with the given ID!");
+        }
+
+        Optional<WatchType> updatedWatchType = watchTypeRepository.findByName(newWatchInformation.getTypeName());
+        if (!updatedWatchType.isPresent()) {
             return res.setMessage("Cannot find any watch type with the given watch type name");
         }
 
-        Optional<WatchBrand> watchBrand = watchBrandRepository.findByName(newWatchInformation.getBrandName());
-        if (!watchBrand.isPresent()) {
+        Optional<WatchBrand> updatedWatchBrand = watchBrandRepository.findByName(newWatchInformation.getBrandName());
+        if (!updatedWatchBrand.isPresent()) {
             return res.setMessage("Cannot find any watch brand with the given watch brand name");
         }
 
         ResponseDto<String> dtoValidationResponse = WatchInformationDto.validDto(newWatchInformation);
         if (!dtoValidationResponse.getStatus().equals(HttpStatus.OK)) {
             return res
-                .setMessage(dtoValidationResponse.getMessage())
-                .setStatus(dtoValidationResponse.getStatus());
+                    .setStatus(dtoValidationResponse.getStatus())
+                    .setMessage(dtoValidationResponse.getMessage());
         }
 
-        watchRepository.updateWatchById(targetingWatchId, newWatchInformation);
-        return res
-            .setMessage("Watch updated successfuly!")
-            .setStatus(HttpStatus.OK)
-            .setData(WatchInformationDto.toModel(
-                newWatchInformation, false, watchType.get(), watchBrand.get()
-            ).get());
+        try {
+            watchRepository.updateWatchById(targetingWatchId, newWatchInformation);
+            return res
+                    .setStatus(HttpStatus.OK)
+                    .setMessage("Watch updated successfully!")
+                    .setData(watchRepository.findById(targetingWatchId).get());
+        } catch (Exception e) {
+            return res
+                    .setMessage(e.getMessage())
+                    .setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    public Integer updateDeleteStatus(UUID id, Boolean status) {
-        return watchRepository.updateDeleteStatus(id, status);
+    public ResponseDto<String> updateWatchPriceById(UUID id, Double newPrice) {
+        ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        if (id == null) {
+            return res.setMessage("Invalid ID");
+        }
+
+        if (newPrice < 0) {
+            return res.setMessage("Invalid price!");
+        }
+
+        Optional<Watch> targetingWatch = watchRepository.findById(id);
+        if (!targetingWatch.isPresent()) {
+            return res
+                    .setStatus(HttpStatus.NOT_FOUND)
+                    .setMessage("Cannot find any watch with the given ID!");
+        }
+
+        try {
+            watchRepository.updateWatchPriceById(id, newPrice);
+            return res
+                    .setStatus(HttpStatus.OK)
+                    .setMessage("Success!");
+        } catch (Exception e) {
+            return res
+                    .setStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .setMessage(e.getMessage());
+        }
+    }
+
+    public ResponseDto<String> updateWatchQuantityById(UUID id, Integer newQuantity) {
+        ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        if (id == null) {
+            return res.setMessage("Invalid ID");
+        }
+
+        if (newQuantity < 0) {
+            return res.setMessage("Invalid quantity!");
+        }
+
+        Optional<Watch> targetingWatch = watchRepository.findById(id);
+        if (!targetingWatch.isPresent()) {
+            return res
+                    .setStatus(HttpStatus.NOT_FOUND)
+                    .setMessage("Cannot find any watch with the given ID!");
+        }
+
+        try {
+            watchRepository.updateWatchQuantityById(id, newQuantity);
+            return res
+                    .setStatus(HttpStatus.OK)
+                    .setMessage("Success!");
+        } catch (Exception e) {
+            return res
+                    .setStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .setMessage(e.getMessage());
+        }
+    }
+
+    public ResponseDto<String> updateDeleteStatus(UUID id, Boolean status) {
+        ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        if (id == null) {
+            return res.setMessage("Invalid ID!");
+        }
+        try {
+            watchRepository.updateDeleteStatus(id, status);
+        } catch (Exception e) {
+            return res.setMessage(e.getMessage());
+        }
+
+        return res
+                .setStatus(HttpStatus.OK)
+                .setMessage("Watch deleted successfully!");
     }
 }

@@ -17,7 +17,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.example.watch_selling.service.JwtService;
 
@@ -26,6 +25,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.MalformedJwtException;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -53,8 +53,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         System.out.println("---------------");
         System.out.println("[LOG] Called API: " + requestPath);
 
-        if (requestPath.startsWith("/auth")
-            && (authHeader == null || !authHeader.startsWith("Bearer "))) {
+        if (startsWithOneOf(requestPath, List.of(
+                "/auth", "/swagger-ui", "/v3/api-docs"))
+                && (authHeader == null || !authHeader.startsWith("Bearer "))) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -80,8 +81,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             filterChain.doFilter(request, response);
-        }
-        catch (JwtException e) {
+        } catch (JwtException e) {
             int statusCode = HttpStatus.UNAUTHORIZED.value();
 
             String errorMessage = "Unauthorized";
@@ -94,8 +94,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.setStatus(statusCode);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.getWriter().write(createErrorBody(errorMessage));
-        }
-        catch (NullPointerException e) {
+        } catch (NullPointerException e) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.getWriter().write(createErrorBody("Token not found!"));
@@ -104,5 +103,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String createErrorBody(String errorMessage) {
         return "{\"error\": \"" + errorMessage + "\"}";
+    }
+
+    private Boolean startsWithOneOf(String target, List<String> prefixes) {
+        for (String prefix : prefixes) {
+            if (target.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

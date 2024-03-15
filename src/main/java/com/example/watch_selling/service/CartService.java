@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -55,7 +56,7 @@ public class CartService {
         Optional<Cart> cart = cartRepository.findById(id);
         if (!cart.isPresent()) {
             res.setMessage("Cannot find any cart with the given cart ID!");
-            return res;   
+            return res;
         }
 
         res.setData(cart.get());
@@ -64,80 +65,55 @@ public class CartService {
         return res;
     }
 
-    public ResponseDto<List<Cart>> findAllCarts() {
+    public ResponseDto<List<Cart>> findAllCarts(int page, int size) {
         ResponseDto<List<Cart>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        List<Cart> carts = cartRepository.findAll();
+        List<Cart> carts = cartRepository.findAll(PageRequest.of(page, size)).getContent();
         if (carts.size() == 0) {
-            res.setMessage("Cannot find any carts!");
-            return res;
+            return res
+                    .setMessage("Cannot find any carts!")
+                    .setStatus(HttpStatus.NOT_FOUND);
         }
 
-        res.setData(carts);
-        res.setMessage("Carts found successfully!");
-        res.setStatus(HttpStatus.OK);
-        return res;
+        return res
+                .setData(carts)
+                .setMessage("Carts found successfully!")
+                .setStatus(HttpStatus.OK);
     }
 
-    public ResponseDto<Cart> updateAccountId(UUID id, UUID newAccountId) {
-        ResponseDto<Cart> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
-
-        if (id == null) {
-            res.setMessage("Invalid ID!");
-            return res;
-        }
-        
-        if (newAccountId == null) {
-            res.setMessage("Invalid account ID!");
-            return res;
-        }
-
-        Optional<Account> newAccount = accountRepository.findById(newAccountId);
-        if (!newAccount.isPresent()) {
-            res.setMessage("Cannot find any account with the given account ID! Invalid account ID!");
-            return res;
-        }
-
-        Optional<Cart> existingCartWithAccountID = cartRepository.findbyAccountId(newAccountId);
-        if (existingCartWithAccountID.isPresent() && !existingCartWithAccountID.get().getId().equals(id)) {
-            res.setMessage("Exist cart with the given account ID! Invalid account ID!");
-            return res;
-        }
-
-        Optional<Cart> cart = cartRepository.findById(id);
-        if (!cart.isPresent()) {
-            res.setMessage("Cannot find any cart with the given ID! Invalid ID!");
-            return res;
-        }
-
-        cartRepository.updateAccountId(id, newAccountId);
-
-        Cart updatedCart = cart.get();
-        updatedCart.setAccount(newAccount.get());
-        res.setData(updatedCart);
-        res.setMessage("Cart updated successfully!");
-        res.setStatus(HttpStatus.OK);
-        return res;
-    }
-
-    public ResponseDto<String> updateDeleteStatus(UUID id, Boolean status) {
+    public ResponseDto<String> deleteById(UUID id) {
         ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
-
         if (id == null) {
-            res.setMessage("Invalid ID!");
-            return res;
+            return res.setMessage("Invalid ID!");
         }
 
-        Optional<Cart> cart = cartRepository.findById(id);
-        if (!cart.isPresent()) {
-            res.setMessage("Cannot find any cart with the given ID! Invalid ID!");
-            return res;
+        if (cartRepository.findById(id).isPresent() == false) {
+            return res
+                    .setMessage("Cannot find any cart with the given ID!")
+                    .setStatus(HttpStatus.NOT_FOUND);
         }
 
-        cartRepository.updateDeleteStatus(id, status);
+        cartRepository.deleteById(id);
+        return res
+                .setStatus(HttpStatus.OK)
+                .setMessage("Success!");
+    }
 
-        res.setStatus(HttpStatus.OK);
-        res.setMessage("Cart updated successfully!");
-        return res;
+    public ResponseDto<String> deleteByAccountId(UUID accountId) {
+        ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        if (accountId == null) {
+            return res.setMessage("Invalid account ID!");
+        }
+
+        if (cartRepository.findbyAccountId(accountId).isPresent() == false) {
+            return res
+                    .setMessage("Cannot find any cart with the given account ID!")
+                    .setStatus(HttpStatus.NOT_FOUND);
+        }
+
+        cartRepository.deleteByAccountId(accountId);
+        return res
+                .setStatus(HttpStatus.OK)
+                .setMessage("Success!");
     }
 }

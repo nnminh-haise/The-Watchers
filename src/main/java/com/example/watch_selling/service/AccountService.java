@@ -1,8 +1,10 @@
 package com.example.watch_selling.service;
 
 import java.util.Optional;
+import java.util.UUID;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -12,54 +14,44 @@ import com.example.watch_selling.model.Account;
 
 @Service
 public class AccountService {
+    @Autowired
     private AccountRepository accountRepository;
-    
-    public AccountService(AccountRepository accountRepository) {
-        this.accountRepository = accountRepository;
-    }
-
-    public Optional<List<Account>> findAll() {
-        return Optional.ofNullable(accountRepository.findAll());
-    }
 
     public ResponseDto<List<Account>> findAllAcounts() {
+        ResponseDto<List<Account>> res = new ResponseDto<>(null, "", HttpStatus.NOT_FOUND);
         List<Account> accounts = accountRepository.findAll();
+        
         if (accounts.isEmpty()) {
-            return new ResponseDto<>(
-                null,
-                "Cannot find any accounts!",
-                HttpStatus.NOT_FOUND
-            );
+            return res
+                .setMessage("Cannot find any accounts!");
         }
 
-        return new ResponseDto<>(
-            accounts,
-            "",
-            HttpStatus.OK
-        );
+        return res
+            .setMessage("Success!")
+            .setStatus(HttpStatus.OK)
+            .setData(accounts);
     }
 
     public Optional<Account> findByEmail(String email) {
+        if (email.isBlank() || email.isEmpty() || email == null) {
+            return Optional.empty();
+        }
         return accountRepository.findByEmail(email);
     }
 
-    public ResponseDto<String> updateDeleteStatus(String email, Boolean status) {
-        if (email.equals(null) ||
-            email.isBlank() ||
-            !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")
-        ) {
-            return new ResponseDto<>(
-                null,
-                "Invalid email!",
-                HttpStatus.BAD_REQUEST
-            );
+    public Optional<Account> findById(UUID id) {
+        if (id == null) {
+            return Optional.empty();
         }
+        return accountRepository.findById(id);
+    }
 
-        accountRepository.updateDeleteStatus(email, status);
-        return new ResponseDto<>(
-            null,
-            "",
-            HttpStatus.OK
-        );
+    public ResponseDto<String> deleteAccount(UUID id) {
+        ResponseDto<String> res = new ResponseDto<>();
+
+        accountRepository.deleteById(id);
+        return res
+            .setMessage("Success!")
+            .setStatus(HttpStatus.OK);
     }
 }

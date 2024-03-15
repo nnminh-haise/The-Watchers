@@ -2,6 +2,8 @@ package com.example.watch_selling.model;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.UniqueConstraint;
@@ -21,21 +23,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(
-    name = "order_detail",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"order_id", "watch_id"})
-)
+@Table(name = "order_detail", uniqueConstraints = @UniqueConstraint(columnNames = { "order_id", "watch_id" }))
 public class OrderDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-    
-    // @JsonIgnore
+
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "orders_id", referencedColumnName = "id", nullable = false)
     private Order order;
 
-    // @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "watch_id", referencedColumnName = "id", nullable = false)
     private Watch watch;
@@ -47,5 +44,6 @@ public class OrderDetail {
     private Integer quantity;
 
     @Column(name = "is_deleted", nullable = false)
+    @JsonIgnore
     private Boolean isDeleted = false;
 }

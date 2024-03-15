@@ -1,12 +1,13 @@
 package com.example.watch_selling.repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -15,49 +16,26 @@ import com.example.watch_selling.model.Cart;
 import jakarta.transaction.Transactional;
 
 @Repository
-public interface CartRepository extends JpaRepository<Cart, UUID> {
+public interface CartRepository extends PagingAndSortingRepository<Cart, UUID> {
     @SuppressWarnings("null")
-    @Query(
-        nativeQuery = true,
-        value = "SELECT * FROM cart WHERE is_deleted = false"
-    )
-    public List<Cart> findAll();
+    @Query("SELECT c FROM Cart as c WHERE c.isDeleted = false")
+    public Page<Cart> findAll(Pageable pageable);
 
-    @SuppressWarnings("null")
-    @Query(
-        nativeQuery = true,
-        value = "SELECT * FROM cart WHERE id = :id AND is_deleted = false"
-    )
+    @Query("SELECT c FROM Cart AS c WHERE c.id = :id AND c.isDeleted = false")
     public Optional<Cart> findById(@Param("id") UUID id);
 
-    @Query(
-        nativeQuery = true,
-        value = "SELECT * FROM cart WHERE account_id = :accountId AND is_deleted = false"
-    )
+    @Query("SELECT c FROM Cart AS c WHERE c.account.id = :accountId AND c.isDeleted = false")
     public Optional<Cart> findbyAccountId(@Param("accountId") UUID accountId);
 
-    @SuppressWarnings({ "null", "unchecked" })
     public Cart save(Cart cart);
 
-    @Query(
-        nativeQuery = true,
-        value = "UPDATE cart SET account_id = :accountId WHERE id = :id AND is_deleted = false"
-    )
+    @Query("UPDATE Cart AS c SET c.isDeleted = true WHERE c.id = :id")
     @Modifying
     @Transactional
-    public void updateAccountId(
-        @Param("id") UUID id,
-        @Param("accountId") UUID accountId
-    );
+    public void deleteById(@Param("id") UUID id);
 
-    @Query(
-        nativeQuery = true,
-        value = "UPDATE cart SET is_deleted = :status WHERE id = :id"
-    )
+    @Query(nativeQuery = true, value = "UPDATE cart SET is_deleted = true WHERE account_id = :accountId")
     @Modifying
     @Transactional
-    public Integer updateDeleteStatus(
-        @Param("id") UUID id,
-        @Param("status") Boolean status
-    );
+    public void deleteByAccountId(@Param("accountId") UUID accountId);
 }

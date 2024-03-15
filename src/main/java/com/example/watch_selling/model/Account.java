@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,9 +28,11 @@ public class Account implements UserDetails {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
-    
+
     @Column(name = "is_deleted")
+    @JsonIgnore
     private Boolean isDeleted;
 
     public Account() {
@@ -74,9 +78,11 @@ public class Account implements UserDetails {
     public void setIsDeleted(Boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        //* Return empty list because we dont cover the role-based access control in this project */
+        // * Return empty list because we dont cover the role-based access control in
+        // this project */
         return List.of();
     }
 
@@ -85,7 +91,7 @@ public class Account implements UserDetails {
         return this.email;
     }
 
-    //* The below methods are unnecessary for this project */
+    // * The below methods are unnecessary for this project */
     @Override
     public boolean isAccountNonExpired() {
         return true;

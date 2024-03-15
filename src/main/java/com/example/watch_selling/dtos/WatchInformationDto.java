@@ -54,8 +54,8 @@ public class WatchInformationDto {
         List<String> values = new ArrayList<>();
         values.add("Đang kinh doanh");
         values.add("Ngừng kinh doanh");
-        
-        for (String value: values) {
+
+        for (String value : values) {
             if (status.equals(value)) {
                 return true;
             }
@@ -73,11 +73,11 @@ public class WatchInformationDto {
         if (!WatchInformationDto.validName(dto.getName())) {
             return res.setMessage("Invalid name");
         }
-        
+
         if (!WatchInformationDto.validPrice(dto.getPrice())) {
             return res.setMessage("Invalid price");
         }
-        
+
         if (!WatchInformationDto.validQuantity(dto.getQuantity())) {
             return res.setMessage("Invalid quantity");
         }
@@ -87,16 +87,15 @@ public class WatchInformationDto {
         }
 
         return res
-            .setMessage("Valid!")
-            .setStatus(HttpStatus.OK);
+                .setMessage("Valid!")
+                .setStatus(HttpStatus.OK);
     }
 
     public static Optional<Watch> toModel(
-        WatchInformationDto dto,
-        Boolean deleteStatus,
-        WatchType type,
-        WatchBrand brand
-    ) {
+            WatchInformationDto dto,
+            Boolean deleteStatus,
+            WatchType type,
+            WatchBrand brand) {
         if (!WatchInformationDto.validDto(dto).getStatus().equals(HttpStatus.OK)) {
             return Optional.empty();
         }
@@ -108,10 +107,10 @@ public class WatchInformationDto {
         watch.setQuantity(dto.getQuantity());
         watch.setDescription(dto.getDescription());
         watch.setStatus(dto.getStatus());
+        watch.setIsDeleted(deleteStatus);
         watch.setPhoto(dto.getPhoto());
         watch.setType(type);
         watch.setBrand(brand);
-        watch.setIsDeleted(deleteStatus);
         return Optional.of(watch);
     }
 
