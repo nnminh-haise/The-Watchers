@@ -179,35 +179,6 @@ public class WatchService {
         }
     }
 
-    public ResponseDto<String> updateWatchPriceById(UUID id, Double newPrice) {
-        ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
-        if (id == null) {
-            return res.setMessage("Invalid ID");
-        }
-
-        if (newPrice < 0) {
-            return res.setMessage("Invalid price!");
-        }
-
-        Optional<Watch> targetingWatch = watchRepository.findById(id);
-        if (!targetingWatch.isPresent()) {
-            return res
-                    .setStatus(HttpStatus.NOT_FOUND)
-                    .setMessage("Cannot find any watch with the given ID!");
-        }
-
-        try {
-            watchRepository.updateWatchPriceById(id, newPrice);
-            return res
-                    .setStatus(HttpStatus.OK)
-                    .setMessage("Success!");
-        } catch (Exception e) {
-            return res
-                    .setStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .setMessage(e.getMessage());
-        }
-    }
-
     public ResponseDto<String> updateWatchQuantityById(UUID id, Integer newQuantity) {
         ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
         if (id == null) {

@@ -55,20 +55,22 @@ public interface WatchRepository extends PagingAndSortingRepository<Watch, UUID>
                         "description = :#{#information.description}, " +
                         "status = :#{#information.status}, " +
                         "photo = :#{#information.photo}, " +
-                        "type_id = (SELECT watch_type.id FROM watch_type WHERE watch_type.name = :#{#information.typeName}), " +
-                        "brand_id = (SELECT watch_brand.id FROM watch_brand WHERE watch_brand.name = :#{#information.brandName}) " +
+                        "type_id = (SELECT watch_type.id FROM watch_type WHERE watch_type.name = :#{#information.typeName}), "
+                        +
+                        "brand_id = (SELECT watch_brand.id FROM watch_brand WHERE watch_brand.name = :#{#information.brandName}) "
+                        +
                         "WHERE id = :id", nativeQuery = true)
         public void updateWatchById(@Param("id") UUID id, @Param("information") WatchInformationDto information);
 
-        @Modifying
-        @Transactional
-        @Query("UPDATE Watch w SET w.price = :price WHERE w.id = :id AND w.isDeleted = false")
-        public Integer updateWatchPriceById(@Param("id") UUID id, @Param("price") Double price);
+        // @Modifying
+        // @Query("UPDATE Watch w SET w.price = :price WHERE w.id = :id AND w.isDeleted
+        // = false")
+        // public Integer updateWatchPriceById(@Param("id") UUID id, @Param("price")
+        // Double price);
 
         @Modifying
-        @Transactional
-        @Query("UPDATE Watch w SET w.quantity = :quantity WHERE w.id = :id AND w.isDeleted = false")
-        public Integer updateWatchQuantityById(@Param("id") UUID id, @Param("quantity") Integer quantity);
+        @Query("UPDATE Watch w SET w.quantity = :newQuantity WHERE w.id = :id AND w.isDeleted = false")
+        public Integer updateWatchQuantityById(@Param("id") UUID id, @Param("newQuantity") Integer newQuantity);
 
         @Modifying
         @Transactional

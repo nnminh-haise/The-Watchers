@@ -1,53 +1,45 @@
 package com.example.watch_selling.repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
-import com.example.watch_selling.dtos.OrderDetailDto;
+import com.example.watch_selling.dtos.UpdateCartDetailDto;
 import com.example.watch_selling.model.OrderDetail;
 
 import jakarta.transaction.Transactional;
 
-public interface OrderDetailRepository extends JpaRepository<OrderDetail, UUID> {
-
-    @SuppressWarnings("null")
+public interface OrderDetailRepository extends PagingAndSortingRepository<OrderDetail, UUID> {
     @Query("SELECT od FROM OrderDetail AS od WHERE od.isDeleted = false AND od.id = :id")
     public Optional<OrderDetail> findById(@Param("id") UUID id);
 
-    @SuppressWarnings("null")
-    @Query("SELECT od FROM OrderDetail AS od WHERE od.isDeleted = false")
-    public List<OrderDetail> findAll();
+    @Query("SELECT od FROM OrderDetail AS od WHERE od.isDeleted = false AND od.order.id = :orderId ORDER BY od.price ASC")
+    public Page<OrderDetail> findAllOrderDetailByOrderIdASC(@Param("orderId") UUID orderId, Pageable pageable);
 
-    @SuppressWarnings({ "null", "unchecked" })
+    @Query("SELECT od FROM OrderDetail AS od WHERE od.isDeleted = false AND od.order.id = :orderId ORDER BY od.price DESC")
+    public Page<OrderDetail> findAllOrderDetailByOrderIdDESC(@Param("orderId") UUID orderId, Pageable pageable);
+
     public OrderDetail save(OrderDetail orderDetail);
 
-    @Transactional
     @Modifying
-    @Query(
-        nativeQuery = true,
-        value = "UPDATE order_detail SET " +
-                    "order_id = :#{#orderDetail.order.id}, " +
-                    "watch_id = :#{#orderDetail.watch.id}, " +
-                    "price = :#{#orderDetail.price}, " +
-                    "quantity = :#{#orderDetail.quantity} " +
-                "WHERE is_deleted = false AND id = :id"
-    )
-    public OrderDetail updateOrderDetailById(
-        @Param("id") UUID id,
-        @Param("orderDetail") OrderDetailDto orderDetail
-    );
+    @Query(nativeQuery = true, value = "UPDATE order_detail SET " +
+            "price = :#{#orderDetail.price}, " +
+            "quantity = :#{#orderDetail.quantity} " +
+            "WHERE is_deleted = false AND id = :id")
+    public Integer updateOrderDetailById(
+            @Param("id") UUID id,
+            @Param("orderDetail") UpdateCartDetailDto orderDetail);
 
     @Transactional
     @Modifying
     @Query("UPDATE OrderDetail AS od SET od.isDeleted = :status WHERE od.id = :id")
-    public OrderDetail updateOrderDetailDeleteStatusById(
-        @Param("id") UUID id,
-        @Param("status") Boolean status
-    );
+    public Integer updateOrderDetailDeleteStatusById(
+            @Param("id") UUID id,
+            @Param("status") Boolean status);
 }

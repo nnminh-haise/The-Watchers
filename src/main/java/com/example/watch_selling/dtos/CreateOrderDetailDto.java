@@ -15,9 +15,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderDetailDto {
-    private UUID id;
-
+public class CreateOrderDetailDto {
     private UUID orderId;
 
     private UUID watchId;
@@ -25,10 +23,6 @@ public class OrderDetailDto {
     private Double price;
 
     private Integer quantity;
-
-    public static Boolean validID(UUID id) {
-        return id != null;
-    }
 
     public static Boolean validOrderID(UUID orderId) {
         return orderId != null;
@@ -46,25 +40,25 @@ public class OrderDetailDto {
         return quantity >= 0;
     }
 
-    public static ResponseDto<String> validDto(OrderDetailDto dto) {
+    public static ResponseDto<String> validDto(CreateOrderDetailDto dto) {
         ResponseDto<String> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (!OrderDetailDto.validOrderID(dto.getOrderId())) {
+        if (!CreateOrderDetailDto.validOrderID(dto.getOrderId())) {
             response.setMessage("Invalid Order ID!");
             return response;
         }
 
-        if (!OrderDetailDto.validWatchID(dto.getWatchId())) {
+        if (!CreateOrderDetailDto.validWatchID(dto.getWatchId())) {
             response.setMessage("Invalid Watch ID!");
             return response;
         }
 
-        if (!OrderDetailDto.validPrice(dto.getPrice())) {
+        if (!CreateOrderDetailDto.validPrice(dto.getPrice())) {
             response.setMessage("Invalid price!");
             return response;
         }
 
-        if (!OrderDetailDto.validQuantity(dto.getQuantity())) {
+        if (!CreateOrderDetailDto.validQuantity(dto.getQuantity())) {
             response.setMessage("Invalid quantity!");
             return response;
         }
@@ -72,13 +66,12 @@ public class OrderDetailDto {
         return response;
     }
 
-    public static OrderDetailDto toDto(OrderDetail orderDetail) {
-        if (orderDetail ==null) {
-            return new OrderDetailDto();
+    public static CreateOrderDetailDto toDto(OrderDetail orderDetail) {
+        if (orderDetail == null) {
+            return new CreateOrderDetailDto();
         }
 
-        OrderDetailDto orderDetailDto = new OrderDetailDto();
-        orderDetailDto.setId(orderDetail.getId());
+        CreateOrderDetailDto orderDetailDto = new CreateOrderDetailDto();
         orderDetailDto.setOrderId(orderDetail.getOrder().getId());
         orderDetailDto.setWatchId(orderDetail.getWatch().getId());
         orderDetailDto.setPrice(orderDetail.getPrice());
@@ -88,16 +81,18 @@ public class OrderDetailDto {
 
     /*
      * Creating a new order detail base on the given OrderDetailDto object.
-     * The return OrderDetail object will not have an id and the isDeleted field will use the default value of isDeleted field of OrderDetail object.
+     * The return OrderDetail object will not have an id and the isDeleted field
+     * will use the default value of isDeleted field of OrderDetail object.
      * The return object should be best use for create new object functionality.
+     * 
      * @Param: OrderDetailDto object
+     * 
      * @Return: OrderDetail object
      */
     public static OrderDetail toModel(
-        OrderDetailDto dto,
-        Order targetingOrder,
-        Watch targetingWatch
-    ) {
+            CreateOrderDetailDto dto,
+            Order targetingOrder,
+            Watch targetingWatch) {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setOrder(targetingOrder);
         orderDetail.setWatch(targetingWatch);

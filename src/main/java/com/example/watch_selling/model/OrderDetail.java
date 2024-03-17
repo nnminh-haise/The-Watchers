@@ -23,7 +23,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "order_detail", uniqueConstraints = @UniqueConstraint(columnNames = { "order_id", "watch_id" }))
+@Table(name = "order_detail", uniqueConstraints = @UniqueConstraint(name = "order_detail_unique_order_id_and_watch_id", columnNames = {
+        "orders_id", "watch_id" }))
 public class OrderDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

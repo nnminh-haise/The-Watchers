@@ -1,24 +1,37 @@
 package com.example.watch_selling.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.example.watch_selling.dtos.OrderDetailDto;
+import com.example.watch_selling.dtos.CreateOrderDetailDto;
+import com.example.watch_selling.dtos.RequestDto;
 import com.example.watch_selling.dtos.ResponseDto;
+import com.example.watch_selling.dtos.UpdateCartDetailDto;
+import com.example.watch_selling.model.CartDetail;
 import com.example.watch_selling.model.Order;
 import com.example.watch_selling.model.OrderDetail;
 import com.example.watch_selling.model.Watch;
+import com.example.watch_selling.repository.CartDetailRepository;
 import com.example.watch_selling.repository.OrderDetailRepository;
 import com.example.watch_selling.repository.OrderRepository;
 import com.example.watch_selling.repository.WatchRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class OrderDetailService {
+    @Autowired
+    private CartDetailRepository cartDetailRepository;
+
     @Autowired
     private OrderDetailRepository orderDetailRepository;
 
@@ -31,7 +44,7 @@ public class OrderDetailService {
     public ResponseDto<OrderDetail> findById(UUID id) {
         ResponseDto<OrderDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (id.equals(null)) {
+        if (id == null) {
             return response.setMessage("Invalid ID!");
         }
 
@@ -41,125 +54,201 @@ public class OrderDetailService {
         }
 
         return response
-            .setData(orderDetail.get())
-            .setMessage("Order detail found successfully!")
-            .setStatus(HttpStatus.OK);
+                .setData(orderDetail.get())
+                .setMessage("Order detail found successfully!")
+                .setStatus(HttpStatus.OK);
     }
 
-    public ResponseDto<List<OrderDetail>> findAll() {
-        ResponseDto<List<OrderDetail>> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+    public ResponseDto<List<OrderDetail>> findAllOrderDetailByOrderId(UUID orderId, int page, int size, String sortBy) {
+        ResponseDto<List<OrderDetail>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        List<OrderDetail> orderDetails = orderDetailRepository.findAll();
+        if (orderId == null) {
+            return res.setMessage("Invalid order ID!");
+        }
+
+        if (!sortBy.equalsIgnoreCase("asc") || !sortBy.equalsIgnoreCase("desc")) {
+            return res.setMessage("Invalid sort by!");
+        }
+
+        Pageable paging = PageRequest.of(page, size);
+        List<OrderDetail> orderDetails = sortBy.equalsIgnoreCase("asc")
+                ? orderDetailRepository.findAllOrderDetailByOrderIdASC(orderId, paging).getContent()
+                : orderDetailRepository.findAllOrderDetailByOrderIdASC(orderId, paging).getContent();
         if (orderDetails.isEmpty()) {
-            return response.setMessage("Cannot find any order detail!");
+            return res
+                    .setStatus(HttpStatus.NO_CONTENT)
+                    .setMessage("Cannot find any order detail!");
         }
 
-        
-        return response
-            .setData(orderDetails)
-            .setMessage("Order details found successfully!")
-            .setStatus(HttpStatus.OK);
+        return res
+                .setData(orderDetails)
+                .setStatus(HttpStatus.OK)
+                .setMessage("Order details found successfully!");
     }
 
-    public ResponseDto<OrderDetail> createNewOrderDetail(OrderDetailDto orderDetail) {
-        ResponseDto<OrderDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+    @Modifying
+    @Transactional
+    private Optional<OrderDetail> createOrderDetailAndUpdateNewInStockQuantity(
+            OrderDetail newOrderDetail, UUID targetingWatch, Integer newInStockQuantity) {
 
-        if (orderDetail.equals(null)) {
-            response.setMessage("Invalid order detail!");
-            return response;
+        int updatedWatch = watchRepository.updateWatchQuantityById(targetingWatch, newInStockQuantity);
+        if (updatedWatch == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(orderDetailRepository.save(newOrderDetail));
+    }
+
+    @Modifying
+    @Transactional
+    public ResponseDto<OrderDetail> createNewOrderDetail(CreateOrderDetailDto createOrderDetailDto) {
+        ResponseDto<OrderDetail> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
+        if (createOrderDetailDto == null) {
+            return res.setMessage("Invalid order detail!");
         }
 
-        if (orderDetail.getOrderId() == null) {
-            response.setMessage("Invalid order ID!");
-            return response;
+        ResponseDto<String> dtoValidationResponse = CreateOrderDetailDto.validDto(createOrderDetailDto);
+        if (!dtoValidationResponse.getStatus().equals(HttpStatus.OK)) {
+            return res
+                    .setStatus(dtoValidationResponse.getStatus())
+                    .setMessage(dtoValidationResponse.getMessage());
         }
 
-        if (orderDetail.getWatchId() == null) {
-            response.setMessage("Invalid watch ID!");
-            return response;
-        }
-
-        if (orderDetail.getPrice() < 0) {
-            response.setMessage("Price must at least 0!");
-            return response;
-        }
-
-        if (orderDetail.getQuantity() < 0) {
-            response.setMessage("Quantity must at least 0!");
-            return response;
-        }
-
-        Optional<Order> targetingOrder = orderRepository.findById(orderDetail.getOrderId());
+        Optional<Order> targetingOrder = orderRepository.findById(createOrderDetailDto.getOrderId());
         if (!targetingOrder.isPresent()) {
-            response.setMessage("Cannot find any Order with the given Order ID!");
-            return response;
+            return res.setMessage("Cannot find any Order with the given Order ID!");
         }
 
-        Optional<Watch> targetingWatch = watchRepository.findById(orderDetail.getWatchId());
+        Optional<Watch> targetingWatch = watchRepository.findById(createOrderDetailDto.getWatchId());
         if (!targetingWatch.isPresent()) {
-            response.setMessage("Cannot find any Watch with the given Watch ID!");
-            return response;
+            return res.setMessage("Cannot find any Watch with the given Watch ID!");
         }
 
-        OrderDetail newOrderDetail = OrderDetailDto.toModel(
-            orderDetail, targetingOrder.get(), targetingWatch.get()
-        );
-        orderDetailRepository.save(newOrderDetail);
-        response.setData(newOrderDetail);
-        response.setMessage("Order detail found successfully!");
-        response.setStatus(HttpStatus.OK);
-        return response;
+        if (targetingWatch.get().getPrice().compareTo(createOrderDetailDto.getPrice()) != 0) {
+            return res.setMessage("Requesting price must equal to the one in stock!");
+        }
+
+        if (targetingWatch.get().getQuantity() < createOrderDetailDto.getQuantity()) {
+            return res.setMessage("Requesting quantity must less then or equal to the one in stock!");
+        }
+
+        OrderDetail newOrderDetail = CreateOrderDetailDto.toModel(
+                createOrderDetailDto, targetingOrder.get(), targetingWatch.get());
+
+        int requestingQuantity = createOrderDetailDto.getQuantity();
+        int newInStockQuantity = targetingWatch.get().getQuantity() - requestingQuantity;
+        this.createOrderDetailAndUpdateNewInStockQuantity(
+                newOrderDetail, targetingWatch.get().getId(), newInStockQuantity);
+        return res
+                .setData(newOrderDetail)
+                .setStatus(HttpStatus.OK)
+                .setMessage("Order detail found successfully!");
     }
 
-    public ResponseDto<OrderDetail> updateOrderDetailById(UUID id, OrderDetailDto updateOrderDetail) {
-        ResponseDto<OrderDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+    @Modifying
+    @Transactional
+    public ResponseDto<List<OrderDetail>> createOrderDetailsFromCartDetailsOfOrder(
+            UUID orderId, List<UUID> cartDetailIds) {
+        ResponseDto<List<OrderDetail>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+
+        if (orderId == null) {
+            return res.setMessage("Invalid order ID!");
+        }
+
+        if (cartDetailIds.isEmpty()) {
+            return res.setMessage("No cart detail provided!");
+        }
+
+        Optional<Order> targetingOrder = orderRepository.findById(orderId);
+        if (!targetingOrder.isPresent()) {
+            return res.setMessage("Cannot find any order with the given order ID!");
+        }
+
+        List<OrderDetail> newOrderDetails = new ArrayList<>();
+        for (UUID cartDetailId : cartDetailIds) {
+            Optional<CartDetail> cartDetail = cartDetailRepository.findById(cartDetailId);
+            if (!cartDetail.isPresent()) {
+                return res.setMessage("Invalid cart detail ID!");
+            }
+            Watch targetingWatch = cartDetail.get().getWatch();
+            OrderDetail newOrderDetail = new OrderDetail(
+                    null,
+                    targetingOrder.get(),
+                    targetingWatch,
+                    cartDetail.get().getPrice(),
+                    cartDetail.get().getQuantity(),
+                    false);
+
+            int requestingQuantity = cartDetail.get().getQuantity();
+            int newInStockQuantity = targetingWatch.getQuantity() - requestingQuantity;
+            this.createOrderDetailAndUpdateNewInStockQuantity(
+                    newOrderDetail, targetingWatch.getId(), newInStockQuantity);
+            newOrderDetails.add(newOrderDetail);
+        }
+
+        return res
+                .setData(newOrderDetails)
+                .setStatus(HttpStatus.OK)
+                .setMessage("Success!");
+    }
+
+    @Modifying
+    @Transactional
+    private Integer updateOrderDetailAndWatchInStockQuantity(
+            UUID id, UpdateCartDetailDto updateCartDetailDto, UUID watchId, Integer newInStockQuantity) {
+
+        Integer updatedWatch = watchRepository.updateWatchQuantityById(watchId, newInStockQuantity);
+        if (updatedWatch == 0) {
+            return 0;
+        }
+        return orderDetailRepository.updateOrderDetailById(id, updateCartDetailDto);
+    }
+
+    @Modifying
+    @Transactional
+    public ResponseDto<OrderDetail> updateOrderDetailById(UUID id, UpdateCartDetailDto updateCartDetailDto) {
+        ResponseDto<OrderDetail> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
         Optional<OrderDetail> targetingOrderDetail = orderDetailRepository.findById(id);
         if (!targetingOrderDetail.isPresent()) {
-            response.setMessage("Cannot find any order detail with the given ID!");
-            return response;
-        }
-        
-        if (!updateOrderDetail.getId().equals(null) && updateOrderDetail.getId().equals(id)) {
-            response.setMessage("The given ID inside the in coming update order detail is not identical to the targeting ID! Cannot change ID!");
-            return response;
+            return res.setMessage("Cannot find any order detail with the given ID!");
         }
 
-        if (updateOrderDetail.getWatchId().equals(null)) {
-            response.setMessage("Invalid watch ID!");
-            return response;
+        ResponseDto<UpdateCartDetailDto> dtoValidationResponse = UpdateCartDetailDto.validateDto(updateCartDetailDto);
+        if (!dtoValidationResponse.getStatus().equals(HttpStatus.OK)) {
+            return res
+                    .setStatus(dtoValidationResponse.getStatus())
+                    .setMessage(dtoValidationResponse.getMessage());
         }
 
-        if (updateOrderDetail.getPrice() < 0) {
-            response.setMessage("Price must at least 0!");
-            return response;
+        Watch targetingWatch = targetingOrderDetail.get().getWatch();
+        if (updateCartDetailDto.getPrice().compareTo(targetingWatch.getPrice()) != 0) {
+            return res.setMessage("Requesting price must be the same to the one in stock!");
         }
 
-        if (updateOrderDetail.getQuantity() < 0) {
-            response.setMessage("Quantity must at least 0!");
-            return response;
+        if (updateCartDetailDto.getQuantity() > targetingWatch.getQuantity()) {
+            return res.setMessage("Requesting quantity must be less than or equal to the one in stock!");
         }
 
-        Optional<Order> targetingOrder = orderRepository.findById(updateOrderDetail.getOrderId());
-        if (!targetingOrder.isPresent()) {
-            response.setMessage("Cannot find any Order with the given Order ID!");
-            return response;
+        int currentRequestQuantity = targetingOrderDetail.get().getQuantity();
+        int requestingQuantity = updateCartDetailDto.getQuantity();
+        int newInStockQuantity = targetingWatch.getQuantity() + (currentRequestQuantity - requestingQuantity);
+        if (this.updateOrderDetailAndWatchInStockQuantity(
+                id, updateCartDetailDto, targetingWatch.getId(), newInStockQuantity) == 0) {
+            return res
+                    .setStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .setMessage("Something wrong!");
         }
 
-        Optional<Watch> targetingWatch = watchRepository.findById(updateOrderDetail.getWatchId());
-        if (!targetingWatch.isPresent()) {
-            response.setMessage("Cannot find any Watch with the given Watch ID!");
-            return response;
-        }
-
-        OrderDetail updatedOrderDetail = orderDetailRepository.updateOrderDetailById(id, updateOrderDetail);
-        
-        response.setData(updatedOrderDetail);
-        response.setMessage("Order detail updated successfully!");
-        response.setStatus(HttpStatus.OK);
-        return response;
+        Optional<OrderDetail> newDetail = orderDetailRepository.findById(id);
+        return res
+                .setData(newDetail.get())
+                .setStatus(HttpStatus.OK)
+                .setMessage("Order detail updated successfully!");
     }
 
+    @Modifying
+    @Transactional
     public ResponseDto<String> updateOrderDetailDeleteStatus(UUID id, Boolean status) {
         ResponseDto<String> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
@@ -175,4 +264,5 @@ public class OrderDetailService {
         response.setStatus(HttpStatus.OK);
         return response;
     }
+
 }

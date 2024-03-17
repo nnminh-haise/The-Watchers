@@ -47,22 +47,22 @@ public class CreateCartDetailDto {
     public static ResponseDto<String> validDto(CreateCartDetailDto dto) {
         ResponseDto<String> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (!OrderDetailDto.validOrderID(dto.getCartId())) {
+        if (!CreateOrderDetailDto.validOrderID(dto.getCartId())) {
             response.setMessage("Invalid Cart ID!");
             return response;
         }
 
-        if (!OrderDetailDto.validWatchID(dto.getWatchId())) {
+        if (!CreateOrderDetailDto.validWatchID(dto.getWatchId())) {
             response.setMessage("Invalid Watch ID!");
             return response;
         }
 
-        if (!OrderDetailDto.validPrice(dto.getPrice())) {
+        if (!CreateOrderDetailDto.validPrice(dto.getPrice())) {
             response.setMessage("Invalid price!");
             return response;
         }
 
-        if (!OrderDetailDto.validQuantity(dto.getQuantity())) {
+        if (!CreateOrderDetailDto.validQuantity(dto.getQuantity())) {
             response.setMessage("Invalid quantity!");
             return response;
         }
