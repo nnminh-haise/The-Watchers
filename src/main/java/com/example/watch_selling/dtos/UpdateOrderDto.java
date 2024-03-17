@@ -1,12 +1,9 @@
 package com.example.watch_selling.dtos;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Optional;
 
-import org.hibernate.validator.cfg.defs.pl.REGONDef;
 import org.springframework.http.HttpStatus;
-
-import com.example.watch_selling.model.Order;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,9 +12,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderUpdateDto {
+public class UpdateOrderDto {
     private String orderDate;
-    
+
     private String name;
 
     private String address;
@@ -26,33 +23,33 @@ public class OrderUpdateDto {
 
     private String deliveryDate;
 
-    public static ResponseDto<String> validDto(OrderUpdateDto dto) {
+    public static ResponseDto<String> validDto(UpdateOrderDto dto) {
         ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        Optional<Date> orderDate = OrderDto.parseDate(dto.getOrderDate());
+        Optional<LocalDate> orderDate = CreateOrderDto.parseDate(dto.getOrderDate());
         if (!orderDate.isPresent()) {
             return res.setMessage("Invalid order date format!");
         }
 
-        Optional<Date> deliveryDate = OrderDto.parseDate(dto.getDeliveryDate());
+        Optional<LocalDate> deliveryDate = CreateOrderDto.parseDate(dto.getDeliveryDate());
         if (!deliveryDate.isPresent()) {
             return res.setMessage("Invalid delivery date format!");
         }
 
-        if (!OrderDto.validName(dto.getName())) {
+        if (!CreateOrderDto.validName(dto.getName())) {
             return res.setMessage("Invalid name!");
         }
 
-        if (!OrderDto.validAddress(dto.getAddress())) {
+        if (!CreateOrderDto.validAddress(dto.getAddress())) {
             return res.setMessage("Invalid address!");
         }
 
-        if (!OrderDto.validPhonenumber(dto.getPhoneNumber())) {
+        if (!CreateOrderDto.validPhonenumber(dto.getPhoneNumber())) {
             return res.setMessage("Invalid phonenumber!");
         }
 
         return res
-            .setMessage("Valid!")
-            .setStatus(HttpStatus.OK);
+                .setMessage("Valid!")
+                .setStatus(HttpStatus.OK);
     }
 }

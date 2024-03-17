@@ -1,11 +1,9 @@
 package com.example.watch_selling.service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -31,13 +29,13 @@ public class CartService {
             return res;
         }
 
-        Optional<Account> associtatedAccount = accountRepository.findById(accountId);
-        if (!associtatedAccount.isPresent()) {
+        Optional<Account> associatedAccount = accountRepository.findById(accountId);
+        if (!associatedAccount.isPresent()) {
             res.setMessage("Cannot find any account with the given account ID");
             return res;
         }
 
-        Cart newCart = cartRepository.save(new Cart(null, associtatedAccount.get(), false));
+        Cart newCart = cartRepository.save(new Cart(null, associatedAccount.get(), false));
 
         res.setData(newCart);
         res.setMessage("New cart created successfully!");
@@ -45,40 +43,22 @@ public class CartService {
         return res;
     }
 
-    public ResponseDto<Cart> findCartById(UUID id) {
+    public ResponseDto<Cart> findCartByAccountId(UUID accountId) {
         ResponseDto<Cart> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (id == null) {
-            res.setMessage("Invalid ID!");
-            return res;
+        if (accountId == null) {
+            return res.setMessage("Invalid account ID!");
         }
 
-        Optional<Cart> cart = cartRepository.findById(id);
+        Optional<Cart> cart = cartRepository.findByAccountId(accountId);
         if (!cart.isPresent()) {
-            res.setMessage("Cannot find any cart with the given cart ID!");
-            return res;
-        }
-
-        res.setData(cart.get());
-        res.setMessage("Cart found successfully!");
-        res.setStatus(HttpStatus.OK);
-        return res;
-    }
-
-    public ResponseDto<List<Cart>> findAllCarts(int page, int size) {
-        ResponseDto<List<Cart>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
-
-        List<Cart> carts = cartRepository.findAll(PageRequest.of(page, size)).getContent();
-        if (carts.size() == 0) {
-            return res
-                    .setMessage("Cannot find any carts!")
-                    .setStatus(HttpStatus.NOT_FOUND);
+            return res.setMessage("Cannot find any cart with the given cart ID!");
         }
 
         return res
-                .setData(carts)
-                .setMessage("Carts found successfully!")
-                .setStatus(HttpStatus.OK);
+                .setData(cart.get())
+                .setStatus(HttpStatus.OK)
+                .setMessage("Cart found successfully!");
     }
 
     public ResponseDto<String> deleteById(UUID id) {
@@ -105,7 +85,7 @@ public class CartService {
             return res.setMessage("Invalid account ID!");
         }
 
-        if (cartRepository.findbyAccountId(accountId).isPresent() == false) {
+        if (cartRepository.findByAccountId(accountId).isPresent() == false) {
             return res
                     .setMessage("Cannot find any cart with the given account ID!")
                     .setStatus(HttpStatus.NOT_FOUND);

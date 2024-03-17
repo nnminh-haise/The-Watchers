@@ -25,36 +25,40 @@ public class InvoiceController {
     @Autowired
     private InvoiceService invoiceService;
 
+    @SuppressWarnings("null")
     @GetMapping("all")
     public ResponseEntity<ResponseDto<List<Invoice>>> readAllInvoices() {
         ResponseDto<List<Invoice>> res = invoiceService.findAllInvoices();
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
+    @SuppressWarnings("null")
     @GetMapping("")
     public ResponseEntity<ResponseDto<Invoice>> readInvoiceById(@RequestParam UUID id) {
         ResponseDto<Invoice> res = invoiceService.findById(id);
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
+    @SuppressWarnings("null")
     @PutMapping("new")
     public ResponseEntity<ResponseDto<Invoice>> createInvoice(@RequestBody InvoiceUpdateDto newInvoice) {
         ResponseDto<Invoice> res = invoiceService.createNewInvoice(newInvoice);
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
+    @SuppressWarnings("null")
     @PatchMapping("update")
     public ResponseEntity<ResponseDto<Invoice>> updateInvoiceById(
-        @RequestParam UUID id,
-        @RequestBody InvoiceUpdateDto updateInvoice
-    ) {
+            @RequestParam UUID id,
+            @RequestBody InvoiceUpdateDto updateInvoice) {
         ResponseDto<Invoice> res = invoiceService.updateInvoiceById(id, updateInvoice);
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
+    @SuppressWarnings("null")
     @DeleteMapping("delete")
     public ResponseEntity<ResponseDto<String>> deleteInvoiceById(@RequestParam UUID id) {
-        ResponseDto<String> res = invoiceService.updateDeleteStatusById(id,true);
+        ResponseDto<String> res = invoiceService.updateDeleteStatusById(id, true);
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 }

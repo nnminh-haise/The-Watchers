@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.example.watch_selling.dtos.InvoiceUpdateDto;
-import com.example.watch_selling.dtos.OrderDto;
+import com.example.watch_selling.dtos.CreateOrderDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Invoice;
 import com.example.watch_selling.model.Order;
@@ -118,7 +118,7 @@ public class InvoiceService {
         }
 
         Invoice updatedInvoice = targettingInvoice.get();
-        updatedInvoice.setCreateDate(OrderDto.parseDate(updateInvoice.getCreateDate()).get());
+        updatedInvoice.setCreateDate(CreateOrderDto.parseDate(updateInvoice.getCreateDate()).get());
         updatedInvoice.setTotal(updateInvoice.getTotal());
         updatedInvoice.setTaxCode(updateInvoice.getTaxcode());
         updatedInvoice.setOrder(invoiceOrder.get());

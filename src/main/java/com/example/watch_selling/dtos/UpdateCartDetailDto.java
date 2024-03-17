@@ -1,7 +1,5 @@
 package com.example.watch_selling.dtos;
 
-import java.util.UUID;
-
 import org.springframework.http.HttpStatus;
 
 import lombok.AllArgsConstructor;

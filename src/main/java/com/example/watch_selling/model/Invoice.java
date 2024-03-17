@@ -1,6 +1,6 @@
 package com.example.watch_selling.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,9 +28,9 @@ public class Invoice {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-    
+
     @Column(name = "create_date", nullable = false)
-    private Date createDate;
+    private LocalDate createDate;
 
     @Column(nullable = false)
     private Double total = 0.0;

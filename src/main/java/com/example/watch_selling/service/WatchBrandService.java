@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.WatchBrand;
-import com.example.watch_selling.model.WatchType;
 import com.example.watch_selling.repository.WatchBrandRepository;
 
 @Service
@@ -40,9 +39,9 @@ public class WatchBrandService {
         }
 
         return res
-            .setData(brand.get())
-            .setMessage("Watch brand found successfully!")
-            .setStatus(HttpStatus.OK);
+                .setData(brand.get())
+                .setMessage("Watch brand found successfully!")
+                .setStatus(HttpStatus.OK);
     }
 
     public ResponseDto<List<WatchBrand>> getAllWatchBrands() {
@@ -51,14 +50,14 @@ public class WatchBrandService {
         List<WatchBrand> brands = watchBrandRepository.findAll();
         if (brands.size() == 0) {
             return res
-                .setMessage("Cannot find any watch brand!")
-                .setStatus(HttpStatus.NOT_FOUND);
+                    .setMessage("Cannot find any watch brand!")
+                    .setStatus(HttpStatus.NOT_FOUND);
         }
 
         return res
-            .setData(brands)
-            .setMessage("Watch brands found successfully!")
-            .setStatus(HttpStatus.OK);
+                .setData(brands)
+                .setMessage("Watch brands found successfully!")
+                .setStatus(HttpStatus.OK);
     }
 
     public ResponseDto<WatchBrand> createNewWatchBrand(String name) {
@@ -66,21 +65,21 @@ public class WatchBrandService {
 
         if (name.equals(null) || name.length() == 0) {
             return res
-                .setMessage("Brand name must be at least one character! Invalid name!");
+                    .setMessage("Brand name must be at least one character! Invalid name!");
         }
 
         if (watchBrandRepository.findByName(name).isPresent()) {
             return res
-                .setMessage("Brand's name must be unique! Invalid brand name!");
+                    .setMessage("Brand's name must be unique! Invalid brand name!");
         }
 
         WatchBrand newBrand = new WatchBrand(null, name, false);
         watchBrandRepository.save(newBrand);
 
         return res
-            .setData(newBrand)
-            .setMessage("New watch brand create successfully!")
-            .setStatus(HttpStatus.OK);
+                .setData(newBrand)
+                .setMessage("New watch brand create successfully!")
+                .setStatus(HttpStatus.OK);
     }
 
     public ResponseDto<WatchBrand> updateWatchBrandName(UUID id, String name) {
@@ -96,10 +95,10 @@ public class WatchBrandService {
 
         if (!watchBrandRepository.findById(id).isPresent()) {
             return res
-                .setMessage("Cannot find the watch brand with the given ID! Invalid ID!")
-                .setStatus(HttpStatus.NOT_FOUND);
+                    .setMessage("Cannot find the watch brand with the given ID! Invalid ID!")
+                    .setStatus(HttpStatus.NOT_FOUND);
         }
-        
+
         Optional<WatchBrand> watch = watchBrandRepository.findByName(name);
         if (watch.isPresent() && !watch.get().getId().equals(id) && watch.get().getName().equals(name)) {
             return res.setMessage("Brand's name must be unique! Invalid brand name!");
@@ -109,9 +108,9 @@ public class WatchBrandService {
         WatchBrand updatedBrand = watch.get();
         updatedBrand.setName(name);
         return res
-            .setMessage("New watch brand created successfully!")
-            .setStatus(HttpStatus.OK)
-            .setData(updatedBrand);
+                .setMessage("New watch brand created successfully!")
+                .setStatus(HttpStatus.OK)
+                .setData(updatedBrand);
     }
 
     public ResponseDto<String> updateWatchBrandDeleteStatus(UUID id, Boolean deleteStatus) {
@@ -122,13 +121,13 @@ public class WatchBrandService {
 
         if (!watchBrandRepository.findById(id).isPresent()) {
             return res
-                .setMessage("Cannot find the watch brand with the given ID! Invalid ID!")
-                .setStatus(HttpStatus.NOT_FOUND);
+                    .setMessage("Cannot find the watch brand with the given ID! Invalid ID!")
+                    .setStatus(HttpStatus.NOT_FOUND);
         }
 
         watchBrandRepository.updateDeleteStatusbyId(id, deleteStatus);
         return res
-            .setMessage("Watch brand delete status updated successfully!")
-            .setStatus(HttpStatus.OK);
+                .setMessage("Watch brand delete status updated successfully!")
+                .setStatus(HttpStatus.OK);
     }
 }

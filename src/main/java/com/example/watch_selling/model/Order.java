@@ -1,6 +1,8 @@
 package com.example.watch_selling.model;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,7 +32,7 @@ public class Order {
     private UUID id;
 
     @Column(name = "order_date", nullable = false)
-    private Date orderDate;
+    private LocalDate orderDate;
 
     @Column(nullable = false)
     private String name;
@@ -42,7 +44,7 @@ public class Order {
     private String phoneNumber;
 
     @Column(name = "delivery_date", nullable = false)
-    private Date deliveryDate;
+    private LocalDate deliveryDate;
 
     @Column(nullable = false)
     private String status;
@@ -54,4 +56,23 @@ public class Order {
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "account_id", referencedColumnName = "id", unique = true, nullable = false)
     private Account account;
+
+    public static Boolean validStatus(String status) {
+        if (status == null) {
+            return false;
+        }
+
+        List<String> values = new ArrayList<>();
+        values.add("Chờ duyệt");
+        values.add("Đang chuẩn bị hàng");
+        values.add("Đang giao hàng");
+        values.add("Hoàn thành");
+        values.add("Đã huỷ");
+        for (String value : values) {
+            if (status.equals(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

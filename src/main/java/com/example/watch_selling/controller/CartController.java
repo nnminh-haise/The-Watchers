@@ -1,16 +1,15 @@
 package com.example.watch_selling.controller;
 
-import java.util.List;
-import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.watch_selling.dtos.ResponseDto;
+import com.example.watch_selling.model.Account;
 import com.example.watch_selling.model.Cart;
 import com.example.watch_selling.service.CartService;
 
@@ -20,19 +19,16 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
-    @SuppressWarnings("null")
-    @GetMapping("")
-    public ResponseEntity<ResponseDto<Cart>> readCartById(@RequestParam("id") UUID id) {
-        ResponseDto<Cart> res = cartService.findCartById(id);
-        return ResponseEntity.status(res.getStatus()).body(res);
+    private Account getCurrentAccount() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (Account) authentication.getPrincipal();
     }
 
     @SuppressWarnings("null")
-    @GetMapping("all")
-    public ResponseEntity<ResponseDto<List<Cart>>> readAllCarts(
-            @RequestParam(name = "page", defaultValue = "0") Integer page,
-            @RequestParam(name = "size", defaultValue = "10") Integer size) {
-        ResponseDto<List<Cart>> res = cartService.findAllCarts(page, size);
+    @GetMapping("my")
+    public ResponseEntity<ResponseDto<Cart>> readCartById() {
+        Account account = this.getCurrentAccount();
+        ResponseDto<Cart> res = cartService.findCartByAccountId(account.getId());
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 }

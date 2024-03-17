@@ -1,6 +1,6 @@
 package com.example.watch_selling.dtos;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 
 import com.example.watch_selling.model.Invoice;
 import com.example.watch_selling.model.Order;
-import com.example.watch_selling.repository.OrderRepository;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,7 +26,7 @@ public class InvoiceUpdateDto {
     private UUID orderId;
 
     public static Boolean validCreateDate(String createDate) {
-        Optional<Date> d = OrderDto.parseDate(createDate);
+        Optional<LocalDate> d = CreateOrderDto.parseDate(createDate);
         return d.isPresent();
     }
 
@@ -57,33 +56,32 @@ public class InvoiceUpdateDto {
         if (!InvoiceUpdateDto.validTotal(dto.getTotal())) {
             return res.setMessage("Invalid total!");
         }
-        
+
         if (!InvoiceUpdateDto.validTaxCode(dto.getTaxcode())) {
             return res.setMessage("Invalid tax code!");
         }
-        
+
         if (!InvoiceUpdateDto.validOrderId(dto.getOrderId())) {
             return res.setMessage("Invalid order ID!");
         }
 
         return res
-            .setStatus(HttpStatus.OK)
-            .setMessage("Valid!")
-            .setData(dto);
+                .setStatus(HttpStatus.OK)
+                .setMessage("Valid!")
+                .setData(dto);
     }
 
     public static Optional<Invoice> toModel(
-        InvoiceUpdateDto dto,
-        Boolean deleteStatus,
-        Order order
-    ) {
+            InvoiceUpdateDto dto,
+            Boolean deleteStatus,
+            Order order) {
         ResponseDto<InvoiceUpdateDto> dtoValidationResponse = InvoiceUpdateDto.validDto(dto);
         if (!dtoValidationResponse.getStatus().equals(HttpStatus.OK)) {
             return Optional.empty();
         }
 
         Invoice i = new Invoice();
-        i.setCreateDate(OrderDto.parseDate(dto.getCreateDate()).get());
+        i.setCreateDate(CreateOrderDto.parseDate(dto.getCreateDate()).get());
         i.setTotal(dto.getTotal());
         i.setTaxCode(dto.getTaxcode());
         i.setOrder(order);

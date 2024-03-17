@@ -28,11 +28,11 @@ public class CartDetail {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "cart_id", referencedColumnName = "id", unique = true, nullable = false)
+    @JoinColumn(name = "cart_id", referencedColumnName = "id", nullable = false)
     private Cart cart;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "watch_id", referencedColumnName = "id", unique = true, nullable = false)
+    @JoinColumn(name = "watch_id", referencedColumnName = "id", nullable = false)
     private Watch watch;
 
     @Column(nullable = false)
