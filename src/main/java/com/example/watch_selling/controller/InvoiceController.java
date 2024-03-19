@@ -7,14 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.watch_selling.dtos.InvoiceUpdateDto;
+import com.example.watch_selling.dtos.CreateInvoiceDto;
+import com.example.watch_selling.dtos.RequestDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Invoice;
 import com.example.watch_selling.service.InvoiceService;
@@ -27,8 +27,17 @@ public class InvoiceController {
 
     @SuppressWarnings("null")
     @GetMapping("all")
-    public ResponseEntity<ResponseDto<List<Invoice>>> readAllInvoices() {
-        ResponseDto<List<Invoice>> res = invoiceService.findAllInvoices();
+    public ResponseEntity<ResponseDto<List<Invoice>>> readAllInvoices(
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "size", defaultValue = "10") Integer size,
+            @RequestParam(name = "date_sort_by", defaultValue = "asc") String dateSortBy,
+            @RequestParam(name = "from_date", required = false) String fromDate,
+            @RequestParam(name = "to_date", required = false) String toDate,
+            @RequestParam(name = "total_sort_by", defaultValue = "asc") String totalSortBy,
+            @RequestParam(name = "from_total", required = false) String fromTotal,
+            @RequestParam(name = "to_total", required = false) String toTotal) {
+        ResponseDto<List<Invoice>> res = invoiceService.findAllInvoices(
+                page, size, dateSortBy, fromDate, toDate, totalSortBy, fromTotal, toTotal);
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
@@ -41,17 +50,8 @@ public class InvoiceController {
 
     @SuppressWarnings("null")
     @PutMapping("new")
-    public ResponseEntity<ResponseDto<Invoice>> createInvoice(@RequestBody InvoiceUpdateDto newInvoice) {
-        ResponseDto<Invoice> res = invoiceService.createNewInvoice(newInvoice);
-        return ResponseEntity.status(res.getStatus()).body(res);
-    }
-
-    @SuppressWarnings("null")
-    @PatchMapping("update")
-    public ResponseEntity<ResponseDto<Invoice>> updateInvoiceById(
-            @RequestParam UUID id,
-            @RequestBody InvoiceUpdateDto updateInvoice) {
-        ResponseDto<Invoice> res = invoiceService.updateInvoiceById(id, updateInvoice);
+    public ResponseEntity<ResponseDto<Invoice>> createInvoice(@RequestBody RequestDto<CreateInvoiceDto> dto) {
+        ResponseDto<Invoice> res = invoiceService.createNewInvoice(dto.getData());
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 

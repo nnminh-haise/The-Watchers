@@ -1,19 +1,22 @@
 package com.example.watch_selling.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.example.watch_selling.dtos.InvoiceUpdateDto;
-import com.example.watch_selling.dtos.CreateOrderDto;
+import com.example.watch_selling.dtos.CreateInvoiceDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Invoice;
 import com.example.watch_selling.model.Order;
 import com.example.watch_selling.repository.InvoiceRepository;
+import com.example.watch_selling.repository.OrderDetailRepository;
 import com.example.watch_selling.repository.OrderRepository;
 
 @Service
@@ -24,20 +27,59 @@ public class InvoiceService {
     @Autowired
     private OrderRepository orderRepository;
 
-    public ResponseDto<List<Invoice>> findAllInvoices() {
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
+
+    public ResponseDto<List<Invoice>> findAllInvoices(
+            Integer page, Integer size,
+            String dateSortBy, String fromDate, String toDate,
+            String totalSortBy, String fromTotal, String toTotal) {
         ResponseDto<List<Invoice>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        List<Invoice> invoices = invoiceRepository.findAll();
-        if (invoices.isEmpty()) {
-            return res
-                .setMessage("Cannot find any invoice!")
-                .setStatus(HttpStatus.NOT_FOUND);
+        List<String> sortByValues = List.of("asc", "desc");
+        Boolean flag = false;
+        for (String value : sortByValues) {
+            if (dateSortBy.equalsIgnoreCase(value)) {
+                flag = true;
+            }
+        }
+        if (!flag) {
+            return res.setMessage("Invalid date sort by value!");
         }
 
-        return res
-            .setData(invoices)
-            .setMessage("Invoice found successfully!")
-            .setStatus(HttpStatus.OK);
+        flag = false;
+        for (String value : sortByValues) {
+            if (totalSortBy.equalsIgnoreCase(value)) {
+                flag = true;
+            }
+        }
+        if (!flag) {
+            return res.setMessage("Invalid total sort by value!");
+        }
+
+        try {
+            LocalDate validFromDate = (fromDate == null) ? null : LocalDate.parse(fromDate);
+            LocalDate validToDate = (toDate == null) ? null : LocalDate.parse(toDate);
+            Double validFromTotal = (fromTotal == null) ? null : Double.parseDouble(fromTotal);
+            Double validToTotal = (toTotal == null) ? null : Double.parseDouble(toTotal);
+
+            Pageable paging = PageRequest.of(page, size);
+            List<Invoice> invoices = invoiceRepository.findAllByDateAndTotal(
+                    paging, dateSortBy, validFromDate, validToDate, totalSortBy, validFromTotal, validToTotal);
+
+            if (invoices.isEmpty()) {
+                return res
+                        .setMessage("Cannot find any invoice!")
+                        .setStatus(HttpStatus.NOT_FOUND);
+            }
+
+            return res
+                    .setData(invoices)
+                    .setMessage("Invoice found successfully!")
+                    .setStatus(HttpStatus.OK);
+        } catch (Exception e) {
+            return res.setMessage(e.getMessage());
+        }
     }
 
     public ResponseDto<Invoice> findById(UUID id) {
@@ -50,84 +92,39 @@ public class InvoiceService {
         Optional<Invoice> invoice = invoiceRepository.findById(id);
         if (!invoice.isPresent()) {
             return res
-                .setMessage("Cannot find any invoice with the given ID!")
-                .setStatus(HttpStatus.NOT_FOUND);
+                    .setMessage("Cannot find any invoice with the given ID!")
+                    .setStatus(HttpStatus.NOT_FOUND);
         }
 
         return res
-            .setMessage("Invoice found successfully!")
-            .setStatus(HttpStatus.OK)
-            .setData(invoice.get());
+                .setMessage("Invoice found successfully!")
+                .setStatus(HttpStatus.OK)
+                .setData(invoice.get());
     }
 
-    public ResponseDto<Invoice> createNewInvoice(InvoiceUpdateDto newInvoice) {
+    public ResponseDto<Invoice> createNewInvoice(CreateInvoiceDto dto) {
         ResponseDto<Invoice> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (newInvoice == null) {
-            return res.setMessage("Invalid invoide information!");
+        if (!CreateInvoiceDto.validateDto(dto)) {
+            return res.setMessage("Invalid DTO");
         }
 
-        ResponseDto<InvoiceUpdateDto> dtoValidateResponse = InvoiceUpdateDto.validDto(newInvoice);
-        if (!dtoValidateResponse.getStatus().equals(HttpStatus.OK)) {
-            return res
-                .setMessage(dtoValidateResponse.getMessage())
-                .setStatus(dtoValidateResponse.getStatus());
-        }
-
-        Optional<Order> orderOfInvoice = orderRepository.findById(newInvoice.getOrderId());
-        if (!orderOfInvoice.isPresent()) {
+        Optional<Order> targetingOrder = orderRepository.findById(dto.getOrderId());
+        if (!targetingOrder.isPresent()) {
             return res.setMessage("Cannot find any Order with the given order ID!");
         }
 
-        Invoice invoice = invoiceRepository.save(
-            InvoiceUpdateDto.toModel(newInvoice, false, orderOfInvoice.get()).get()
-        );
+        Double totalPrice = orderDetailRepository.totalOfOrder(dto.getOrderId());
+        Double priceAfterTax = totalPrice * 1.08;
+        Invoice newInvoice = new Invoice(
+                null, LocalDate.now(), priceAfterTax, dto.getTaxCode(), false, targetingOrder.get());
+
+        Invoice invoice = invoiceRepository.save(newInvoice);
 
         return res
-            .setMessage("New incoide created successfully!")
-            .setStatus(HttpStatus.OK)
-            .setData(invoice);
-    }
-
-    public ResponseDto<Invoice> updateInvoiceById(UUID id, InvoiceUpdateDto updateInvoice) {
-        ResponseDto<Invoice> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
-
-        if (id == null) {
-            return res.setMessage("Invalid ID!");
-        }
-
-        Optional<Invoice> targettingInvoice = invoiceRepository.findById(id);
-        if (!targettingInvoice.isPresent()) {
-            return res
-                .setMessage("Cannot find any invoice with the given ID!")
-                .setStatus(HttpStatus.NOT_FOUND);
-        }
-
-        ResponseDto<InvoiceUpdateDto> dtoValidateResponse = InvoiceUpdateDto.validDto(updateInvoice);
-        if (!dtoValidateResponse.getStatus().equals(HttpStatus.OK)) {
-            return res
-                .setMessage(dtoValidateResponse.getMessage())
-                .setStatus(dtoValidateResponse.getStatus());
-        }
-
-        Optional<Order> invoiceOrder = orderRepository.findById(updateInvoice.getOrderId());
-        if (!invoiceOrder.isPresent()) {
-            return res
-                .setMessage("Cannot find any order with the given order ID!")
-                .setStatus(HttpStatus.NOT_FOUND);
-        }
-
-        Invoice updatedInvoice = targettingInvoice.get();
-        updatedInvoice.setCreateDate(CreateOrderDto.parseDate(updateInvoice.getCreateDate()).get());
-        updatedInvoice.setTotal(updateInvoice.getTotal());
-        updatedInvoice.setTaxCode(updateInvoice.getTaxcode());
-        updatedInvoice.setOrder(invoiceOrder.get());
-
-        invoiceRepository.updateInvoiceById(id, updatedInvoice);
-        return res
-            .setStatus(HttpStatus.OK)
-            .setMessage("Invoice updated successfully!")
-            .setData(updatedInvoice);
+                .setData(invoice)
+                .setStatus(HttpStatus.OK)
+                .setMessage("Successful!");
     }
 
     public ResponseDto<String> updateDeleteStatusById(UUID id, Boolean status) {
@@ -139,7 +136,7 @@ public class InvoiceService {
 
         invoiceRepository.updateDeleteStatusById(id, status);
         return res
-            .setStatus(HttpStatus.OK)
-            .setMessage("Invoice updated successfully!");
+                .setStatus(HttpStatus.OK)
+                .setMessage("Invoice updated successfully!");
     }
 }

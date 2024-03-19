@@ -55,6 +55,7 @@ public class OrderDetailController {
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
+    // TODO: finish this API
     // @GetMapping("all")
     // public ResponseEntity<ResponseDto<List<OrderDetail>>>
     // readAllOrdersIncludeOrderDetailsOfAccount(

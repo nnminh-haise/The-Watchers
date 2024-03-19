@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.example.watch_selling.dtos.CreateOrderDetailDto;
-import com.example.watch_selling.dtos.RequestDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.dtos.UpdateCartDetailDto;
 import com.example.watch_selling.model.CartDetail;
