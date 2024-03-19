@@ -12,7 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.example.watch_selling.dtos.CreateInvoiceDto;
+import com.example.watch_selling.dtos.EmailInvoiceInformation;
 import com.example.watch_selling.dtos.ResponseDto;
+import com.example.watch_selling.mailing.EmailServiceImpl;
 import com.example.watch_selling.model.Invoice;
 import com.example.watch_selling.model.Order;
 import com.example.watch_selling.repository.InvoiceRepository;
@@ -29,6 +31,9 @@ public class InvoiceService {
 
     @Autowired
     private OrderDetailRepository orderDetailRepository;
+
+    @Autowired
+    private EmailServiceImpl emailServiceImpl;
 
     public ResponseDto<List<Invoice>> findAllInvoices(
             Integer page, Integer size,
@@ -120,6 +125,24 @@ public class InvoiceService {
                 null, LocalDate.now(), priceAfterTax, dto.getTaxCode(), false, targetingOrder.get());
 
         Invoice invoice = invoiceRepository.save(newInvoice);
+
+        String recipient = targetingOrder.get().getAccount().getEmail();
+        String subject = "Watch ordering invoice - Number: " + invoice.getId().toString();
+        EmailInvoiceInformation body = new EmailInvoiceInformation();
+        body.setInvoiceNumber(invoice.getId().toString());
+        body.setOwnerEmail(recipient);
+        body.setOrderId(targetingOrder.get().getId().toString());
+        body.setTotal(EmailInvoiceInformation.formatAsVND(totalPrice));
+        body.setTotalAfterTax(EmailInvoiceInformation.formatAsVND(priceAfterTax));
+        body.setTaxCode(dto.getTaxCode());
+        body.setCreateDate(invoice.getCreateDate());
+        body.setContact(this.emailServiceImpl.getSendingEmail());
+        ResponseDto<Boolean> emailSender = this.emailServiceImpl.sendEmail(recipient, subject, body.toHtmlBody());
+        if (emailSender.getData() == false) {
+            return res
+                    .setStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .setMessage("Cannot send Email!");
+        }
 
         return res
                 .setData(invoice)

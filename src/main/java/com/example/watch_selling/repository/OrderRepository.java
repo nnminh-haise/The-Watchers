@@ -53,6 +53,9 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, UUID>
         @Query("SELECT o FROM Order AS o WHERE o.isDeleted = false AND o.id = :id")
         public Optional<Order> findById(@Param("id") UUID id);
 
+        @Query("SELECT o.account.email FROM Order AS o WHERE o.isDeleted = false AND o.id = :id")
+        public Optional<String> findAccountEmailById(@Param("id") UUID id);
+
         @Query("SELECT o FROM Order AS o WHERE o.isDeleted = false AND o.orderDate = :date")
         public Optional<List<Order>> findByOrderDate(@Param("date") LocalDate date);
 
