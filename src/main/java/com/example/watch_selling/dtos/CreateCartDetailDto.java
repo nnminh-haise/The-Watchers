@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import com.example.watch_selling.model.Cart;
 import com.example.watch_selling.model.CartDetail;
 import com.example.watch_selling.model.Watch;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,9 +17,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class CreateCartDetailDto {
-    private UUID cartId;
-
     private UUID watchId;
 
     private Double price;
@@ -26,10 +27,6 @@ public class CreateCartDetailDto {
 
     public static Boolean validID(UUID id) {
         return id != null;
-    }
-
-    public static Boolean validCartId(UUID cartId) {
-        return cartId != null;
     }
 
     public static Boolean validWatchID(UUID watchId) {
@@ -46,11 +43,6 @@ public class CreateCartDetailDto {
 
     public static ResponseDto<String> validDto(CreateCartDetailDto dto) {
         ResponseDto<String> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
-
-        if (!CreateOrderDetailDto.validOrderID(dto.getCartId())) {
-            response.setMessage("Invalid Cart ID!");
-            return response;
-        }
 
         if (!CreateOrderDetailDto.validWatchID(dto.getWatchId())) {
             response.setMessage("Invalid Watch ID!");
@@ -77,7 +69,6 @@ public class CreateCartDetailDto {
         }
 
         CreateCartDetailDto dto = new CreateCartDetailDto();
-        dto.setCartId(cartDetail.getCart().getId());
         dto.setWatchId(cartDetail.getWatch().getId());
         dto.setPrice(cartDetail.getPrice());
         dto.setQuantity(cartDetail.getQuantity());

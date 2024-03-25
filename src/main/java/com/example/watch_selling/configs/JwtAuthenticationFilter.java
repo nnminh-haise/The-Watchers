@@ -54,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         System.out.println("[LOG] Called API: " + requestPath);
 
         if (startsWithOneOf(requestPath, List.of(
-                "/auth", "/swagger-ui", "/v3/api-docs"))
+                "/api/auth", "/swagger-ui", "/v3/api-docs"))
                 && (authHeader == null || !authHeader.startsWith("Bearer "))) {
             filterChain.doFilter(request, response);
             return;

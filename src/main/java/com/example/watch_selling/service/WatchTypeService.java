@@ -39,9 +39,9 @@ public class WatchTypeService {
         }
 
         return res
-            .setData(type.get())
-            .setMessage("Watch type found successfully!")
-            .setStatus(HttpStatus.OK);
+                .setData(type.get())
+                .setMessage("Watch type found successfully!")
+                .setStatus(HttpStatus.OK);
     }
 
     public ResponseDto<List<WatchType>> getAllWatchTypes() {
@@ -50,14 +50,14 @@ public class WatchTypeService {
         List<WatchType> types = watchTypeRepository.findAll();
         if (types.size() == 0) {
             return res
-                .setMessage("Cannot find any watch type!")
-                .setStatus(HttpStatus.NOT_FOUND);
+                    .setMessage("Cannot find any watch type!")
+                    .setStatus(HttpStatus.NOT_FOUND);
         }
 
         return res
-            .setData(types)
-            .setMessage("Watch types found successfully!")
-            .setStatus(HttpStatus.OK);
+                .setData(types)
+                .setMessage("Watch types found successfully!")
+                .setStatus(HttpStatus.OK);
     }
 
     public ResponseDto<WatchType> createNewWatchType(String name) {
@@ -65,21 +65,21 @@ public class WatchTypeService {
 
         if (name.equals(null) || name.length() == 0) {
             return res
-                .setMessage("Type name must be at least one character! Invalid name!");
+                    .setMessage("Type name must be at least one character! Invalid name!");
         }
 
         if (watchTypeRepository.findByName(name).isPresent()) {
             return res
-                .setMessage("Type's name must be unique! Invalid type name!");
+                    .setMessage("Type's name must be unique! Invalid type name!");
         }
 
         WatchType newType = new WatchType(null, name, false);
         watchTypeRepository.save(newType);
 
         return res
-            .setData(newType)
-            .setMessage("New watch type create successfully!")
-            .setStatus(HttpStatus.OK);
+                .setData(newType)
+                .setMessage("New watch type create successfully!")
+                .setStatus(HttpStatus.OK);
     }
 
     public ResponseDto<WatchType> updateWatchTypeName(UUID id, String name) {
@@ -95,10 +95,10 @@ public class WatchTypeService {
 
         if (!watchTypeRepository.findById(id).isPresent()) {
             return res
-                .setMessage("Cannot find the watch type with the given ID! Invalid ID!")
-                .setStatus(HttpStatus.NOT_FOUND);
+                    .setMessage("Cannot find the watch type with the given ID! Invalid ID!")
+                    .setStatus(HttpStatus.NOT_FOUND);
         }
-        
+
         Optional<WatchType> watch = watchTypeRepository.findByName(name);
         if (watch.isPresent() && !watch.get().getId().equals(id) && watch.get().getName().equals(name)) {
             return res.setMessage("Type's name must be unique! Invalid type name!");
@@ -108,9 +108,9 @@ public class WatchTypeService {
         WatchType updatedType = watch.get();
         updatedType.setName(name);
         return res
-            .setMessage("New watch type created successfully!")
-            .setStatus(HttpStatus.OK)
-            .setData(updatedType);
+                .setMessage("New watch type created successfully!")
+                .setStatus(HttpStatus.OK)
+                .setData(updatedType);
     }
 
     public ResponseDto<String> updateWatchTypeDeleteStatus(UUID id, Boolean deleteStatus) {
@@ -121,13 +121,13 @@ public class WatchTypeService {
 
         if (!watchTypeRepository.findById(id).isPresent()) {
             return res
-                .setMessage("Cannot find the watch type with the given ID! Invalid ID!")
-                .setStatus(HttpStatus.NOT_FOUND);
+                    .setMessage("Cannot find the watch type with the given ID! Invalid ID!")
+                    .setStatus(HttpStatus.NOT_FOUND);
         }
 
         watchTypeRepository.updateDeleteStatusbyId(id, deleteStatus);
         return res
-            .setMessage("Watch type delete status updated successfully!")
-            .setStatus(HttpStatus.OK);
+                .setMessage("Watch type delete status updated successfully!")
+                .setStatus(HttpStatus.OK);
     }
 }

@@ -6,11 +6,14 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.example.watch_selling.dtos.CreateCartDetailDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.dtos.UpdateCartDetailDto;
+import com.example.watch_selling.model.Account;
 import com.example.watch_selling.model.Cart;
 import com.example.watch_selling.model.CartDetail;
 import com.example.watch_selling.model.Watch;
@@ -32,6 +35,11 @@ public class CartDetailService {
     @Autowired
     private CartRepository cartRepository;
 
+    private Account getCurrentAccount() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (Account) authentication.getPrincipal();
+    }
+
     public ResponseDto<CartDetail> findCartDetailById(UUID id) {
         ResponseDto<CartDetail> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
         if (id == null) {
@@ -51,17 +59,17 @@ public class CartDetailService {
                 .setStatus(HttpStatus.OK);
     }
 
-    public ResponseDto<List<CartDetail>> findCartDetailsByCartId(UUID cartId) {
+    public ResponseDto<List<CartDetail>> findCartDetailsByCartId() {
         ResponseDto<List<CartDetail>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (cartId == null) {
-            return res.setMessage("Invalid cart ID!");
-        }
+        Account currentAccount = this.getCurrentAccount();
+
+        Cart targetingCart = cartRepository.findByAccountId(currentAccount.getId()).get();
 
         try {
-            cartDetailRepository.updateAvailabilityByCartIdAndQuantity(cartId);
+            cartDetailRepository.updateAvailabilityByCartIdAndQuantity(targetingCart.getId());
 
-            List<CartDetail> details = cartDetailRepository.findAllDetailWithCartId(cartId);
+            List<CartDetail> details = cartDetailRepository.findAllDetailWithCartId(targetingCart.getId());
             if (details.isEmpty()) {
                 return res
                         .setStatus(HttpStatus.NOT_FOUND)
@@ -82,6 +90,9 @@ public class CartDetailService {
     public ResponseDto<CartDetail> createNewCartDetail(CreateCartDetailDto detail) {
         ResponseDto<CartDetail> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
+        Account currentAccount = this.getCurrentAccount();
+        Optional<Cart> targetingCart = cartRepository.findByAccountId(currentAccount.getId());
+
         if (detail == null) {
             return res.setMessage("Invalid detail!");
         }
@@ -93,12 +104,12 @@ public class CartDetailService {
                     .setMessage(cartDetailValidationResponse.getMessage());
         }
 
-        Optional<Cart> targetingCart = cartRepository.findById(detail.getCartId());
-        if (!targetingCart.isPresent()) {
-            return res
-                    .setStatus(HttpStatus.NOT_FOUND)
-                    .setMessage("Cannot find any cart with the given Card ID!");
-        }
+        // Optional<Cart> targetingCart = cartRepository.findById(detail.getCartId());
+        // if (!targetingCart.isPresent()) {
+        // return res
+        // .setStatus(HttpStatus.NOT_FOUND)
+        // .setMessage("Cannot find any cart with the given Card ID!");
+        // }
 
         Optional<Watch> targetingWatch = watchRepository.findById(detail.getWatchId());
         if (!targetingWatch.isPresent()) {

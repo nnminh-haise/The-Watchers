@@ -8,15 +8,17 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 
 import com.example.watch_selling.model.Customer;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class CustomerProfileDto {
     private String citizenId;
 
@@ -40,10 +42,9 @@ public class CustomerProfileDto {
 
     public static Boolean validCitizenId(String citizenId) {
         if (citizenId == null ||
-            citizenId.isEmpty() ||
-            citizenId.isBlank() ||
-            citizenId.length() != 10
-        ) {
+                citizenId.isEmpty() ||
+                citizenId.isBlank() ||
+                citizenId.length() != 10) {
             return false;
         }
 
@@ -52,11 +53,10 @@ public class CustomerProfileDto {
 
     public static Boolean validTaxCode(String taxCode) {
         if (taxCode == null ||
-            taxCode.isEmpty() ||
-            taxCode.isBlank() ||
-            taxCode.length() < 10 ||
-            taxCode.length() > 13
-        ) {
+                taxCode.isEmpty() ||
+                taxCode.isBlank() ||
+                taxCode.length() < 10 ||
+                taxCode.length() > 13) {
             return false;
         }
 
@@ -65,9 +65,8 @@ public class CustomerProfileDto {
 
     public static Boolean validFirstName(String firstName) {
         if (firstName == null ||
-            firstName.isEmpty() ||
-            firstName.isBlank()
-        ) {
+                firstName.isEmpty() ||
+                firstName.isBlank()) {
             return false;
         }
 
@@ -76,9 +75,8 @@ public class CustomerProfileDto {
 
     public static Boolean validLastName(String lastName) {
         if (lastName == null ||
-            lastName.isEmpty() ||
-            lastName.isBlank()
-        ) {
+                lastName.isEmpty() ||
+                lastName.isBlank()) {
             return false;
         }
 
@@ -88,8 +86,7 @@ public class CustomerProfileDto {
     // TODO: Consider changing to Enum class
     public static Boolean validGender(String gender) {
         if (gender.equals("Nam") == false &&
-            gender.equals("Nữ") == false
-        ) {
+                gender.equals("Nữ") == false) {
             return false;
         }
 
@@ -99,8 +96,7 @@ public class CustomerProfileDto {
     public static Boolean validDateOfBirth(String dateOfBirth) {
         try {
             new SimpleDateFormat("yyyy-MM-dd").parse(dateOfBirth);
-        }
-        catch (ParseException e) {
+        } catch (ParseException e) {
             return false;
         }
 
@@ -109,9 +105,8 @@ public class CustomerProfileDto {
 
     public static Boolean validAddress(String address) {
         if (address == null ||
-            address.isEmpty() ||
-            address.isBlank()
-        ) {
+                address.isEmpty() ||
+                address.isBlank()) {
             return false;
         }
 
@@ -120,10 +115,9 @@ public class CustomerProfileDto {
 
     public static Boolean validPhonenumber(String phonenumber) {
         if (phonenumber == null ||
-            phonenumber.isEmpty() ||
-            phonenumber.isBlank() ||
-            phonenumber.length() != 10
-        ) {
+                phonenumber.isEmpty() ||
+                phonenumber.isBlank() ||
+                phonenumber.length() != 10) {
             return false;
         }
 
@@ -132,8 +126,7 @@ public class CustomerProfileDto {
 
     public static ResponseDto<String> validDto(CustomerProfileDto dto) {
         ResponseDto<String> response = new ResponseDto<>(
-            null, "", HttpStatus.BAD_REQUEST
-        );
+                null, "", HttpStatus.BAD_REQUEST);
 
         if (dto == null) {
             return response.setMessage("Invalid DTO");
@@ -195,8 +188,7 @@ public class CustomerProfileDto {
         Date dob = null;
         try {
             dob = new SimpleDateFormat("yyyy-MM-dd").parse(dto.getDateOfBirth());
-        }
-        catch (ParseException e) {
+        } catch (ParseException e) {
             return Optional.empty();
         }
 

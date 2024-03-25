@@ -13,16 +13,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.watch_selling.dtos.CreateOrderDto;
 import com.example.watch_selling.dtos.UpdateOrderDto;
-import com.example.watch_selling.dtos.RequestDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.model.Order;
 import com.example.watch_selling.service.OrderService;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
@@ -36,8 +39,13 @@ public class OrderController {
         return (Account) authentication.getPrincipal();
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Request success!"),
+            @ApiResponse(responseCode = "400", description = "Bad request!"),
+            @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
+    })
     @SuppressWarnings("null")
-    @GetMapping("my")
+    @GetMapping("all")
     public ResponseEntity<ResponseDto<List<Order>>> readAllOrders(
             @RequestParam(name = "page", defaultValue = "0") Integer page,
             @RequestParam(name = "size", defaultValue = "10") Integer size,
@@ -51,33 +59,53 @@ public class OrderController {
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Request success!"),
+            @ApiResponse(responseCode = "400", description = "Bad request!"),
+            @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
+    })
     @SuppressWarnings("null")
-    @GetMapping("")
-    public ResponseEntity<ResponseDto<Order>> getOrderById(@RequestParam UUID id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseDto<Order>> getOrderById(@PathVariable UUID id) {
         ResponseDto<Order> res = orderService.findById(id);
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Request success!"),
+            @ApiResponse(responseCode = "400", description = "Bad request!"),
+            @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
+    })
     @SuppressWarnings("null")
-    @PutMapping("new")
-    public ResponseEntity<ResponseDto<Order>> createNewOrder(@RequestBody RequestDto<CreateOrderDto> newOrder) {
+    @PostMapping("new")
+    public ResponseEntity<ResponseDto<Order>> createNewOrder(@RequestBody CreateOrderDto newOrder) {
         Account account = this.getCurrentAccount();
-        ResponseDto<Order> res = orderService.createNewOrder(newOrder.getData(), account.getId());
+        ResponseDto<Order> res = orderService.createNewOrder(newOrder, account.getId());
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Request success!"),
+            @ApiResponse(responseCode = "400", description = "Bad request!"),
+            @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
+    })
     @SuppressWarnings("null")
-    @PatchMapping("update")
+    @PatchMapping("update/{id}")
     public ResponseEntity<ResponseDto<Order>> updateOrderById(
-            @RequestParam UUID id,
-            @RequestBody RequestDto<UpdateOrderDto> updateOrder) {
-        ResponseDto<Order> res = orderService.updateOrderById(id, updateOrder.getData());
+            @PathVariable UUID id,
+            @RequestBody UpdateOrderDto updateOrder) {
+        ResponseDto<Order> res = orderService.updateOrderById(id, updateOrder);
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Request success!"),
+            @ApiResponse(responseCode = "400", description = "Bad request!"),
+            @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
+    })
     @SuppressWarnings("null")
-    @DeleteMapping("delete")
-    public ResponseEntity<ResponseDto<String>> deleteOrderById(@RequestParam UUID id) {
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<ResponseDto<String>> deleteOrderById(@PathVariable UUID id) {
         ResponseDto<String> res = orderService.updateDeleteStatus(id, true);
         return ResponseEntity.status(res.getStatus()).body(res);
     }

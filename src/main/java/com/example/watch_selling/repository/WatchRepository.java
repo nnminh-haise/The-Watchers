@@ -20,22 +20,15 @@ import jakarta.transaction.Transactional;
 public interface WatchRepository extends PagingAndSortingRepository<Watch, UUID> {
         @Query("SELECT w FROM Watch AS w " +
                         "WHERE w.isDeleted = false " +
-                        "AND (cast(:typeId as uuid) IS null OR w.type.id = :typeId) " +
-                        "AND (cast(:brandId as uuid) IS null OR w.brand.id = :brandId)" +
-                        "ORDER BY w.price ASC")
-        public List<Watch> findWatchesByTypeASC(
-                        @Param("typeId") UUID typeId,
-                        @Param("brandId") UUID brandId,
-                        Pageable pageable);
-
-        @Query("SELECT w FROM Watch AS w " +
-                        "WHERE w.isDeleted = false " +
-                        "AND (cast(:typeId as uuid) IS null OR w.type.id = :typeId) " +
-                        "AND (cast(:brandId as uuid) IS null OR w.brand.id = :brandId)" +
-                        "ORDER BY w.price DESC")
-        public List<Watch> findWatchesByTypeDESC(
-                        @Param("typeId") UUID typeId,
-                        @Param("brandId") UUID brandId,
+                        "AND (:typeIds IS NULL OR w.type.id in :typeIds) " +
+                        "AND (:brandIds IS NULL OR w.brand.id in :brandIds) " +
+                        "ORDER BY " +
+                        "CASE WHEN :sortBy = 'asc' THEN w.price END ASC, " +
+                        "CASE WHEN :sortBy = 'desc' THEN w.price END DESC ")
+        public List<Watch> findWatchesByTypeAndBrand(
+                        @Param("typeIds") List<UUID> typeIds,
+                        @Param("brandIds") List<UUID> brandIds,
+                        @Param("sortBy") String sortBy,
                         Pageable pageable);
 
         @Query("SELECT w FROM Watch w WHERE w.name = :name AND w.isDeleted = false")

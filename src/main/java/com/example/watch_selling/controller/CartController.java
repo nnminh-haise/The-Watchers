@@ -13,6 +13,9 @@ import com.example.watch_selling.model.Account;
 import com.example.watch_selling.model.Cart;
 import com.example.watch_selling.service.CartService;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @RestController
 @RequestMapping(path = "api/cart")
 public class CartController {
@@ -24,6 +27,11 @@ public class CartController {
         return (Account) authentication.getPrincipal();
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Request success!"),
+            @ApiResponse(responseCode = "400", description = "Bad request!"),
+            @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
+    })
     @SuppressWarnings("null")
     @GetMapping("my")
     public ResponseEntity<ResponseDto<Cart>> readCartById() {

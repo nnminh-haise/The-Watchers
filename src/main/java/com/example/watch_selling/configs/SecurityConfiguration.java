@@ -18,68 +18,66 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
-    private final AuthenticationProvider authenticationProvider;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final AuthenticationProvider authenticationProvider;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfiguration(
-            JwtAuthenticationFilter jwtAuthenticationFilter,
-            AuthenticationProvider authenticationProvider) {
-        this.authenticationProvider = authenticationProvider;
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
+        public SecurityConfiguration(
+                        JwtAuthenticationFilter jwtAuthenticationFilter,
+                        AuthenticationProvider authenticationProvider) {
+                this.authenticationProvider = authenticationProvider;
+                this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        }
 
-    // @Bean
-    // CorsFilter corsFilter() {
-    //     CorsFilter filter = new CorsFilter();
-    //     return filter;
-    // }
+        // @Bean
+        // CorsFilter corsFilter() {
+        // CorsFilter filter = new CorsFilter();
+        // return filter;
+        // }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // http.addFilterBefore(corsFilter(), SessionManagementFilter.class);
-        http
-            .cors(Customizer.withDefaults())
-            .csrf(csrf -> csrf
-            .disable())
-            .authorizeHttpRequests(requests -> requests
-                .requestMatchers(
-                    "/auth/**",
-                    "/v3/api-docs/**",
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/api/customer/**",
-                    "/api/watch/**",
-                    "/api/cart/**",
-                    "/api/order/**",
-                    "/api/invoice/**"
-                )
-                .permitAll()
-                .anyRequest()
-                .authenticated())
-            .sessionManagement(management -> management
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authenticationProvider(authenticationProvider)
-            .addFilterBefore(jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter.class);
-        return http.build();
-    }
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                // http.addFilterBefore(corsFilter(), SessionManagementFilter.class);
+                http
+                                .cors(Customizer.withDefaults())
+                                .csrf(csrf -> csrf
+                                                .disable())
+                                .authorizeHttpRequests(requests -> requests
+                                                .requestMatchers(
+                                                                "/api/auth/**",
+                                                                "/v3/api-docs/**",
+                                                                "/swagger-ui/**",
+                                                                "/swagger-ui.html",
+                                                                "/api/customer/**",
+                                                                "/api/watch/**",
+                                                                "/api/cart/**",
+                                                                "/api/order/**",
+                                                                "/api/invoice/**",
+                                                                "/api/cart-detail/**",
+                                                                "/api/order-detail/**")
+                                                .permitAll()
+                                                .anyRequest()
+                                                .authenticated())
+                                .sessionManagement(management -> management
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authenticationProvider(authenticationProvider)
+                                .addFilterBefore(jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class);
+                return http.build();
+        }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList(
-            "GET", "POST", "PUT", "DELETE", "OPTIONS"
-        ));
-        configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization", "Cache-Control", "Content-Type"
-        ));
-        configuration.addAllowedHeader("*");
-        configuration.setAllowCredentials(true);
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+                configuration.setAllowedMethods(Arrays.asList(
+                                "GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                configuration.setAllowedHeaders(Arrays.asList(
+                                "Authorization", "Cache-Control", "Content-Type"));
+                configuration.addAllowedHeader("*");
+                configuration.setAllowCredentials(true);
 
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
+        }
 }

@@ -7,17 +7,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.watch_selling.dtos.CreateInvoiceDto;
-import com.example.watch_selling.dtos.RequestDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Invoice;
 import com.example.watch_selling.service.InvoiceService;
+
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @RestController
 @RequestMapping("api/invoice")
@@ -25,6 +28,11 @@ public class InvoiceController {
     @Autowired
     private InvoiceService invoiceService;
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Request success!"),
+            @ApiResponse(responseCode = "400", description = "Bad request!"),
+            @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
+    })
     @SuppressWarnings("null")
     @GetMapping("all")
     public ResponseEntity<ResponseDto<List<Invoice>>> readAllInvoices(
@@ -41,23 +49,39 @@ public class InvoiceController {
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Request success!"),
+            @ApiResponse(responseCode = "400", description = "Bad request!"),
+            @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
+    })
     @SuppressWarnings("null")
-    @GetMapping("")
-    public ResponseEntity<ResponseDto<Invoice>> readInvoiceById(@RequestParam UUID id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseDto<Invoice>> readInvoiceById(@PathVariable UUID id) {
         ResponseDto<Invoice> res = invoiceService.findById(id);
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Request success!"),
+            @ApiResponse(responseCode = "400", description = "Bad request!"),
+            @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
+    })
     @SuppressWarnings("null")
-    @PutMapping("new")
-    public ResponseEntity<ResponseDto<Invoice>> createInvoice(@RequestBody RequestDto<CreateInvoiceDto> dto) {
-        ResponseDto<Invoice> res = invoiceService.createNewInvoice(dto.getData());
+    @PostMapping("new")
+    public ResponseEntity<ResponseDto<Invoice>> createInvoice(
+            @RequestBody CreateInvoiceDto dto) {
+        ResponseDto<Invoice> res = invoiceService.createNewInvoice(dto);
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Request success!"),
+            @ApiResponse(responseCode = "400", description = "Bad request!"),
+            @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
+    })
     @SuppressWarnings("null")
-    @DeleteMapping("delete")
-    public ResponseEntity<ResponseDto<String>> deleteInvoiceById(@RequestParam UUID id) {
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<ResponseDto<String>> deleteInvoiceById(@PathVariable UUID id) {
         ResponseDto<String> res = invoiceService.updateDeleteStatusById(id, true);
         return ResponseEntity.status(res.getStatus()).body(res);
     }

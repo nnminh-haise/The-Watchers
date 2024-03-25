@@ -14,6 +14,9 @@ import com.example.watch_selling.model.Account;
 import com.example.watch_selling.service.AuthenticationService;
 import com.example.watch_selling.service.JwtService;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 class LoginResponse {
     private String token;
 
@@ -23,7 +26,7 @@ class LoginResponse {
         return token;
     }
 
-	public long getExpiresIn() {
+    public long getExpiresIn() {
         return expiresIn;
     }
 
@@ -40,10 +43,10 @@ class LoginResponse {
 
 // TODO: Set exprire jwt time
 @RestController
-@RequestMapping(path = "/auth")
+@RequestMapping(path = "/api/auth")
 public class AuthenticationController {
     private final JwtService jwtService;
-    
+
     private final AuthenticationService authenticationService;
 
     public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService) {
@@ -51,25 +54,36 @@ public class AuthenticationController {
         this.authenticationService = authenticationService;
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Sign up success!"),
+            @ApiResponse(responseCode = "401", description = "Unauthorize!"),
+            @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
+    })
     @PostMapping("/sign-up")
     public ResponseEntity<ResponseDto<Account>> register(@RequestBody RegisterDto registerAccountDto) {
         Account registeredAccount = authenticationService.signup(registerAccountDto);
 
         ResponseDto<Account> response = new ResponseDto<>();
         response.setData(registeredAccount);
-        response.setStatus(HttpStatus.ACCEPTED);
+        response.setStatus(HttpStatus.OK);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Sign in success!"),
+            @ApiResponse(responseCode = "401", description = "Unauthorize!"),
+            @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
+    })
     @PostMapping("/sign-in")
     public ResponseEntity<ResponseDto<LoginResponse>> authenticate(@RequestBody LoginDto loginDto) {
         Account authenticatedUser = authenticationService.authenticate(loginDto);
         String jwtToken = jwtService.generateToken(authenticatedUser);
-        LoginResponse loginResponse = new LoginResponse().setToken(jwtToken).setExpiresIn(jwtService.getExpirationTime());
+        LoginResponse loginResponse = new LoginResponse().setToken(jwtToken)
+                .setExpiresIn(jwtService.getExpirationTime());
 
         ResponseDto<LoginResponse> response = new ResponseDto<>();
         response.setData(loginResponse);
-        response.setStatus(HttpStatus.ACCEPTED);
+        response.setStatus(HttpStatus.OK);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

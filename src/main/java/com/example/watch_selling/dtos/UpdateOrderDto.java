@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +15,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+
 public class UpdateOrderDto {
     private String orderDate;
 

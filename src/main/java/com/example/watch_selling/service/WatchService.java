@@ -50,7 +50,8 @@ public class WatchService {
                 .setMessage("Successful!");
     }
 
-    public ResponseDto<List<Watch>> findAll(int page, int size, UUID typeId, UUID brandId, String sortBy) {
+    public ResponseDto<List<Watch>> findAll(
+            int page, int size, List<UUID> typeIds, List<UUID> brandIds, String sortBy) {
         ResponseDto<List<Watch>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
         if (!(sortBy.equalsIgnoreCase("desc") || sortBy.equalsIgnoreCase("asc"))) {
@@ -58,26 +59,20 @@ public class WatchService {
         }
 
         Pageable selectingPage = PageRequest.of(page, size);
-        try {
-            List<Watch> watches = sortBy.equalsIgnoreCase("asc")
-                    ? watchRepository.findWatchesByTypeASC(typeId, brandId, selectingPage)
-                    : watchRepository.findWatchesByTypeDESC(typeId, brandId, selectingPage);
+        List<Watch> watches = watchRepository.findWatchesByTypeAndBrand(
+                typeIds, brandIds, sortBy, selectingPage);
 
-            if (watches == null || watches.isEmpty()) {
-                return res
-                        .setStatus(HttpStatus.NOT_FOUND)
-                        .setMessage("Cannot find any watch!");
-            }
-
+        if (watches == null || watches.isEmpty()) {
             return res
-                    .setData(watches)
+                    .setData(List.of())
                     .setStatus(HttpStatus.OK)
-                    .setMessage("Successfully!");
-        } catch (Exception e) {
-            return res
-                    .setMessage(e.getMessage())
-                    .setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                    .setMessage("Cannot find any watch!");
         }
+
+        return res
+                .setData(watches)
+                .setStatus(HttpStatus.OK)
+                .setMessage("Successfully!");
     }
 
     public ResponseDto<Watch> createWatch(WatchInformationDto watchInformation) {
