@@ -2,6 +2,7 @@ package com.example.watch_selling.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.watch_selling.dtos.ReadWatchesDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.dtos.WatchInformationDto;
 import com.example.watch_selling.model.Watch;
@@ -49,13 +50,13 @@ public class WatchController {
         })
         @SuppressWarnings("null")
         @GetMapping("all")
-        public ResponseEntity<ResponseDto<List<Watch>>> readAllWatches(
-                        @RequestParam(name = "page", defaultValue = "0") Integer page,
+        public ResponseEntity<ResponseDto<ReadWatchesDto>> readAllWatches(
+                        @RequestParam(name = "page", defaultValue = "1") Integer page,
                         @RequestParam(name = "size", defaultValue = "10") Integer size,
                         @RequestParam(name = "type_id", required = false) List<UUID> typeIds,
                         @RequestParam(name = "brand_id", required = false) List<UUID> brandIds,
                         @RequestParam(name = "sort_by", defaultValue = "asc", required = false) String sortBy) {
-                ResponseDto<List<Watch>> res = watchService.findAll(page, size, typeIds, brandIds, sortBy);
+                ResponseDto<ReadWatchesDto> res = watchService.findAll(page - 1, size, typeIds, brandIds, sortBy);
                 return ResponseEntity.status(res.getStatus()).body(res);
         }
 

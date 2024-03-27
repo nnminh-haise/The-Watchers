@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.example.watch_selling.dtos.ReadWatchesDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.dtos.WatchInformationDto;
 import com.example.watch_selling.model.Watch;
@@ -50,9 +51,10 @@ public class WatchService {
                 .setMessage("Successful!");
     }
 
-    public ResponseDto<List<Watch>> findAll(
+    public ResponseDto<ReadWatchesDto> findAll(
             int page, int size, List<UUID> typeIds, List<UUID> brandIds, String sortBy) {
-        ResponseDto<List<Watch>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        ResponseDto<ReadWatchesDto> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+        ReadWatchesDto dto = new ReadWatchesDto();
 
         if (!(sortBy.equalsIgnoreCase("desc") || sortBy.equalsIgnoreCase("asc"))) {
             return res.setMessage("Invalid sort by value!");
@@ -61,16 +63,21 @@ public class WatchService {
         Pageable selectingPage = PageRequest.of(page, size);
         List<Watch> watches = watchRepository.findWatchesByTypeAndBrand(
                 typeIds, brandIds, sortBy, selectingPage);
+        Integer total = watchRepository.countWatchesByTypeAndBrand(typeIds, brandIds);
 
         if (watches == null || watches.isEmpty()) {
+            dto.setTotal(0);
+            dto.setWatches(List.of());
             return res
-                    .setData(List.of())
+                    .setData(dto)
                     .setStatus(HttpStatus.OK)
                     .setMessage("Cannot find any watch!");
         }
 
+        dto.setWatches(watches);
+        dto.setTotal(total);
         return res
-                .setData(watches)
+                .setData(dto)
                 .setStatus(HttpStatus.OK)
                 .setMessage("Successfully!");
     }

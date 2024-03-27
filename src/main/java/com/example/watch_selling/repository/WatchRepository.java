@@ -31,6 +31,14 @@ public interface WatchRepository extends PagingAndSortingRepository<Watch, UUID>
                         @Param("sortBy") String sortBy,
                         Pageable pageable);
 
+        @Query("SELECT count(w.id) FROM Watch AS w " +
+                        "WHERE w.isDeleted = false " +
+                        "AND (:typeIds IS NULL OR w.type.id in :typeIds) " +
+                        "AND (:brandIds IS NULL OR w.brand.id in :brandIds)")
+        public Integer countWatchesByTypeAndBrand(
+                        @Param("typeIds") List<UUID> typeIds,
+                        @Param("brandIds") List<UUID> brandIds);
+
         @Query("SELECT w FROM Watch w WHERE w.name = :name AND w.isDeleted = false")
         public Optional<Watch> findByName(@Param("name") String name);
 
