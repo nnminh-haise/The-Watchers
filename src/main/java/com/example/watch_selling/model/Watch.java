@@ -45,11 +45,11 @@ public class Watch {
     private Boolean isDeleted = false;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "type_id", referencedColumnName = "id", unique = true, nullable = false)
+    @JoinColumn(name = "type_id", referencedColumnName = "id", nullable = false)
     private WatchType type;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "brand_id", referencedColumnName = "id", unique = true, nullable = false)
+    @JoinColumn(name = "brand_id", referencedColumnName = "id", nullable = false)
     private WatchBrand brand;
 
     public Watch() {

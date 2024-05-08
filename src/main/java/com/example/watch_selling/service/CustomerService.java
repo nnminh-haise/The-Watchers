@@ -1,5 +1,6 @@
 package com.example.watch_selling.service;
 
+import java.text.SimpleDateFormat;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.watch_selling.dtos.CustomerProfileDto;
 import com.example.watch_selling.dtos.ResponseDto;
+import com.example.watch_selling.dtos.UpdateProfileDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.model.Customer;
 import com.example.watch_selling.repository.CustomerRepository;
@@ -118,12 +120,14 @@ public class CustomerService {
 
     public ResponseDto<Customer> updateCustomerProfile(
             UUID accountId,
-            CustomerProfileDto updatedProfile) {
+            UpdateProfileDto dto) {
         ResponseDto<Customer> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
         if (accountId == null) {
             return res.setMessage("Invalid ID!");
         }
+
+        System.out.println("account id: " + accountId);
 
         Optional<Customer> targetingCustomerProfile = customerRepository.findByAccountId(accountId);
         if (!targetingCustomerProfile.isPresent()) {
@@ -132,53 +136,27 @@ public class CustomerService {
                     .setStatus(HttpStatus.NOT_FOUND);
         }
 
-        if (updatedProfile.getJwt() != null) {
-            return res.setMessage("JWT must be null!");
-        }
-
-        ResponseDto<String> dtoValidationResponse = CustomerProfileDto.validDto(updatedProfile);
-        if (!dtoValidationResponse.getStatus().equals(HttpStatus.OK)) {
+        if (customerRepository.existProfileWithPhonenumber(
+            dto.getPhoneNumber(), accountId).isPresent()) {
             return res
-                    .setMessage(dtoValidationResponse.getMessage())
-                    .setStatus(dtoValidationResponse.getStatus());
-        }
-
-        if (!updatedProfile.getCitizenId().equals(targetingCustomerProfile.get().getCitizenId())) {
-            return res.setMessage("Cannot change citizen ID!");
-        }
-
-        if (!updatedProfile.getTaxCode().equals(targetingCustomerProfile.get().getTaxCode())) {
-            return res.setMessage("Cannot change tax code!");
-        }
-
-        if (customerRepository
-                .existProfileWithCitizenId(updatedProfile.getCitizenId(), accountId).isPresent()) {
-            return res
-                    .setMessage("Duplicated citizen ID! Invalid citizen ID!")
+                    .setMessage("Duplicated phone number! Invalid phone number!")
                     .setStatus(HttpStatus.FORBIDDEN);
         }
 
-        if (customerRepository
-                .existProfileWithPhonenumber(updatedProfile.getPhoneNumber(), accountId).isPresent()) {
-            return res
-                    .setMessage("Duplicated phonenumber! Invalid phonenumber!")
-                    .setStatus(HttpStatus.FORBIDDEN);
+        Customer newProfile = targetingCustomerProfile.get();
+        if (dto.getFirstName() != null) newProfile.setFirstName(dto.getFirstName());
+        if (dto.getLastName() != null) newProfile.setLastName(dto.getLastName());
+        try {
+            if (dto.getDateOfBirth() != null) newProfile.setDateOfBirth(new SimpleDateFormat("yyyy-MM-dd").parse(dto.getDateOfBirth()));
         }
+        catch (Exception e) {
+            return res.setMessage("Error parsing date of birth value!");
+        }
+        if (dto.getAddress() != null) newProfile.setAddress(dto.getAddress());
+        if (dto.getGender() != null) newProfile.setGender(dto.getGender());
+        if (dto.getPhoneNumber() != null) newProfile.setPhoneNumber(dto.getPhoneNumber());
+        if (dto.getPhoto() != null) newProfile.setPhoto(dto.getPhoto());
 
-        if (customerRepository
-                .existProfileWithTaxCode(updatedProfile.getTaxCode(), accountId).isPresent()) {
-            return res
-                    .setMessage("Duplicated tax code! Invalid tax code!")
-                    .setStatus(HttpStatus.FORBIDDEN);
-        }
-
-        Optional<Customer> newProfileBuffer = CustomerProfileDto.toModel(updatedProfile);
-        if (!newProfileBuffer.isPresent()) {
-            return res.setMessage("Cannot create new profile from the given data!");
-        }
-        Customer newProfile = newProfileBuffer.get();
-        newProfile.setId(targetingCustomerProfile.get().getId());
-        newProfile.setAccount(targetingCustomerProfile.get().getAccount());
 
         customerRepository.updateCustomerProfileByAccountId(accountId, newProfile);
 
@@ -188,13 +166,6 @@ public class CustomerService {
                 .setStatus(HttpStatus.OK);
     }
 
-    /*
-     * Deleting customer profile.
-     * <p>
-     * Deleteing customer profile will also deleting the associtated account of that
-     * profile!
-     * </p>
-     */
     public ResponseDto<String> updateDeleteStatusById(UUID accountId) {
         ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
@@ -208,16 +179,6 @@ public class CustomerService {
                     .setMessage("Cannot find any customer with the given account ID!")
                     .setStatus(HttpStatus.NOT_FOUND);
         }
-
-        // try {
-        // customerRepository.deleteProfileByAccountId(accountId);
-        // accountService.deleteAccount(accountId);
-        // cartService.deleteByAccountId(accountId);
-        // }
-        // catch (Exception e) {
-        // return res
-        // .setMessage(e.getMessage());
-        // }
 
         customerRepository.deleteProfileByAccountId(accountId);
         accountService.deleteAccount(accountId);

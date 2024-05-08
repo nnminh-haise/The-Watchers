@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
@@ -50,7 +51,7 @@ public class CartDetailController {
                         @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
         })
         @SuppressWarnings("null")
-        @GetMapping("all")
+        @GetMapping("my")
         public ResponseEntity<ResponseDto<List<CartDetail>>> readAllCartDetailByCartId() {
                 ResponseDto<List<CartDetail>> res = cartDetailService.findCartDetailsByCartId();
                 return ResponseEntity.status(res.getStatus()).body(res);
@@ -75,7 +76,7 @@ public class CartDetailController {
                         @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
         })
         @SuppressWarnings("null")
-        @PatchMapping("update/{id}")
+        @PutMapping("update/{id}")
         public ResponseEntity<ResponseDto<CartDetail>> updateCartDetailById(
                         @PathVariable UUID id,
                         @RequestBody UpdateCartDetailDto dto) {

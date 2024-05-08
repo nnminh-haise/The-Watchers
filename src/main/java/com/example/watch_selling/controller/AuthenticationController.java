@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.watch_selling.dtos.LoginDto;
 import com.example.watch_selling.dtos.RegisterDto;
+import com.example.watch_selling.dtos.RegisterResponse;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.service.AuthenticationService;
@@ -18,9 +19,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 class LoginResponse {
+    private String email;
+
     private String token;
 
     private long expiresIn;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public LoginResponse setEmail(String email) {
+        this.email = email;
+        return this;
+    }
 
     public String getToken() {
         return token;
@@ -60,12 +72,19 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
     })
     @PostMapping("/sign-up")
-    public ResponseEntity<ResponseDto<Account>> register(@RequestBody RegisterDto registerAccountDto) {
+    public ResponseEntity<ResponseDto<RegisterResponse>> register(@RequestBody RegisterDto registerAccountDto) {
         Account registeredAccount = authenticationService.signup(registerAccountDto);
 
-        ResponseDto<Account> response = new ResponseDto<>();
-        response.setData(registeredAccount);
-        response.setStatus(HttpStatus.OK);
+        String token = jwtService.generateToken(registeredAccount);
+
+        ResponseDto<RegisterResponse> response = new ResponseDto<>(
+                new RegisterResponse(
+                        registeredAccount.getId(),
+                        registeredAccount.getEmail(),
+                        token),
+                "Success!",
+                HttpStatus.OK);
+
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -78,7 +97,9 @@ public class AuthenticationController {
     public ResponseEntity<ResponseDto<LoginResponse>> authenticate(@RequestBody LoginDto loginDto) {
         Account authenticatedUser = authenticationService.authenticate(loginDto);
         String jwtToken = jwtService.generateToken(authenticatedUser);
-        LoginResponse loginResponse = new LoginResponse().setToken(jwtToken)
+        LoginResponse loginResponse = new LoginResponse()
+                .setToken(jwtToken)
+                .setEmail(loginDto.getEmail())
                 .setExpiresIn(jwtService.getExpirationTime());
 
         ResponseDto<LoginResponse> response = new ResponseDto<>();

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.example.watch_selling.model.Customer;
 import com.example.watch_selling.dtos.CustomerProfileDto;
 import com.example.watch_selling.dtos.ResponseDto;
+import com.example.watch_selling.dtos.UpdateProfileDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.service.CustomerService;
 
@@ -40,6 +42,8 @@ public class CustomerController {
                         @RequestBody CustomerProfileDto customerProfile) {
                 Account customerAccount = getAssociatedAccount();
 
+                System.out.println("dob: " + customerProfile.getDateOfBirth().toString());
+
                 ResponseDto<Customer> res = customerService.createNewCustomer(
                                 customerAccount.getId(), customerProfile);
 
@@ -52,7 +56,7 @@ public class CustomerController {
                         @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
         })
         @SuppressWarnings("null")
-        @GetMapping("/me")
+        @GetMapping("/profile")
         public ResponseEntity<ResponseDto<Customer>> readCustomerProfile(
                         @RequestHeader(value = "Authorization", required = false) String token) {
                 Account customerAccount = getAssociatedAccount();
@@ -68,10 +72,10 @@ public class CustomerController {
                         @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
         })
         @SuppressWarnings("null")
-        @PatchMapping("/update")
+        @PutMapping("/update")
         public ResponseEntity<ResponseDto<Customer>> updateProfile(
                         @RequestHeader(value = "Authorization", required = false) String token,
-                        @RequestBody CustomerProfileDto updatedProfile) {
+                        @RequestBody UpdateProfileDto updatedProfile) {
                 Account account = getAssociatedAccount();
 
                 ResponseDto<Customer> res = customerService.updateCustomerProfile(

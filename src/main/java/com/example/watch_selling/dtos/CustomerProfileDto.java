@@ -8,8 +8,7 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 
 import com.example.watch_selling.model.Customer;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +17,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class CustomerProfileDto {
     private String citizenId;
 
@@ -168,7 +166,7 @@ public class CustomerProfileDto {
         }
 
         if (!CustomerProfileDto.validDateOfBirth(dto.getDateOfBirth())) {
-            response.setMessage("Invalid phonenumber!");
+            response.setMessage("Invalid date of bitrh!");
             return response;
         }
 
