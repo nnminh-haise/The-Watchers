@@ -1,11 +1,14 @@
 package com.example.watch_selling.service;
 
+import java.text.DecimalFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -13,33 +16,46 @@ import org.springframework.stereotype.Service;
 
 import com.example.watch_selling.dtos.CreateInvoiceDto;
 import com.example.watch_selling.dtos.EmailInvoiceInformation;
+import com.example.watch_selling.dtos.InvoiceDetail;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.mailing.EmailServiceImpl;
 import com.example.watch_selling.model.Invoice;
 import com.example.watch_selling.model.Order;
+import com.example.watch_selling.model.OrderDetail;
 import com.example.watch_selling.repository.InvoiceRepository;
 import com.example.watch_selling.repository.OrderDetailRepository;
 import com.example.watch_selling.repository.OrderRepository;
 
 @Service
 public class InvoiceService {
-    @Autowired
+    private final double TAX_PERCENT = 1.08;
+
     private InvoiceRepository invoiceRepository;
 
-    @Autowired
     private OrderRepository orderRepository;
 
-    @Autowired
     private OrderDetailRepository orderDetailRepository;
 
-    @Autowired
     private EmailServiceImpl emailServiceImpl;
 
-    public ResponseDto<List<Invoice>> findAllInvoices(
+    public InvoiceService(
+            InvoiceRepository invoiceRepository,
+            OrderRepository orderRepository,
+            OrderDetailRepository orderDetailRepository,
+            EmailServiceImpl emailServiceImpl) {
+        this.invoiceRepository = invoiceRepository;
+        this.orderRepository = orderRepository;
+        this.orderDetailRepository = orderDetailRepository;
+        this.emailServiceImpl = emailServiceImpl;
+    }
+
+    public ResponseDto<List<InvoiceDetail>> findAllInvoiceByAccountId(
             Integer page, Integer size,
             String dateSortBy, String fromDate, String toDate,
-            String totalSortBy, String fromTotal, String toTotal) {
-        ResponseDto<List<Invoice>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+            String totalSortBy, String fromTotal, String toTotal,
+            UUID accountId) {
+        ResponseDto<List<InvoiceDetail>> res = new ResponseDto<>(
+                null, "", HttpStatus.BAD_REQUEST);
 
         List<String> sortByValues = List.of("asc", "desc");
         Boolean flag = false;
@@ -52,16 +68,6 @@ public class InvoiceService {
             return res.setMessage("Invalid date sort by value!");
         }
 
-        flag = false;
-        for (String value : sortByValues) {
-            if (totalSortBy.equalsIgnoreCase(value)) {
-                flag = true;
-            }
-        }
-        if (!flag) {
-            return res.setMessage("Invalid total sort by value!");
-        }
-
         try {
             LocalDate validFromDate = (fromDate == null) ? null : LocalDate.parse(fromDate);
             LocalDate validToDate = (toDate == null) ? null : LocalDate.parse(toDate);
@@ -70,7 +76,8 @@ public class InvoiceService {
 
             Pageable paging = PageRequest.of(page, size);
             List<Invoice> invoices = invoiceRepository.findAllByDateAndTotal(
-                    paging, dateSortBy, validFromDate, validToDate, totalSortBy, validFromTotal, validToTotal);
+                    paging, dateSortBy, validFromDate, validToDate, totalSortBy, validFromTotal, validToTotal,
+                    accountId);
 
             if (invoices.isEmpty()) {
                 return res
@@ -78,8 +85,21 @@ public class InvoiceService {
                         .setStatus(HttpStatus.NOT_FOUND);
             }
 
+            List<InvoiceDetail> invoiceDetails = new ArrayList<>();
+
+            for (var invoice : invoices) {
+                Order order = invoice.getOrder();
+                var invoideDetail = createInvoiceDetail(invoice, order);
+                if (invoideDetail.isEmpty()) {
+                    return res
+                            .setStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .setMessage("Cannot create invoice detail!");
+                }
+                invoiceDetails.add(invoideDetail.get());
+            }
+
             return res
-                    .setData(invoices)
+                    .setData(invoiceDetails)
                     .setMessage("Invoice found successfully!")
                     .setStatus(HttpStatus.OK);
         } catch (Exception e) {
@@ -87,8 +107,16 @@ public class InvoiceService {
         }
     }
 
-    public ResponseDto<Invoice> findById(UUID id) {
-        ResponseDto<Invoice> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+    // public ResponseDto<List<InvoiceDetail>> findAllByAccountId(
+    // Integer page, Integer size,
+    // String dateSortBy, String fromDate, String toDate,
+    // String totalSortBy, String fromTotal, String toTotal,
+    // UUID accountId) {
+    // // ResponseDto<List<InvoiceDetail>>
+    // }
+
+    public ResponseDto<InvoiceDetail> findById(UUID id) {
+        ResponseDto<InvoiceDetail> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
         if (id == null) {
             return res.setMessage("Invalid ID!");
@@ -97,18 +125,26 @@ public class InvoiceService {
         Optional<Invoice> invoice = invoiceRepository.findById(id);
         if (!invoice.isPresent()) {
             return res
-                    .setMessage("Cannot find any invoice with the given ID!")
+                    .setMessage("Invoice not found!")
                     .setStatus(HttpStatus.NOT_FOUND);
         }
 
+        Optional<InvoiceDetail> invoiceDetail = this.createInvoiceDetail(
+                invoice.get(), invoice.get().getOrder());
+        if (invoiceDetail.isEmpty()) {
+            return res
+                    .setStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .setMessage("Cannot create invoice detail!");
+        }
+
         return res
-                .setMessage("Invoice found successfully!")
+                .setMessage("Success!")
                 .setStatus(HttpStatus.OK)
-                .setData(invoice.get());
+                .setData(invoiceDetail.get());
     }
 
-    public ResponseDto<Invoice> createNewInvoice(CreateInvoiceDto dto) {
-        ResponseDto<Invoice> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
+    public ResponseDto<InvoiceDetail> createNewInvoice(CreateInvoiceDto dto) {
+        ResponseDto<InvoiceDetail> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
         if (!CreateInvoiceDto.validateDto(dto)) {
             return res.setMessage("Invalid DTO");
@@ -120,12 +156,25 @@ public class InvoiceService {
         }
 
         Double totalPrice = orderDetailRepository.totalOfOrder(dto.getOrderId());
-        Double priceAfterTax = totalPrice * 1.08;
-        Invoice newInvoice = new Invoice(
-                null, LocalDate.now(), priceAfterTax, dto.getTaxCode(), false, targetingOrder.get());
+        Double priceAfterTax = totalPrice * TAX_PERCENT;
+        LocalDate createDate = LocalDate.now();
+        Invoice invoice = invoiceRepository.save(new Invoice(
+                null,
+                createDate,
+                totalPrice,
+                dto.getTaxCode(),
+                false,
+                targetingOrder.get()));
 
-        Invoice invoice = invoiceRepository.save(newInvoice);
+        Optional<InvoiceDetail> invoiceDetail = createInvoiceDetail(invoice, targetingOrder.get());
+        if (invoiceDetail.isEmpty()) {
+            return res
+                    .setStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .setMessage("Cannot create invoice detal!");
+        }
 
+        // * Sending email to recevier
+        // TODO: improve this code
         String recipient = targetingOrder.get().getAccount().getEmail();
         String subject = "Watch ordering invoice - Number: " + invoice.getId().toString();
         EmailInvoiceInformation body = new EmailInvoiceInformation();
@@ -145,9 +194,9 @@ public class InvoiceService {
         }
 
         return res
-                .setData(invoice)
+                .setData(invoiceDetail.get())
                 .setStatus(HttpStatus.OK)
-                .setMessage("Successful!");
+                .setMessage("Success!");
     }
 
     public ResponseDto<String> updateDeleteStatusById(UUID id, Boolean status) {
@@ -161,5 +210,40 @@ public class InvoiceService {
         return res
                 .setStatus(HttpStatus.OK)
                 .setMessage("Invoice updated successfully!");
+    }
+
+    private Optional<InvoiceDetail> createInvoiceDetail(Invoice invoice, Order order) {
+        if (invoice == null || order == null) {
+            return Optional.empty();
+        }
+
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        InvoiceDetail invoiceDetail = new InvoiceDetail();
+        invoiceDetail.setOrder(order);
+        invoiceDetail.setCreateDate(invoice.getCreateDate().format(dateTimeFormat));
+        invoiceDetail.setInvoiceNumber(this.getTimestamp(LocalDateTime.now()));
+        invoiceDetail.setTotalPrice(decimalFormat.format(invoice.getTotal()));
+        invoiceDetail.setTotalPriceAfterTax(decimalFormat.format(invoice.getTotal() * TAX_PERCENT));
+        invoiceDetail.setTaxCode(invoice.getTaxCode());
+        invoiceDetail.setReceiverName(order.getName());
+        invoiceDetail.setReceiverAddress(order.getAddress());
+        invoiceDetail.setReceiverPhoneNumber(order.getPhoneNumber());
+        invoiceDetail.setOrderDate(order.getOrderDate().toString());
+        invoiceDetail.setEstimateDeliveryDate(order.getDeliveryDate().toString());
+        List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrderId(order.getId());
+        invoiceDetail.setOrderDetails(orderDetails);
+
+        return Optional.of(invoiceDetail);
+    }
+
+    private String getTimestamp(LocalDateTime date) {
+        return String.valueOf(date.getYear()) +
+                date.getMonthValue() +
+                date.getDayOfMonth() +
+                date.getHour() +
+                date.getMinute() +
+                date.getSecond();
     }
 }

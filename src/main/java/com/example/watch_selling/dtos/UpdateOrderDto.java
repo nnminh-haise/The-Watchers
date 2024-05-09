@@ -3,16 +3,19 @@ package com.example.watch_selling.dtos;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
+import com.example.watch_selling.helpers.DateParser;
+import com.example.watch_selling.model.Order;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class UpdateOrderDto {
     private String orderDate;
 
@@ -20,37 +23,52 @@ public class UpdateOrderDto {
 
     private String address;
 
+    @Size(min = 10, max = 10, message = "Receiver's phone number must be exact 10 digit")
     private String phoneNumber;
 
     private String deliveryDate;
 
-    public static ResponseDto<String> validDto(UpdateOrderDto dto) {
-        ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
-
-        Optional<LocalDate> orderDate = CreateOrderDto.parseDate(dto.getOrderDate());
-        if (!orderDate.isPresent()) {
-            return res.setMessage("Invalid order date format!");
+    public static Optional<Order> produce(UpdateOrderDto dto, Order order) {
+        if (dto == null) {
+            return Optional.empty();
         }
 
-        Optional<LocalDate> deliveryDate = CreateOrderDto.parseDate(dto.getDeliveryDate());
-        if (!deliveryDate.isPresent()) {
-            return res.setMessage("Invalid delivery date format!");
+        Order updatedOrder = order;
+
+        if (dto.getOrderDate() != null) {
+            Optional<LocalDate> orderDate = DateParser.parse(dto.getOrderDate());
+            if (orderDate.isEmpty()) {
+                System.out.println("[Update order dto] DTO validator: Cannot parse order date!");
+                return Optional.empty();
+            }
+            updatedOrder.setOrderDate(orderDate.get());
         }
 
-        if (!CreateOrderDto.validName(dto.getName())) {
-            return res.setMessage("Invalid name!");
+        if (dto.getDeliveryDate() != null) {
+            Optional<LocalDate> deliveryDate = DateParser.parse(dto.getOrderDate());
+            if (deliveryDate.isEmpty()) {
+                System.out.println("[Update order dto] DTO validator: Cannot parse delivery date!");
+                return Optional.empty();
+            }
+            if (deliveryDate.get().isBefore(updatedOrder.getOrderDate())) {
+                System.out.println("[Update order dto] DTO validator: Delivery date must after the order date!");
+                return Optional.empty();
+            }
+            updatedOrder.setDeliveryDate(deliveryDate.get());
         }
 
-        if (!CreateOrderDto.validAddress(dto.getAddress())) {
-            return res.setMessage("Invalid address!");
+        if (dto.getName() != null) {
+            updatedOrder.setName(dto.getName());
         }
 
-        if (!CreateOrderDto.validPhonenumber(dto.getPhoneNumber())) {
-            return res.setMessage("Invalid phonenumber!");
+        if (dto.getAddress() != null) {
+            updatedOrder.setAddress(dto.getAddress());
         }
 
-        return res
-                .setMessage("Valid!")
-                .setStatus(HttpStatus.OK);
+        if (dto.getPhoneNumber() != null) {
+            updatedOrder.setPhoneNumber(dto.getPhoneNumber());
+        }
+
+        return Optional.of(updatedOrder);
     }
 }

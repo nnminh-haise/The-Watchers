@@ -75,8 +75,9 @@ public class OrderDetailService {
                 : orderDetailRepository.findAllOrderDetailByOrderIdASC(orderId, paging).getContent();
         if (orderDetails.isEmpty()) {
             return res
+                    .setData(List.of())
                     .setStatus(HttpStatus.NO_CONTENT)
-                    .setMessage("Cannot find any order detail!");
+                    .setMessage("Empty order detail!");
         }
 
         return res

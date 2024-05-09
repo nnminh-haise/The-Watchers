@@ -72,8 +72,9 @@ public class CartDetailService {
             List<CartDetail> details = cartDetailRepository.findAllDetailWithCartId(targetingCart.getId());
             if (details.isEmpty()) {
                 return res
-                        .setStatus(HttpStatus.NOT_FOUND)
-                        .setMessage("Cannot find any card detail with the given cart ID!");
+                        .setData(List.of())
+                        .setStatus(HttpStatus.OK)
+                        .setMessage("Empty cart detail!");
             }
 
             return res

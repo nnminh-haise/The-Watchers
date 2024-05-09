@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,9 +24,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
@@ -46,7 +47,7 @@ public class OrderController {
     })
     @SuppressWarnings("null")
     @GetMapping("all")
-    public ResponseEntity<ResponseDto<List<Order>>> readAllOrders(
+    public ResponseEntity<ResponseDto<List<Order>>> findAllOrderWithFilterAndSorting(
             @RequestParam(name = "page", defaultValue = "0") Integer page,
             @RequestParam(name = "size", defaultValue = "10") Integer size,
             @RequestParam(name = "sort_by", defaultValue = "asc") String sortBy,
@@ -66,7 +67,7 @@ public class OrderController {
     })
     @SuppressWarnings("null")
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseDto<Order>> getOrderById(@PathVariable UUID id) {
+    public ResponseEntity<ResponseDto<Order>> findOrderById(@PathVariable UUID id) {
         ResponseDto<Order> res = orderService.findById(id);
         return ResponseEntity.status(res.getStatus()).body(res);
     }
@@ -78,9 +79,10 @@ public class OrderController {
     })
     @SuppressWarnings("null")
     @PostMapping("new")
-    public ResponseEntity<ResponseDto<Order>> createNewOrder(@RequestBody CreateOrderDto newOrder) {
+    public ResponseEntity<ResponseDto<Order>> createOrder(@RequestBody CreateOrderDto dto) {
         Account account = this.getCurrentAccount();
-        ResponseDto<Order> res = orderService.createNewOrder(newOrder, account.getId());
+
+        ResponseDto<Order> res = orderService.createNewOrder(dto, account.getId());
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 
@@ -90,11 +92,11 @@ public class OrderController {
             @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
     })
     @SuppressWarnings("null")
-    @PatchMapping("update/{id}")
+    @PutMapping("update/{id}")
     public ResponseEntity<ResponseDto<Order>> updateOrderById(
             @PathVariable UUID id,
-            @RequestBody UpdateOrderDto updateOrder) {
-        ResponseDto<Order> res = orderService.updateOrderById(id, updateOrder);
+            @RequestBody UpdateOrderDto dto) {
+        ResponseDto<Order> res = orderService.updateOrderById(id, dto);
         return ResponseEntity.status(res.getStatus()).body(res);
     }
 

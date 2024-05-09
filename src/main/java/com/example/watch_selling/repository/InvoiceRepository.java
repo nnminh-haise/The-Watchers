@@ -15,6 +15,7 @@ import com.example.watch_selling.model.Invoice;
 public interface InvoiceRepository extends PagingAndSortingRepository<Invoice, UUID> {
         @Query("SELECT i FROM Invoice AS i " +
                         "WHERE i.deleteStatus = false " +
+                        "AND i.order.account.id = :accountId " +
                         "AND ( " +
                         "CASE WHEN NOT CAST(:fromDate AS date) IS null THEN " +
                         "CASE WHEN NOT CAST(:toDate AS date) IS null THEN " +
@@ -39,7 +40,23 @@ public interface InvoiceRepository extends PagingAndSortingRepository<Invoice, U
         public List<Invoice> findAllByDateAndTotal(
                         Pageable page,
                         String dateSortBy, LocalDate fromDate, LocalDate toDate,
-                        String totalSortBy, Double fromTotal, Double toTotal);
+                        String totalSortBy, Double fromTotal, Double toTotal,
+                        UUID accountId);
+
+        @Query("""
+                        SELECT i FROM Invoice AS i
+                        WHERE
+                                i.deleteStatus = false AND
+                                i.createDate BETWEEN :fromDate AND :toDate AND
+                                i.total >= :minTotal AND
+                                i.total <= :maxTotal
+                                        """)
+        public List<Invoice> findAllByAccountId(
+                        Pageable page,
+                        LocalDate fromDate,
+                        LocalDate toDate,
+                        Double minTotal,
+                        Double maxTotal);
 
         @Query("SELECT i FROM Invoice AS i WHERE i.deleteStatus = false AND i.id = :id")
         public Optional<Invoice> findById(@Param("id") UUID id);

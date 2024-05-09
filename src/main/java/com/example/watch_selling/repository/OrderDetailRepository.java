@@ -1,5 +1,6 @@
 package com.example.watch_selling.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,6 +19,9 @@ import jakarta.transaction.Transactional;
 public interface OrderDetailRepository extends PagingAndSortingRepository<OrderDetail, UUID> {
         @Query("SELECT od FROM OrderDetail AS od WHERE od.isDeleted = false AND od.id = :id")
         public Optional<OrderDetail> findById(@Param("id") UUID id);
+
+        @Query("SELECT od FROM OrderDetail AS od WHERE od.isDeleted = false AND od.order.id = :orderId")
+        public List<OrderDetail> findAllByOrderId(@Param("orderId") UUID orderId);
 
         @Query("SELECT od FROM OrderDetail AS od WHERE od.isDeleted = false AND od.order.id = :orderId ORDER BY od.price ASC")
         public Page<OrderDetail> findAllOrderDetailByOrderIdASC(@Param("orderId") UUID orderId, Pageable pageable);

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.watch_selling.dtos.CreateOrderDto;
 import com.example.watch_selling.dtos.UpdateOrderDto;
+import com.example.watch_selling.helpers.DateParser;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.model.Order;
@@ -30,8 +31,6 @@ public class OrderService {
     public ResponseDto<List<Order>> findAllOrders(
             UUID accountId, int page, int size, String sortBy, String fromOrderDate, String toOrderDate) {
         ResponseDto<List<Order>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
-
-        System.out.println("Log: " + accountId);
 
         if (!sortBy.equalsIgnoreCase("asc") && !sortBy.equalsIgnoreCase("desc")) {
             return res.setMessage("Invalid sort by value!");
@@ -80,60 +79,47 @@ public class OrderService {
                 .setData(order.get());
     }
 
-    public ResponseDto<Order> createNewOrder(CreateOrderDto newOrderDto, UUID accountId) {
+    public ResponseDto<Order> createNewOrder(CreateOrderDto dto, UUID accountId) {
         ResponseDto<Order> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (newOrderDto == null)
-            return res.setMessage("Invalid order!");
-
-        ResponseDto<String> dtoValidationResponse = CreateOrderDto.validDto(newOrderDto);
-        if (!dtoValidationResponse.getStatus().equals(HttpStatus.OK)) {
-            return res
-                    .setMessage(dtoValidationResponse.getMessage())
-                    .setStatus(dtoValidationResponse.getStatus());
-        }
-
-        @SuppressWarnings("null")
         Optional<Account> associatedAccount = accountRepository.findById(accountId);
         if (!associatedAccount.isPresent()) {
-            return res.setMessage("Cannot find the associated account with the given account ID! Invalid account ID!");
+            return res.setMessage("Cannot find the associated account with the given account ID!");
         }
 
-        Order order = orderRepository.save(
-                CreateOrderDto.toModel(newOrderDto, "Chờ duyệt", false, associatedAccount.get()).get());
+        Optional<Order> order = CreateOrderDto.produce(dto, associatedAccount.get());
+        if (order.isEmpty()) {
+            return res.setMessage("Invalid DTO object!");
+        }
+
+        orderRepository.save(order.get());
         return res
                 .setMessage("New order created successfully!")
                 .setStatus(HttpStatus.OK)
-                .setData(order);
+                .setData(order.get());
     }
 
-    public ResponseDto<Order> updateOrderById(UUID id, UpdateOrderDto updateOrder) {
+    public ResponseDto<Order> updateOrderById(UUID id, UpdateOrderDto dto) {
         ResponseDto<Order> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        if (id == null)
-            return res.setMessage("Invalid ID!");
+        if (id == null) {
+            return res.setMessage("Invalid order ID!");
+        }
 
         Optional<Order> targetingOrder = orderRepository.findById(id);
         if (!targetingOrder.isPresent())
             return res.setMessage("Cannot find any order with the given ID!");
 
-        ResponseDto<String> dtoValidataResponse = UpdateOrderDto.validDto(updateOrder);
-        if (!dtoValidataResponse.getStatus().equals(HttpStatus.OK)) {
-            return res.setMessage(dtoValidataResponse.getMessage());
+        Optional<Order> updatedOrder = UpdateOrderDto.produce(dto, targetingOrder.get());
+        if (updatedOrder.isEmpty()) {
+            return res.setMessage("Invalid DTO object!");
         }
 
-        Order newOrder = targetingOrder.get();
-        newOrder.setName(updateOrder.getName());
-        newOrder.setAddress(updateOrder.getAddress());
-        newOrder.setPhoneNumber(updateOrder.getPhoneNumber());
-        newOrder.setOrderDate(CreateOrderDto.parseDate(updateOrder.getOrderDate()).get());
-        newOrder.setDeliveryDate(CreateOrderDto.parseDate(updateOrder.getDeliveryDate()).get());
-
-        orderRepository.updateById(id, newOrder);
+        orderRepository.updateById(id, updatedOrder.get());
         return res
                 .setMessage("Order updated successfully!")
                 .setStatus(HttpStatus.OK)
-                .setData(newOrder);
+                .setData(updatedOrder.get());
     }
 
     public ResponseDto<String> updateDeleteStatus(UUID id, Boolean status) {
