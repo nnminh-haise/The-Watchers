@@ -1,6 +1,7 @@
 package com.example.watch_selling.dtos;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.example.watch_selling.model.Order;
 import com.example.watch_selling.model.OrderDetail;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InvoiceDetail {
-    private Order order;
+    private UUID id;
 
     private String invoiceNumber;
 
@@ -24,6 +25,8 @@ public class InvoiceDetail {
     private String totalPriceAfterTax;
 
     private String taxCode;
+
+    private Order order;
 
     private List<OrderDetail> orderDetails;
 

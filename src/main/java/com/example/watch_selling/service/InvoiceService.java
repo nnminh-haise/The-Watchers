@@ -157,7 +157,7 @@ public class InvoiceService {
 
         Double totalPrice = orderDetailRepository.totalOfOrder(dto.getOrderId());
         Double priceAfterTax = totalPrice * TAX_PERCENT;
-        LocalDate createDate = LocalDate.now();
+        LocalDateTime createDate = LocalDateTime.now();
         Invoice invoice = invoiceRepository.save(new Invoice(
                 null,
                 createDate,
@@ -221,9 +221,10 @@ public class InvoiceService {
         DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         InvoiceDetail invoiceDetail = new InvoiceDetail();
+        invoiceDetail.setId(invoice.getId());
         invoiceDetail.setOrder(order);
         invoiceDetail.setCreateDate(invoice.getCreateDate().format(dateTimeFormat));
-        invoiceDetail.setInvoiceNumber(this.getTimestamp(LocalDateTime.now()));
+        invoiceDetail.setInvoiceNumber(this.makeInvoiceNumber(invoice.getCreateDate()));
         invoiceDetail.setTotalPrice(decimalFormat.format(invoice.getTotal()));
         invoiceDetail.setTotalPriceAfterTax(decimalFormat.format(invoice.getTotal() * TAX_PERCENT));
         invoiceDetail.setTaxCode(invoice.getTaxCode());
@@ -238,7 +239,7 @@ public class InvoiceService {
         return Optional.of(invoiceDetail);
     }
 
-    private String getTimestamp(LocalDateTime date) {
+    private String makeInvoiceNumber(LocalDateTime date) {
         return String.valueOf(date.getYear()) +
                 date.getMonthValue() +
                 date.getDayOfMonth() +

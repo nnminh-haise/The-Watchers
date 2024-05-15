@@ -1,7 +1,7 @@
 package com.example.watch_selling.dtos;
 
 import java.text.DecimalFormat;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import lombok.AllArgsConstructor;
@@ -24,7 +24,7 @@ public class EmailInvoiceInformation {
 
     private String totalAfterTax;
 
-    private LocalDate createDate;
+    private LocalDateTime createDate;
 
     private String taxCode;
 
