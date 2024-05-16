@@ -2,14 +2,17 @@ package com.example.watch_selling.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.watch_selling.dtos.ForgetPasswordDto;
 import com.example.watch_selling.dtos.LoginDto;
 import com.example.watch_selling.dtos.RegisterDto;
 import com.example.watch_selling.dtos.RegisterResponse;
+import com.example.watch_selling.dtos.RequestDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.service.AuthenticationService;
@@ -106,5 +109,14 @@ public class AuthenticationController {
         response.setData(loginResponse);
         response.setStatus(HttpStatus.OK);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/recover-password")
+    public ResponseEntity<ResponseDto<String>> recoverPassword(
+            @RequestBody ForgetPasswordDto payload) {
+
+        ResponseDto<String> response = this.authenticationService.recoverPassword(payload);
+
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

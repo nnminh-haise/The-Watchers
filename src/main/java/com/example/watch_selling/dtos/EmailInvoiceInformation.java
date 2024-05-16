@@ -45,13 +45,13 @@ public class EmailInvoiceInformation {
         sb.append("<head>");
         sb.append("<meta charset=\"UTF-8\">");
         sb.append("<title>Invoice Information</title>");
-        sb.append("<style>"); // Add any desired inline styles here (optional)
+        sb.append("<style>");
         sb.append("th {text-align: left; font-weight: bold; padding-right: 20px;}");
         sb.append("</style>");
         sb.append("</head>");
         sb.append("<body>");
         sb.append("<h1>Invoice Information</h1>");
-        sb.append("<table style=\"border-collapse: collapse;\">"); // Add table styling if desired (optional)
+        sb.append("<table style=\"border-collapse: collapse;\">");
         sb.append("<tr>");
         sb.append("<th>Invoice Number</th>");
         sb.append("<td>" + invoiceNumber + "</td>");

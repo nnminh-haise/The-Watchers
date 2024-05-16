@@ -29,6 +29,13 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
             @Param("email") String email,
             @Param("status") Boolean status);
 
+    @Query("UPDATE Account AS a SET a.password = :password WHERE a.email = :email")
+    @Transactional
+    @Modifying
+    public Integer updatePassword(
+            @Param("email") String email,
+            @Param("password") String password);
+
     @Query("UPDATE Account AS a SET a.isDeleted = true WHERE a.id = :id")
     @Transactional
     @Modifying

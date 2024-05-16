@@ -107,14 +107,6 @@ public class InvoiceService {
         }
     }
 
-    // public ResponseDto<List<InvoiceDetail>> findAllByAccountId(
-    // Integer page, Integer size,
-    // String dateSortBy, String fromDate, String toDate,
-    // String totalSortBy, String fromTotal, String toTotal,
-    // UUID accountId) {
-    // // ResponseDto<List<InvoiceDetail>>
-    // }
-
     public ResponseDto<InvoiceDetail> findById(UUID id) {
         ResponseDto<InvoiceDetail> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
