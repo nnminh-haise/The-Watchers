@@ -50,6 +50,14 @@ public class AccountService {
         return accountRepository.findById(id);
     }
 
+    public Boolean verifyPassword(String email, String verifyingPassword) {
+        Optional<Account> account = this.accountRepository.findByEmail(email);
+        if (account.isEmpty()) {
+            return false;
+        }
+        return this.passwordEncoder.matches(verifyingPassword, account.get().getPassword());
+    }
+
     public Boolean updatePassword(String email, String password) {
         String hashedPassword = passwordEncoder.encode(password);
         Integer affectedRecords = this.accountRepository.updatePassword(email,

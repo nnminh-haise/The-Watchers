@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdatePasswordDto {
     @NotEmpty
+    private String currentPassword;
+
+    @NotEmpty
     private String password;
 
     @NotEmpty

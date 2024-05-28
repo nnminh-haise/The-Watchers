@@ -2,7 +2,6 @@ package com.example.watch_selling.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,7 +11,6 @@ import com.example.watch_selling.dtos.ForgetPasswordDto;
 import com.example.watch_selling.dtos.LoginDto;
 import com.example.watch_selling.dtos.RegisterDto;
 import com.example.watch_selling.dtos.RegisterResponse;
-import com.example.watch_selling.dtos.RequestDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.service.AuthenticationService;
