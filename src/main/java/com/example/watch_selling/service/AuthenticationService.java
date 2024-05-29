@@ -1,6 +1,8 @@
 package com.example.watch_selling.service;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Optional;
 import java.util.Random;
 
@@ -18,11 +20,15 @@ import com.example.watch_selling.dtos.RegisterDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.mailing.EmailServiceImpl;
 import com.example.watch_selling.model.Account;
+import com.example.watch_selling.model.Customer;
 import com.example.watch_selling.repository.AccountRepository;
+import com.example.watch_selling.repository.CustomerRepository;
 
 @Service
 public class AuthenticationService {
     private final AccountRepository accountRepository;
+
+    private final CustomerRepository customerRepository;
 
     private final AccountService accountService;
 
@@ -38,12 +44,14 @@ public class AuthenticationService {
 
     public AuthenticationService(
             AccountRepository accountRepository,
+            CustomerRepository customerRepository,
             AuthenticationManager authenticationManager,
             PasswordEncoder passwordEncoder,
             AccountService accountService,
             CartService cartService,
             EmailServiceImpl emailServiceImpl) {
         this.authenticationManager = authenticationManager;
+        this.customerRepository = customerRepository;
         this.accountRepository = accountRepository;
         this.passwordEncoder = passwordEncoder;
         this.accountService = accountService;
@@ -82,6 +90,24 @@ public class AuthenticationService {
         buffer.setIsDeleted(false);
         Account newAccount = accountRepository.save(buffer);
         cartService.createNewCart(newAccount.getId());
+
+        Customer newProfile = new Customer();
+        String citizenId = LocalDateTime.now().toString();
+        String phoneNumer = LocalDateTime.now().toString();
+        Date dob = new Date();
+        newProfile.setCitizenId(citizenId);
+        newProfile.setFirstName("Họ");
+        newProfile.setLastName("Tên");
+        newProfile.setPhoneNumber(phoneNumer);
+        newProfile.setGender("Nam");
+        newProfile.setDateOfBirth(dob);
+        newProfile.setAddress("Địa chỉ");
+        newProfile.setTaxCode("Mã số thuế");
+        newProfile.setPhoto(null);
+        newProfile.setAccount(newAccount);
+        newProfile.setIsDeleted(false);
+
+        this.customerRepository.save(newProfile);
 
         return newAccount;
     }

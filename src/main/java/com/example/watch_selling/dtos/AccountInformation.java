@@ -14,5 +14,7 @@ public class AccountInformation {
 
     private String email;
 
+    private String lastName;
+
     private String token;
 }

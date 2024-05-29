@@ -11,12 +11,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.example.watch_selling.dtos.CreateInvoiceDto;
 import com.example.watch_selling.dtos.CreateOrderDto;
-import com.example.watch_selling.dtos.UpdateOrderDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
+import com.example.watch_selling.model.CartDetail;
 import com.example.watch_selling.model.Order;
+import com.example.watch_selling.model.OrderDetail;
+import com.example.watch_selling.model.enums.OrderStatus;
 import com.example.watch_selling.repository.AccountRepository;
+import com.example.watch_selling.repository.OrderDetailRepository;
 import com.example.watch_selling.repository.OrderRepository;
 
 @Service
@@ -26,6 +30,15 @@ public class OrderService {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
+
+    @Autowired
+    private InvoiceService invoiceService;
+
+    @Autowired
+    private CartDetailService cartDetailService;
 
     public ResponseDto<List<Order>> findAllOrders(
             UUID accountId, int page, int size, String sortBy, String fromOrderDate, String toOrderDate) {
@@ -78,61 +91,51 @@ public class OrderService {
                 .setData(order.get());
     }
 
-    public ResponseDto<Order> createNewOrder(CreateOrderDto dto, UUID accountId) {
+    public ResponseDto<Order> createNewOrder(CreateOrderDto payload, UUID accountId) {
         ResponseDto<Order> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
-        Optional<Account> associatedAccount = accountRepository.findById(accountId);
-        if (!associatedAccount.isPresent()) {
+        Optional<Account> customerAccount = accountRepository.findById(accountId);
+        if (!customerAccount.isPresent()) {
             return res.setMessage("Cannot find the associated account with the given account ID!");
         }
 
-        Optional<Order> order = CreateOrderDto.produce(dto, associatedAccount.get());
-        if (order.isEmpty()) {
-            return res.setMessage("Invalid DTO object!");
+        LocalDate orderDate = LocalDate.now();
+        LocalDate estimateDeliveryDate = orderDate.plusDays(3);
+
+        Order newOrder = new Order();
+        newOrder.setAccount(customerAccount.get());
+        newOrder.setAddress(payload.getAddress());
+        newOrder.setOrderDate(orderDate);
+        newOrder.setDeliveryDate(estimateDeliveryDate);
+        newOrder.setName(payload.getName());
+        newOrder.setPhoneNumber(payload.getPhoneNumber());
+        newOrder.setStatus(OrderStatus.PENDING.toString());
+        newOrder.setIsDeleted(false);
+
+        this.orderRepository.save(newOrder);
+
+        for (UUID cartDetailId : payload.getOrderDetails()) {
+            ResponseDto<CartDetail> detail = this.cartDetailService.findCartDetailById(cartDetailId);
+
+            OrderDetail newOrderDetail = new OrderDetail();
+            newOrderDetail.setOrder(newOrder);
+            newOrderDetail.setWatch(detail.getData().getWatch());
+            newOrderDetail.setPrice(detail.getData().getPrice());
+            newOrderDetail.setQuantity(detail.getData().getQuantity());
+
+            this.orderDetailRepository.save(newOrderDetail);
+
+            this.cartDetailService.deleteCartDetailById(cartDetailId);
         }
 
-        orderRepository.save(order.get());
+        CreateInvoiceDto invoicePayload = new CreateInvoiceDto();
+        invoicePayload.setOrderId(newOrder.getId());
+        invoicePayload.setTaxCode(payload.getTaxCode());
+        this.invoiceService.createNewInvoice(invoicePayload);
+
         return res
                 .setMessage("New order created successfully!")
                 .setStatus(HttpStatus.OK)
-                .setData(order.get());
-    }
-
-    public ResponseDto<Order> updateOrderById(UUID id, UpdateOrderDto dto) {
-        ResponseDto<Order> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
-
-        if (id == null) {
-            return res.setMessage("Invalid order ID!");
-        }
-
-        Optional<Order> targetingOrder = orderRepository.findById(id);
-        if (!targetingOrder.isPresent())
-            return res.setMessage("Cannot find any order with the given ID!");
-
-        Optional<Order> updatedOrder = UpdateOrderDto.produce(dto, targetingOrder.get());
-        if (updatedOrder.isEmpty()) {
-            return res.setMessage("Invalid DTO object!");
-        }
-
-        orderRepository.updateById(id, updatedOrder.get());
-        return res
-                .setMessage("Order updated successfully!")
-                .setStatus(HttpStatus.OK)
-                .setData(updatedOrder.get());
-    }
-
-    public ResponseDto<String> updateDeleteStatus(UUID id, Boolean status) {
-        ResponseDto<String> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
-        if (id == null)
-            return res.setMessage("Invalid ID!");
-
-        Optional<Order> targetingOrder = orderRepository.findById(id);
-        if (!targetingOrder.isPresent())
-            return res.setMessage("Cannot find any order with the given ID!");
-
-        orderRepository.updateDeleteStatus(id, status);
-        return res
-                .setMessage("Delete status update successfully!")
-                .setStatus(HttpStatus.OK);
+                .setData(newOrder);
     }
 }

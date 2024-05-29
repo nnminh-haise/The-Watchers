@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f8f8;
+        margin: 0;
+        padding: 20px;
+      }
+      .invoice-container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
+        margin: auto;
+      }
+      .invoice-header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .invoice-header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .invoice-info,
+      .order-info,
+      .receiver-info {
+        margin-bottom: 20px;
+      }
+      .invoice-info table,
+      .order-info table,
+      .receiver-info table,
+      .order-details table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .invoice-info th,
+      .order-info th,
+      .receiver-info th,
+      .order-details th,
+      .invoice-info td,
+      .order-info td,
+      .receiver-info td,
+      .order-details td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      .order-details {
+        margin-top: 20px;
+      }
+      .order-details th,
+      .order-details td {
+        text-align: center;
+      }
+      .order-details th {
+        background-color: #f0f0f0;
+      }
+      .order-details td.name-column {
+        text-align: left;
+      }
+      .total {
+        font-weight: bold;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+      }
+      .footer p {
+        margin: 5px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="invoice-container">
+      <div class="invoice-header">
+        <h1>Invoice</h1>
+        <p>Invoice Number: 2024319000</p>
+        <p>Date: 19-03-2024</p>
+        <p>Tax code: 123421241</p>
+      </div>
+      <div class="order-info">
+        <h2>Order details</h2>
+        <table>
+          <tr>
+            <th>Order Date</th>
+            <td>2024-03-01</td>
+          </tr>
+          <tr>
+            <th>Receiver Name</th>
+            <td>Mai Thuỵ Quỳnh Giang</td>
+          </tr>
+          <tr>
+            <th>Receiver Address</th>
+            <td>107FB Lạc Long Quân, P. 3, Q. 11, TP. Hồ Chí Minh</td>
+          </tr>
+          <tr>
+            <th>Receiver Phone Number</th>
+            <td>0902633291</td>
+          </tr>
+          <tr>
+            <th>Estimate Delivery Date</th>
+            <td>2024-03-12</td>
+          </tr>
+        </table>
+      </div>
+      <div class="order-details">
+        <h2>Products</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name-column">Samsung Galaxy Watch 5 Pro</td>
+              <td>10</td>
+              <td>9,990,000 VND</td>
+              <td>99,900,000 VND</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="total">
+        <p>Total Price: 99,900,000 VND</p>
+        <p>Total Price After Tax (8%): 107,892,000 VND</p>
+      </div>
+      <div class="footer">
+        <p>Thank you for shopping with us!</p>
+        <p>If you have any questions, please contact us at:</p>
+        <p>Email: nnminh.sam.1803@gmail.com</p>
+        <p>Phone: (+84) 0704098399</p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -81,8 +81,8 @@ public class InvoiceService {
 
             if (invoices.isEmpty()) {
                 return res
-                        .setMessage("Cannot find any invoice!")
-                        .setStatus(HttpStatus.NOT_FOUND);
+                        .setData(List.of())
+                        .setStatus(HttpStatus.OK);
             }
 
             List<InvoiceDetail> invoiceDetails = new ArrayList<>();
@@ -168,16 +168,9 @@ public class InvoiceService {
         // * Sending email to recevier
         // TODO: improve this code
         String recipient = targetingOrder.get().getAccount().getEmail();
-        String subject = "Watch ordering invoice - Number: " + invoice.getId().toString();
+        String subject = "Your CheriCT E-invoice | Number: " + invoiceDetail.get().getInvoiceNumber();
         EmailInvoiceInformation body = new EmailInvoiceInformation();
-        body.setInvoiceNumber(invoice.getId().toString());
-        body.setOwnerEmail(recipient);
-        body.setOrderId(targetingOrder.get().getId().toString());
-        body.setTotal(EmailInvoiceInformation.formatAsVND(totalPrice));
-        body.setTotalAfterTax(EmailInvoiceInformation.formatAsVND(priceAfterTax));
-        body.setTaxCode(dto.getTaxCode());
-        body.setCreateDate(invoice.getCreateDate());
-        body.setContact(this.emailServiceImpl.getSendingEmail());
+        body.setInvoiceDetail(invoiceDetail.get());
         ResponseDto<Boolean> emailSender = this.emailServiceImpl.sendEmail(recipient, subject, body.toHtmlBody());
         if (emailSender.getData() == false) {
             return res

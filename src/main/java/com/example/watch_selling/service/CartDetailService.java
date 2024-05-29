@@ -105,13 +105,6 @@ public class CartDetailService {
                     .setMessage(cartDetailValidationResponse.getMessage());
         }
 
-        // Optional<Cart> targetingCart = cartRepository.findById(detail.getCartId());
-        // if (!targetingCart.isPresent()) {
-        // return res
-        // .setStatus(HttpStatus.NOT_FOUND)
-        // .setMessage("Cannot find any cart with the given Card ID!");
-        // }
-
         Optional<Watch> targetingWatch = watchRepository.findById(detail.getWatchId());
         if (!targetingWatch.isPresent()) {
             return res
@@ -132,7 +125,7 @@ public class CartDetailService {
         Optional<CartDetail> duplicatedDetail = cartDetailRepository.findByCartIdAndWatchId(
                 targetingCart.get().getId(), targetingWatch.get().getId());
         if (duplicatedDetail.isPresent()) {
-            return res.setMessage("Duplicated detail!");
+            return res.setMessage("Sản phẩm đã tồn tại trong giỏ hàng!");
         }
 
         CartDetail newDetail = CreateCartDetailDto.toModel(

@@ -60,6 +60,8 @@ public class CustomerController {
                         @RequestHeader(value = "Authorization", required = false) String token) {
                 Account customerAccount = getAssociatedAccount();
 
+                System.out.println("id: " + customerAccount.getId());
+
                 ResponseDto<Customer> res = customerService.findCustomerByAccountId(customerAccount.getId());
 
                 return ResponseEntity.status(res.getStatus()).body(res);

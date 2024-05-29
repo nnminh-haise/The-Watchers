@@ -52,7 +52,7 @@ public class WatchService {
     }
 
     public ResponseDto<ReadWatchesDto> findAll(
-            int page, int size, List<UUID> typeIds, List<UUID> brandIds, String sortBy) {
+            int page, int size, String name, List<UUID> typeIds, List<UUID> brandIds, String sortBy) {
         ResponseDto<ReadWatchesDto> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
         ReadWatchesDto dto = new ReadWatchesDto();
 
@@ -62,8 +62,8 @@ public class WatchService {
 
         Pageable selectingPage = PageRequest.of(page, size);
         List<Watch> watches = watchRepository.findWatchesByTypeAndBrand(
-                typeIds, brandIds, sortBy, selectingPage);
-        Integer total = watchRepository.countWatchesByTypeAndBrand(typeIds, brandIds);
+                name, typeIds, brandIds, sortBy, selectingPage);
+        Integer total = watchRepository.countWatchesByTypeAndBrand(name, typeIds, brandIds);
 
         if (watches == null || watches.isEmpty()) {
             dto.setTotal(0);

@@ -18,7 +18,9 @@ import com.example.watch_selling.dtos.AccountInformation;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.dtos.UpdatePasswordDto;
 import com.example.watch_selling.model.Account;
+import com.example.watch_selling.model.Customer;
 import com.example.watch_selling.service.AccountService;
+import com.example.watch_selling.service.CustomerService;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -28,6 +30,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class AccountController {
         @Autowired
         private AccountService accountService;
+
+        @Autowired
+        private CustomerService customerService;
 
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Request success!"),
@@ -48,9 +53,17 @@ public class AccountController {
                                         null, "Cannot find any account with the given token!",
                                         HttpStatus.NOT_FOUND));
                 }
+
+                ResponseDto<Customer> profile = this.customerService.findCustomerByAccountId(customerAccount.getId());
+                String lastName = null;
+                if (profile.getStatus().equals(HttpStatus.OK)) {
+                        lastName = profile.getData().getLastName();
+                }
+
                 AccountInformation data = new AccountInformation(
                                 res.get().getId(),
                                 res.get().getEmail(),
+                                lastName,
                                 token.substring(7));
 
                 return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto<>(
@@ -94,10 +107,13 @@ public class AccountController {
                                         null, "Cannot update password!", HttpStatus.INTERNAL_SERVER_ERROR));
                 }
 
+                ResponseDto<Customer> profile = this.customerService.findCustomerByAccountId(user.getId());
+
                 return ResponseEntity.ok().body(new ResponseDto<>(
                                 new AccountInformation(
                                                 user.getId(),
                                                 user.getEmail(),
+                                                profile.getData().getLastName(),
                                                 token.substring(7)),
                                 "Success", HttpStatus.OK));
         }

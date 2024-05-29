@@ -53,10 +53,11 @@ public class WatchController {
         public ResponseEntity<ResponseDto<ReadWatchesDto>> readAllWatches(
                         @RequestParam(name = "page", defaultValue = "1") Integer page,
                         @RequestParam(name = "size", defaultValue = "10") Integer size,
+                        @RequestParam(name = "name", required = false) String name,
                         @RequestParam(name = "type_id", required = false) List<UUID> typeIds,
                         @RequestParam(name = "brand_id", required = false) List<UUID> brandIds,
                         @RequestParam(name = "sort_by", defaultValue = "asc", required = false) String sortBy) {
-                ResponseDto<ReadWatchesDto> res = watchService.findAll(page - 1, size, typeIds, brandIds, sortBy);
+                ResponseDto<ReadWatchesDto> res = watchService.findAll(page - 1, size, name, typeIds, brandIds, sortBy);
                 return ResponseEntity.status(res.getStatus()).body(res);
         }
 

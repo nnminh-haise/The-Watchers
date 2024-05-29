@@ -20,12 +20,14 @@ import jakarta.transaction.Transactional;
 public interface WatchRepository extends PagingAndSortingRepository<Watch, UUID> {
         @Query("SELECT w FROM Watch AS w " +
                         "WHERE w.isDeleted = false " +
+                        "AND (w.name ILIKE %:name% OR :name is NULL) " +
                         "AND (:typeIds IS NULL OR w.type.id in :typeIds) " +
                         "AND (:brandIds IS NULL OR w.brand.id in :brandIds) " +
                         "ORDER BY " +
                         "CASE WHEN :sortBy = 'asc' THEN w.price END ASC, " +
                         "CASE WHEN :sortBy = 'desc' THEN w.price END DESC ")
         public List<Watch> findWatchesByTypeAndBrand(
+                        @Param("name") String name,
                         @Param("typeIds") List<UUID> typeIds,
                         @Param("brandIds") List<UUID> brandIds,
                         @Param("sortBy") String sortBy,
@@ -33,9 +35,11 @@ public interface WatchRepository extends PagingAndSortingRepository<Watch, UUID>
 
         @Query("SELECT count(w.id) FROM Watch AS w " +
                         "WHERE w.isDeleted = false " +
+                        "AND (w.name ILIKE %:name% OR :name is NULL) " +
                         "AND (:typeIds IS NULL OR w.type.id in :typeIds) " +
                         "AND (:brandIds IS NULL OR w.brand.id in :brandIds)")
         public Integer countWatchesByTypeAndBrand(
+                        @Param("name") String name,
                         @Param("typeIds") List<UUID> typeIds,
                         @Param("brandIds") List<UUID> brandIds);
 
