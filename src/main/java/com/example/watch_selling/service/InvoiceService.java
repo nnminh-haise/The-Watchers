@@ -148,7 +148,6 @@ public class InvoiceService {
         }
 
         Double totalPrice = orderDetailRepository.totalOfOrder(dto.getOrderId());
-        Double priceAfterTax = totalPrice * TAX_PERCENT;
         LocalDateTime createDate = LocalDateTime.now();
         Invoice invoice = invoiceRepository.save(new Invoice(
                 null,
