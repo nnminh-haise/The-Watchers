@@ -6,11 +6,9 @@ import java.util.Optional;
 import com.example.watch_selling.helpers.DateParser;
 import com.example.watch_selling.model.Order;
 
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data

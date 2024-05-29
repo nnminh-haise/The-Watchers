@@ -49,13 +49,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain) throws ServletException, IOException, NullPointerException {
         final String authHeader = request.getHeader("Authorization");
         final String requestPath = request.getRequestURI();
+        final String requestMethod = request.getMethod();
 
         System.out.println("---------------");
         System.out.println("[LOG] Called API: " + requestPath);
 
-        if (startsWithOneOf(requestPath, List.of(
-                "/api/auth", "/swagger-ui", "/v3/api-docs", "/api/watch/all"))
+        if ((startsWithOneOf(requestPath, List.of(
+                "/api/auth",
+                "/swagger-ui",
+                "/v3/api-docs",
+                "/api/watch/all",
+                "/api/watch-type/all",
+                "/api/watch-brand/all"))
+                || (startsWithOneOf(requestPath, List.of("/api/watch")) && "GET".equalsIgnoreCase(requestMethod)))
                 && (authHeader == null || !authHeader.startsWith("Bearer "))) {
+
+            System.out.println("skipped");
+
             filterChain.doFilter(request, response);
             return;
         }

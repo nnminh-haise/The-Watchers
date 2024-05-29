@@ -40,6 +40,8 @@ public class SecurityConfiguration {
                                 "/swagger-ui.html",
                                 "/api/customer/**",
                                 "/api/watch/**",
+                                "/api/watch-type/**",
+                                "/api/watch-brand/**",
                                 "/api/cart/**",
                                 "/api/order/**",
                                 "/api/invoice/**",

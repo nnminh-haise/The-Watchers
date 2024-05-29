@@ -20,7 +20,6 @@ import com.example.watch_selling.dtos.CreateInvoiceDto;
 import com.example.watch_selling.dtos.InvoiceDetail;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.model.Account;
-import com.example.watch_selling.model.Invoice;
 import com.example.watch_selling.service.InvoiceService;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

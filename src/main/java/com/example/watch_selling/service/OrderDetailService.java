@@ -25,20 +25,28 @@ import com.example.watch_selling.repository.OrderRepository;
 import com.example.watch_selling.repository.WatchRepository;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotNull;
 
 @Service
 public class OrderDetailService {
-    @Autowired
-    private CartDetailRepository cartDetailRepository;
+    private final CartDetailRepository cartDetailRepository;
 
-    @Autowired
-    private OrderDetailRepository orderDetailRepository;
+    private final OrderDetailRepository orderDetailRepository;
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
 
-    @Autowired
-    private WatchRepository watchRepository;
+    private final WatchRepository watchRepository;
+
+    public OrderDetailService(
+            CartDetailRepository cartDetailRepository,
+            OrderDetailRepository orderDetailRepository,
+            OrderRepository orderRepository,
+            WatchRepository watchRepository) {
+        this.cartDetailRepository = cartDetailRepository;
+        this.orderDetailRepository = orderDetailRepository;
+        this.orderRepository = orderRepository;
+        this.watchRepository = watchRepository;
+    }
 
     public ResponseDto<OrderDetail> findById(UUID id) {
         ResponseDto<OrderDetail> response = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
@@ -148,7 +156,8 @@ public class OrderDetailService {
     @Modifying
     @Transactional
     public ResponseDto<List<OrderDetail>> createOrderDetailsFromCartDetailsOfOrder(
-            UUID orderId, List<UUID> cartDetailIds) {
+            @NotNull UUID orderId,
+            @NotNull List<UUID> cartDetailIds) {
         ResponseDto<List<OrderDetail>> res = new ResponseDto<>(null, "", HttpStatus.BAD_REQUEST);
 
         if (orderId == null) {
