@@ -2,13 +2,13 @@ package com.example.watch_selling.dtos;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 
+import com.example.watch_selling.helpers.DateParser;
 import com.example.watch_selling.model.Customer;
-
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -183,10 +183,8 @@ public class CustomerProfileDto {
     public static Optional<Customer> toModel(CustomerProfileDto dto) {
         Customer newCustomer = new Customer();
 
-        Date dob = null;
-        try {
-            dob = new SimpleDateFormat("yyyy-MM-dd").parse(dto.getDateOfBirth());
-        } catch (ParseException e) {
+        Optional<LocalDate> dob = DateParser.parse(dto.getDateOfBirth());
+        if (!dob.isPresent()) {
             return Optional.empty();
         }
 
@@ -194,7 +192,7 @@ public class CustomerProfileDto {
         newCustomer.setFirstName(dto.getFirstName());
         newCustomer.setLastName(dto.getLastName());
         newCustomer.setGender(dto.getGender());
-        newCustomer.setDateOfBirth(dob);
+        newCustomer.setDateOfBirth(dob.get());
         newCustomer.setAddress(dto.getAddress());
         newCustomer.setPhoneNumber(dto.getPhoneNumber());
         newCustomer.setTaxCode(dto.getTaxCode());

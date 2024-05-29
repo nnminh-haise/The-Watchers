@@ -1,6 +1,6 @@
 package com.example.watch_selling.service;
 
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.example.watch_selling.dtos.CustomerProfileDto;
 import com.example.watch_selling.dtos.ResponseDto;
 import com.example.watch_selling.dtos.UpdateProfileDto;
+import com.example.watch_selling.helpers.DateParser;
 import com.example.watch_selling.model.Account;
 import com.example.watch_selling.model.Customer;
 import com.example.watch_selling.repository.CustomerRepository;
@@ -127,8 +128,6 @@ public class CustomerService {
             return res.setMessage("Invalid ID!");
         }
 
-        System.out.println("account id: " + accountId);
-
         Optional<Customer> targetingCustomerProfile = customerRepository.findByAccountId(accountId);
         if (!targetingCustomerProfile.isPresent()) {
             return res
@@ -137,26 +136,42 @@ public class CustomerService {
         }
 
         if (customerRepository.existProfileWithPhonenumber(
-            dto.getPhoneNumber(), accountId).isPresent()) {
+                dto.getPhoneNumber(), accountId).isPresent()) {
             return res
-                    .setMessage("Duplicated phone number! Invalid phone number!")
-                    .setStatus(HttpStatus.FORBIDDEN);
+                    .setMessage("Số điện thoại đã được sử dụng! Vui lòng sử dụng số điện thoại khác")
+                    .setStatus(HttpStatus.BAD_REQUEST);
+        }
+
+        if (customerRepository.existProfileWithCitizenId(dto.getCitizenId(), accountId).isPresent()) {
+            return res
+                    .setMessage("CCCD đã được đăng kí! Vui lòng sử dụng CCCD khác!")
+                    .setStatus(HttpStatus.BAD_REQUEST);
+        }
+
+        Optional<LocalDate> dob = DateParser.parse(dto.getDateOfBirth());
+        if (!dob.isPresent()) {
+            return res.setMessage("Lồi định dạng ngày sinh!");
+        }
+        if (dob.get().isAfter(LocalDate.now())) {
+            return res.setMessage("Lỗi ngày sinh vô nghĩa! Ngày sinh không thể lớn hơn ngày hiện tại!");
         }
 
         Customer newProfile = targetingCustomerProfile.get();
-        if (dto.getFirstName() != null) newProfile.setFirstName(dto.getFirstName());
-        if (dto.getLastName() != null) newProfile.setLastName(dto.getLastName());
-        try {
-            if (dto.getDateOfBirth() != null) newProfile.setDateOfBirth(new SimpleDateFormat("yyyy-MM-dd").parse(dto.getDateOfBirth()));
-        }
-        catch (Exception e) {
-            return res.setMessage("Error parsing date of birth value!");
-        }
-        if (dto.getAddress() != null) newProfile.setAddress(dto.getAddress());
-        if (dto.getGender() != null) newProfile.setGender(dto.getGender());
-        if (dto.getPhoneNumber() != null) newProfile.setPhoneNumber(dto.getPhoneNumber());
-        if (dto.getPhoto() != null) newProfile.setPhoto(dto.getPhoto());
-
+        if (dto.getFirstName() != null)
+            newProfile.setFirstName(dto.getFirstName());
+        if (dto.getLastName() != null)
+            newProfile.setLastName(dto.getLastName());
+        if (dto.getAddress() != null)
+            newProfile.setAddress(dto.getAddress());
+        if (dto.getGender() != null)
+            newProfile.setGender(dto.getGender());
+        if (dto.getPhoneNumber() != null)
+            newProfile.setPhoneNumber(dto.getPhoneNumber());
+        if (dto.getPhoto() != null)
+            newProfile.setPhoto(dto.getPhoto());
+        if (dto.getCitizenId() != null)
+            newProfile.setCitizenId(dto.getCitizenId());
+        newProfile.setDateOfBirth(dob.get());
 
         customerRepository.updateCustomerProfileByAccountId(accountId, newProfile);
 

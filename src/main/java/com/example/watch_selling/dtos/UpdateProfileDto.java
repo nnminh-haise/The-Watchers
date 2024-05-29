@@ -21,4 +21,6 @@ public class UpdateProfileDto {
     private String phoneNumber;
 
     private String photo;
+
+    private String citizenId;
 }

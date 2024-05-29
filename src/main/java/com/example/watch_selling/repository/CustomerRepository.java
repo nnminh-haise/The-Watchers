@@ -54,6 +54,7 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
         @Transactional
         @Modifying
         @Query(nativeQuery = true, value = "UPDATE customer SET " +
+                        "citizen_id = :#{#customer.citizenId}, " +
                         "first_name = :#{#customer.firstName}, " +
                         "last_name = :#{#customer.lastName}, " +
                         "gender = :#{#customer.gender}, " +

@@ -72,7 +72,6 @@ public class CustomerController {
                         @ApiResponse(responseCode = "400", description = "Bad request!"),
                         @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
         })
-        @SuppressWarnings("null")
         @PutMapping("/update")
         public ResponseEntity<ResponseDto<Customer>> updateProfile(
                         @RequestHeader(value = "Authorization", required = false) String token,
@@ -90,7 +89,6 @@ public class CustomerController {
                         @ApiResponse(responseCode = "400", description = "Bad request!"),
                         @ApiResponse(responseCode = "500", description = "Internal server error! Server might be down or API was broken!")
         })
-        @SuppressWarnings("null")
         @DeleteMapping("delete")
         public ResponseEntity<ResponseDto<String>> deleteCustomerProfile(
                         @RequestHeader(value = "Authorization", required = false) String token) {

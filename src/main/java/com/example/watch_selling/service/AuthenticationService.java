@@ -1,7 +1,10 @@
 package com.example.watch_selling.service;
 
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Random;
@@ -91,16 +94,17 @@ public class AuthenticationService {
         Account newAccount = accountRepository.save(buffer);
         cartService.createNewCart(newAccount.getId());
 
+        ZonedDateTime zonedDateTime = LocalDate.now().atStartOfDay(ZoneId.systemDefault());
+        long epochMilli = zonedDateTime.toInstant().toEpochMilli();
+        String dummyValue = Long.toString(epochMilli);
+
         Customer newProfile = new Customer();
-        String citizenId = LocalDateTime.now().toString();
-        String phoneNumer = LocalDateTime.now().toString();
-        Date dob = new Date();
-        newProfile.setCitizenId(citizenId);
+        newProfile.setCitizenId(dummyValue);
         newProfile.setFirstName("Họ");
         newProfile.setLastName("Tên");
-        newProfile.setPhoneNumber(phoneNumer);
+        newProfile.setPhoneNumber(dummyValue);
         newProfile.setGender("Nam");
-        newProfile.setDateOfBirth(dob);
+        newProfile.setDateOfBirth(LocalDate.now());
         newProfile.setAddress("Địa chỉ");
         newProfile.setTaxCode("Mã số thuế");
         newProfile.setPhoto(null);

@@ -1,5 +1,6 @@
 package com.example.watch_selling.model;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
 
@@ -38,7 +39,7 @@ public class Customer {
     private String gender;
 
     @Column(name = "date_of_birth", nullable = false)
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
 
     @Column(unique = true, nullable = false)
     private String address;
@@ -56,9 +57,11 @@ public class Customer {
     @JoinColumn(name = "account_id", referencedColumnName = "id", unique = true, nullable = false)
     private Account account;
 
-    public Customer() {}
+    public Customer() {
+    }
 
-    public Customer(UUID id, String citizenId, String firstName, String lastName, String phoneNumber, String gender, Date dateOfBirth, String address, String taxCode, Boolean isDeleted, String photo, Account account) {
+    public Customer(UUID id, String citizenId, String firstName, String lastName, String phoneNumber, String gender,
+            LocalDate dateOfBirth, String address, String taxCode, Boolean isDeleted, String photo, Account account) {
         this.id = id;
         this.citizenId = citizenId;
         this.firstName = firstName;
@@ -73,7 +76,8 @@ public class Customer {
         this.account = account;
     }
 
-    public Customer(String citizenId, String firstName, String lastName, String phoneNumber, String gender, Date dateOfBirth, String address, String taxCode, Boolean isDeleted, String photo, Account account) {
+    public Customer(String citizenId, String firstName, String lastName, String phoneNumber, String gender,
+            LocalDate dateOfBirth, String address, String taxCode, Boolean isDeleted, String photo, Account account) {
         this.citizenId = citizenId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -87,7 +91,8 @@ public class Customer {
         this.account = account;
     }
 
-    public Customer(String citizenId, String firstName, String lastName, String phoneNumber, String gender, Date dateOfBirth, String address, String taxCode, String photo) {
+    public Customer(String citizenId, String firstName, String lastName, String phoneNumber, String gender,
+            LocalDate dateOfBirth, String address, String taxCode, String photo) {
         this.citizenId = citizenId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -97,7 +102,7 @@ public class Customer {
         this.address = address;
         this.taxCode = taxCode;
         this.photo = photo;
-    }    
+    }
 
     public UUID getId() {
         return id;
@@ -147,11 +152,11 @@ public class Customer {
         this.gender = gender;
     }
 
-    public Date getDateOfBirth() {
+    public LocalDate getDateOfBirth() {
         return this.dateOfBirth;
     }
 
-    public void setDateOfBirth(Date dateOfBirth) {
+    public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 
